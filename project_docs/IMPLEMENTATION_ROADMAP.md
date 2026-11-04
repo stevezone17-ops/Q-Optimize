@@ -3,18 +3,18 @@
 Build incrementally. Each phase ends with tests, documentation updates, and a focused Git commit.
 
 ## Phase 0 — Project setup
-- [ ] Create repository structure.
-- [ ] Configure React/TypeScript/Vite and FastAPI.
-- [ ] Add linting, formatting, and tests.
-- [ ] Add `.env.example` and `.gitignore`.
-- [ ] Add health endpoint.
-**Exit:** frontend/backend start locally and baseline tests pass.
+- [x] Create repository structure (`backend/app`, `frontend/src`, `research`, `docs`, `project_docs`).
+- [x] Configure React/TypeScript/Vite and FastAPI.
+- [x] Add linting, formatting, and tests (Pytest, Vitest, Testing Library).
+- [x] Add `.env.example` and `.gitignore`.
+- [x] Add health endpoint (`/health` and `/api/v1/health`).
+**Exit:** frontend/backend start locally and baseline tests pass. (Achieved & Verified)
 
 ## Phase 1 — Product shell
-- [ ] Landing page, dashboard, navigation.
-- [ ] Problem Builder and workspace pages.
-- [ ] Responsive design system and typed API client.
-**Exit:** pages navigate and real API health is displayed; no fake solver results.
+- [x] Landing page, dashboard, navigation (9-section technical sidebar).
+- [x] Problem Builder and workspace pages (Max-Cut, Assignment, TSP, Natural Language Draft).
+- [x] Responsive design system and typed API client (`frontend/src/services/api.ts`).
+**Exit:** pages navigate and real API health is displayed; no fake solver results. (Achieved & Verified)
 
 ## Phase 2 — Canonical problem domain
 - [ ] Versioned schemas.
