@@ -168,3 +168,4 @@ def test_assignment_invalid_matrix_cost():
             tasks=["Task_1"],
             cost_matrix=[[float("nan")]],
         )
+

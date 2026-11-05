@@ -145,3 +145,4 @@ def test_max_cut_invalid_solution_non_binary_value(evaluator):
     res = evaluator.evaluate(problem, {"A": 0, "B": 2})
     assert res.is_feasible is False
     assert any(v.constraint_id == "BINARY_DOMAIN_VIOLATION" for v in res.violations)
+

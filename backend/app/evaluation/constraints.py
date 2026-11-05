@@ -462,3 +462,4 @@ class ConstraintValidator:
         # Return the closed tour cycle [c0, c1, ..., cn-1, c0]
         closed_tour = intermediate_cities + [intermediate_cities[0]] if intermediate_cities else []
         return violations, closed_tour
+

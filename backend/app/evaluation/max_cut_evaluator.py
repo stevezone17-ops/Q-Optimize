@@ -103,3 +103,4 @@ class MaxCutEvaluator(IEvaluator):
             violations=violations,
             details=details,
         )
+

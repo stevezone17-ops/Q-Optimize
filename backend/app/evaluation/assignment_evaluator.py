@@ -109,3 +109,4 @@ class AssignmentEvaluator(IEvaluator):
             violations=violations,
             details=details,
         )
+

@@ -1,43 +1,72 @@
 # Research Methodology
 
-## Proposed research
-Investigate adaptive QAOA parameter strategies and ML-assisted solver recommendation for selected combinatorial optimization problems.
+## 1. Proposed Research Scope
+Investigate adaptive QAOA parameter strategies, formulation robustness, and ML-assisted solver recommendation for canonical combinatorial optimization problems (Max-Cut, Linear Assignment, and Travelling Salesperson Problem).
 
-## Research questions
-- RQ1: How does QAOA quality vary with problem size and structure?
-- RQ2: Do defined adaptive parameter strategies improve solution quality or convergence under a fixed evaluation budget?
-- RQ3: Can problem features support useful solver recommendations compared with a rule-based baseline?
-- RQ4: How do selected simulated noise settings affect QAOA quality and variability?
-- RQ5: Under which tested conditions do classical methods outperform or match QAOA?
+---
 
-## Hypotheses
+## 2. Research Questions
+- **RQ1:** How does QAOA solution quality vary with problem size, graph density, and constraint density?
+- **RQ2:** Do defined adaptive parameter strategies improve solution quality or convergence under a fixed evaluation budget compared to standard heuristics?
+- **RQ3:** Can structural problem features support useful solver recommendations compared with a rule-based baseline?
+- **RQ4:** How do selected simulated noise settings affect QAOA quality and variability?
+- **RQ5:** Under which tested conditions do classical heuristic methods (Simulated Annealing, Genetic Algorithms) outperform or match QAOA simulation?
+
+---
+
+## 3. Hypotheses
 Treat as hypotheses, not promised outcomes:
-- H1: Some adaptive strategies may improve QAOA quality or convergence on selected instance families.
-- H2: A recommender may reduce recommendation regret on held-out instances.
-- H3: Increasing noise under the chosen model may degrade quality or increase variability.
+- **H1:** Some adaptive strategies may improve QAOA quality or convergence on selected instance families.
+- **H2:** A recommender may reduce recommendation regret on held-out instances compared to random or static baselines.
+- **H3:** Increasing depolarizing/thermal noise under the chosen simulator model may degrade solution quality or increase bitstring variance.
 
-Negative or inconclusive results are valid.
+Negative or inconclusive results are scientifically valid and will be reported with equal rigor.
 
-## Instance families
-Max-Cut graphs with varied size/density/topology; Assignment instances with varied dimensions/cost structures; small TSP instances. Record generator seeds and data provenance.
+---
 
-## Baselines
-Exact solver for small instances, Genetic Algorithm, Simulated Annealing, relevant greedy baseline, standard QAOA initialization, and adaptive QAOA variants.
+## 4. Problem Instance Families
+- **Max-Cut:** Erdős-Rényi random graphs, cycle graphs, complete graphs, and regular graphs with varied density and edge weights.
+- **Linear Assignment:** Square assignment instances with uniform, clustered, and metric cost matrices.
+- **TSP:** Small geometric and asymmetric Euclidean instances with 3 to 10 cities.
+- All instances record generator seeds and reproducible JSON representations.
 
-## Metrics
-Objective value, feasibility rate, violations, approximation ratio/optimality gap when a valid optimum or bound exists, runtime, evaluation budget, convergence, seed variability, circuit depth, shots, and noise sensitivity. Define formulas and direction before experiments.
+---
 
-## Controls
-Same instance for compared solvers; documented configurations; fixed and reported seeds; repeated stochastic runs; equivalent budgets where possible; record machine/software versions; separate formulation and solver time.
+## 5. Baselines & Experimental Controls
+- **Solvers:** Exact brute-force solver (small $N$), Genetic Algorithm, Simulated Annealing, greedy heuristics, standard QAOA ($p=1, 2, 3$), and adaptive QAOA.
+- **Controls:** Identical problem instance across compared solvers; fixed random seeds; equivalent evaluation budgets (shots $\times$ iterations); separation of formulation generation time from solver execution time; machine/library version provenance.
 
-## Analysis
-Report sample count, mean, standard deviation, median, quantiles, and confidence intervals where justified. Preserve raw per-run data. Use statistical tests only when assumptions and sample sizes support them.
+---
 
-## Reproducibility
-Preserve instances, generator seeds, formulations, variable order, solver configuration, run seeds, software versions, environment metadata, raw results, and analysis scripts.
+## 6. Evaluation Metrics & Independent Truth
+1. **Objective Value:** Evaluated strictly by an independent domain evaluator directly against the original problem definition, not the internal solver score.
+2. **Feasibility Rate:** Fraction of measured bitstrings that satisfy 100% of problem constraints.
+3. **Approximation Ratio:** $\alpha = \frac{\text{Computed Value}}{\text{Optimal Value}}$ when exact optimum is known.
+4. **Energy Discrepancy:** $|E_{\text{QUBO}}(x) - H_{\text{Ising}}(Z)|$ to confirm formulation precision.
 
-## Threats to validity
-Small simulator-limited instances, generated-data bias, penalty/encoding choices, unequal budgets, parser errors, ML leakage, simplified noise models, and limited generalizability.
+---
 
-## Reporting rule
-Never fabricate results. Simulator-based experiments do not establish quantum advantage.
+## 7. Formulation Verification & Penalty Sufficiency Methodology (Phase 3)
+
+### 7.1 Exhaustive Truth-Table State Space Verification
+To guarantee that QUBO and Ising models accurately reflect the intended combinatorial problem:
+- For small benchmark instances ($n \le 12$ binary variables, corresponding to $2^{12} = 4,096$ states), the platform performs exhaustive state-space enumeration.
+- For each state $x \in \{0, 1\}^n$:
+  1. Evaluate classical QUBO energy $E_{\text{QUBO}}(x) = x^T Q x + c$.
+  2. Map bitstring to spin configuration $Z_i = 1 - 2x_i$ and compute $H_{\text{Ising}}(Z) = \sum h_i Z_i + \sum J_{ij} Z_i Z_j + C$.
+  3. Verify $|E_{\text{QUBO}}(x) - H_{\text{Ising}}(Z)| < 10^{-6}$.
+  4. For all feasible states, compare $E_{\text{QUBO}}(x)$ to the Phase 2 independent objective evaluator output to ensure objective direction and offsets match.
+
+### 7.2 Penalty Multiplier Sufficiency Testing
+For constrained problems (Assignment and TSP), penalty multipliers $A$ and $B$ must exceed the maximum possible objective decrease achievable by violating a constraint. 
+The platform tests:
+\[
+\min_{x \in \mathcal{S}_{\text{infeasible}}} E_{\text{QUBO}}(x) > \min_{x \in \mathcal{S}_{\text{feasible}}} E_{\text{QUBO}}(x)
+\]
+If an infeasible state achieves an energy lower than the optimal feasible state, the penalty coefficients are marked as insufficient, and the researcher is provided with mathematically grounded lower bounds.
+
+---
+
+## 8. Reproducibility & Research Integrity
+- Every experiment record preserves the exact QUBO upper-triangular matrix, variable ordering array, penalty parameters, random seeds, and raw bitstring count distribution.
+- **Strict Prohibition:** Simulator-based experiments do not establish physical quantum advantage and will never be presented as physical quantum speedup.

@@ -414,3 +414,4 @@ export const SolutionEvaluatorModal: React.FC<SolutionEvaluatorModalProps> = ({
     </Modal>
   )
 }
+

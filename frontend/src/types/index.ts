@@ -149,6 +149,71 @@ export interface BackendHealthResponse {
   supported_problems: ProblemType[]
 }
 
+// -------------------------------------------------------------
+// Phase 3 Formulation & Verification Types
+// -------------------------------------------------------------
+
+export interface QuboModel {
+  variable_order: string[]
+  linear_terms: Record<string, number>
+  quadratic_terms: Record<string, number>
+  offset: number
+  matrix?: number[][]
+  penalties: Record<string, number>
+  assumptions: string[]
+  metadata: Record<string, unknown>
+}
+
+export interface IsingModel {
+  variable_order: string[]
+  local_fields: Record<string, number>
+  couplings: Record<string, number>
+  offset: number
+  spin_mapping: Record<string, string>
+  latex_expression?: string
+  metadata: Record<string, unknown>
+}
+
+export interface FormulationResponse {
+  id: string
+  problem_id?: string
+  owner_id: string
+  formulation_type: 'qubo' | 'ising'
+  schema_version: string
+  qubo?: QuboModel
+  ising?: IsingModel
+  created_at: string
+}
+
+export interface GenerateFormulationPayload {
+  problem_id?: string
+  problem_type?: string
+  instance?: Record<string, unknown>
+  penalty_coefficients?: Record<string, number>
+}
+
+export interface VerificationResult {
+  is_verified: boolean
+  num_states_tested: number
+  max_energy_discrepancy: number
+  tolerance: number
+  feasible_states_count: number
+  min_qubo_energy: number
+  min_ising_energy: number
+  optimal_bitstring: string
+  feasibility_summary: string
+  discrepancies: Record<string, unknown>[]
+  verified_at: string
+}
+
+export interface VerifyFormulationPayload {
+  formulation_id?: string
+  problem_id?: string
+  problem_type?: string
+  instance?: Record<string, unknown>
+  qubo?: QuboModel
+}
+
 export type NavigationItemKey =
   | 'overview'
   | 'problem-builder'

@@ -132,3 +132,4 @@ def test_problem_metadata_and_evaluate_by_id(client: TestClient):
     # 5. Evaluate non-existent problem ID returns 404
     non_existent_res = client.post("/api/v1/problems/non_existent_id_12345/evaluate", json=eval_payload)
     assert non_existent_res.status_code == 404
+

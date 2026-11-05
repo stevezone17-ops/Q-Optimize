@@ -27,13 +27,18 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 - [x] Hand-calculated small-instance tests with verified ground truths (52 Pytest + 7 Vitest).
 **Exit:** known examples produce correct values. (Achieved & Verified)
 
-## Phase 3 — Formulations
-- [ ] Define QUBO convention.
-- [ ] Max-Cut QUBO.
-- [ ] Assignment QUBO with documented penalties.
-- [ ] Small TSP encoding and QUBO.
-- [ ] QUBO-to-Ising conversion and exhaustive equivalence tests.
-**Exit:** mathematical consistency tests pass.
+## Phase 3 — Formulations & Ising Hamiltonian Modeling
+- [x] Canonical QUBO builder with upper-triangular indexing and sparse/dense export.
+- [x] Max-Cut QUBO minimization mapping with graph degree and edge coupling terms.
+- [x] Square Assignment QUBO with exact row/column penalty expansions and rectangular rejection.
+- [x] Position-based TSP QUBO with cyclic transitions, city/step penalties, and start pinning.
+- [x] Reusable penalty management module with mathematically proven sufficiency bounds.
+- [x] Analytical QUBO-to-Ising conversion via $x_i = (1 - Z_i)/2$, computing local fields $h_i$, couplings $J_{ij}$, and offset $C$.
+- [x] Independent mathematical verification engine with exhaustive $2^n$ state-space truth tables ($n \le 12$).
+- [x] Versioned API endpoints (/generate, /qubo, /ising, /verify, /{id}, /{id}/metadata, /{id}/export).
+- [x] Interactive Formulation Studio in the React/TypeScript frontend (heatmap, LaTeX inspector, verification panel).
+- [x] Comprehensive test coverage (80 backend pytest + 12 frontend vitest passing).
+**Exit:** mathematical consistency, energy equivalence, and truth-table verification tests pass. (Achieved & Verified)
 
 ## Phase 4 — Classical solvers
 - [ ] Exact small-instance solver.

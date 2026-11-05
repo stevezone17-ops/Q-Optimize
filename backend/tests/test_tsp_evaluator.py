@@ -165,3 +165,4 @@ def test_tsp_missing_city_tour_fails(evaluator):
     res = evaluator.evaluate(problem, ["Paris", "London"])
     assert res.is_feasible is False
     assert any(v.constraint_id == "TOUR_LENGTH_MISMATCH" for v in res.violations)
+

@@ -35,3 +35,4 @@ class EvaluationRequest(BaseModel):
     """API request schema for evaluating a candidate solution."""
     candidate: Any = Field(..., description="Candidate partition (MaxCut), assignment (Assignment), or tour (TSP)")
     options: Optional[Dict[str, Any]] = Field(default=None, description="Optional evaluation settings")
+

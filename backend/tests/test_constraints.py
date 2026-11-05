@@ -73,3 +73,4 @@ def test_validate_tsp_tour_hamiltonian_cycle():
     violations, closed = ConstraintValidator.validate_tsp_tour(cities, ["C1", "C2", "C3"])
     assert len(violations) == 0
     assert closed == ["C1", "C2", "C3", "C1"]
+

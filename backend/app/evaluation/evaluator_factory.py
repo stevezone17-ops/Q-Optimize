@@ -36,3 +36,4 @@ class EvaluatorFactory:
         if not evaluator:
             raise ValueError(f"No evaluator registered for problem type '{pt.value}'.")
         return evaluator
+
