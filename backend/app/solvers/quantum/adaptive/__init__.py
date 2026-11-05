@@ -60,6 +60,10 @@ from backend.app.solvers.quantum.adaptive.optimizer_controller import (
     OptimizerTransitionRecord,
     AdaptiveOptimizerController,
 )
+from backend.app.solvers.quantum.adaptive.depth_manager import (
+    DepthGrowthEvent,
+    AdaptiveDepthManager,
+)
 
 __all__ = [
     "AdaptiveQAOAError",
@@ -106,4 +110,6 @@ __all__ = [
     "ParameterTransferService",
     "OptimizerTransitionRecord",
     "AdaptiveOptimizerController",
+    "DepthGrowthEvent",
+    "AdaptiveDepthManager",
 ]
