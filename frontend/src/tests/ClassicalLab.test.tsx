@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ClassicalLabPage } from '../pages/ClassicalLabPage'
 
-describe('Classical Lab Feature (Stages 4.1 - 4.3)', () => {
+describe('Classical Lab Feature (Stages 4.1 - 4.4)', () => {
   it('renders classical lab header and problem selection controls', async () => {
     render(<ClassicalLabPage />)
     expect(screen.getByText('Classical Optimization Lab')).toBeInTheDocument()
@@ -21,7 +21,7 @@ describe('Classical Lab Feature (Stages 4.1 - 4.3)', () => {
 
     expect(screen.getByText('Ready (Stage 4.2)')).toBeInTheDocument()
     expect(screen.getByText('Ready (Stage 4.3)')).toBeInTheDocument()
-    expect(screen.getByText('Stage 4.4')).toBeInTheDocument()
+    expect(screen.getByText('Ready (Stage 4.4)')).toBeInTheDocument()
   })
 
   it('allows selecting Genetic Algorithm and displays evolutionary hyperparameters', async () => {
@@ -40,6 +40,25 @@ describe('Classical Lab Feature (Stages 4.1 - 4.3)', () => {
     expect(screen.getByText('Evolutionary Hyperparameters:')).toBeInTheDocument()
     expect(screen.getByText('Solver Execution Dispatch')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Execute Genetic Algorithm/i })).toBeInTheDocument()
+  })
+
+  it('allows selecting Simulated Annealing and displays annealing hyperparameters', async () => {
+    render(<ClassicalLabPage />)
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Exact Classical Solver').length).toBeGreaterThanOrEqual(1)
+    })
+
+    // Click on Simulated Annealing card
+    const saCard = screen.getAllByText('Simulated Annealing (SA)')[0]
+    fireEvent.click(saCard)
+
+    // Configuration badge and SA specific controls
+    expect(screen.getByText('Algorithm Configuration')).toBeInTheDocument()
+    expect(screen.getByText('Annealing Hyperparameters')).toBeInTheDocument()
+    expect(screen.getByText('Exponential (T·α)')).toBeInTheDocument()
+    expect(screen.getByText('Linear (T - ΔT)')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Execute Simulated Annealing/i })).toBeInTheDocument()
   })
 
   it('executes exact classical solver and renders results panel with proven optimal status', async () => {

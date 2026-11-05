@@ -6,6 +6,7 @@ from backend.app.main import app
 from backend.app.domain.problems.models import ProblemType
 from backend.app.solvers.classical.registry import ClassicalSolverRegistry
 from backend.app.solvers.classical.factory import ClassicalSolverFactory
+from backend.app.solvers.classical.base import IClassicalSolver
 from backend.app.solvers.classical.exceptions import (
     SolverNotFoundError,
     SolverNotImplementedError,
@@ -41,7 +42,7 @@ def test_registry_registration_and_discovery():
     assert ga_meta.stage_introduced == "Stage 4.3"
 
     sa_meta = next(s for s in solvers if s.solver_id == "simulated_annealing")
-    assert sa_meta.is_implemented is False
+    assert sa_meta.is_implemented is True
     assert sa_meta.stage_introduced == "Stage 4.4"
 
 
@@ -62,10 +63,34 @@ def test_solver_factory_get():
 
 
 def test_unimplemented_solver_solve_raises():
-    """Verify that calling solve() on stubs raises SolverNotImplementedError."""
-    sa_solver = ClassicalSolverFactory.get_solver("simulated_annealing")
-    with pytest.raises(SolverNotImplementedError, match="Stage 4.4"):
-        sa_solver.solve(
+    """Verify that calling solve() on stubs raises SolverNotImplementedError when not implemented."""
+    class DummyStubSolver(IClassicalSolver):
+        @property
+        def solver_id(self) -> str:
+            return "dummy_stub"
+        @property
+        def name(self) -> str:
+            return "Dummy Stub"
+        @property
+        def description(self) -> str:
+            return "Test stub"
+        @property
+        def supported_problem_types(self) -> list:
+            return [ProblemType.MAX_CUT]
+        @property
+        def is_implemented(self) -> bool:
+            return False
+        @property
+        def stage_introduced(self) -> str:
+            return "Stage 5.0"
+        def get_config_schema(self) -> dict:
+            return {}
+        def solve(self, problem_type, instance, config=None, seed=42):
+            return super().solve(problem_type, instance, config, seed)
+
+    dummy = DummyStubSolver()
+    with pytest.raises(SolverNotImplementedError, match="Stage 5.0"):
+        dummy.solve(
             problem_type=ProblemType.MAX_CUT,
             instance={"nodes": ["A", "B"], "edges": [["A", "B", 1.0]]},
         )
@@ -133,14 +158,42 @@ def test_api_validate_solver_config(client: TestClient):
 
 def test_api_execute_unimplemented_solver_returns_501(client: TestClient):
     """POST /api/v1/solvers/classical/execute returns 501 Not Implemented for unimplemented algorithms."""
-    payload = {
-        "solver_id": "simulated_annealing",
-        "problem_type": "max_cut",
-        "instance": {
-            "nodes": ["A", "B"],
-            "edges": [["A", "B", 1.0]],
-        },
-    }
-    res = client.post("/api/v1/solvers/classical/execute", json=payload)
-    assert res.status_code == 501
-    assert "Stage 4.4" in res.json()["detail"]
+    class MockUnimplemented(IClassicalSolver):
+        @property
+        def solver_id(self) -> str:
+            return "mock_unimplemented"
+        @property
+        def name(self) -> str:
+            return "Mock Unimplemented"
+        @property
+        def description(self) -> str:
+            return "Mock stub"
+        @property
+        def supported_problem_types(self) -> list:
+            return [ProblemType.MAX_CUT]
+        @property
+        def is_implemented(self) -> bool:
+            return False
+        @property
+        def stage_introduced(self) -> str:
+            return "Future Stage"
+        def get_config_schema(self) -> dict:
+            return {}
+        def solve(self, problem_type, instance, config=None, seed=42):
+            return super().solve(problem_type, instance, config, seed)
+
+    ClassicalSolverRegistry.register(MockUnimplemented())
+    try:
+        payload = {
+            "solver_id": "mock_unimplemented",
+            "problem_type": "max_cut",
+            "instance": {
+                "nodes": ["A", "B"],
+                "edges": [["A", "B", 1.0]],
+            },
+        }
+        res = client.post("/api/v1/solvers/classical/execute", json=payload)
+        assert res.status_code == 501
+        assert "Future Stage" in res.json()["detail"]
+    finally:
+        ClassicalSolverRegistry.reset_defaults()

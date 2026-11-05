@@ -183,7 +183,7 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
             name: 'Simulated Annealing (SA)',
             description: 'Thermodynamic single-solution trajectory with Metropolis acceptance rule.',
             supported_problem_types: ['max_cut', 'assignment', 'tsp'],
-            is_implemented: false,
+            is_implemented: true,
             stage_introduced: 'Stage 4.4',
             config_schema: { initial_temperature: { type: 'float', default: 100.0 } },
             default_parameters: { initial_temperature: 100.0 },

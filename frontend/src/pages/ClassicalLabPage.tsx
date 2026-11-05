@@ -89,6 +89,14 @@ export const ClassicalLabPage: React.FC = () => {
   const [crossoverRate, setCrossoverRate] = useState<number>(0.8)
   const [elitismCount, setElitismCount] = useState<number>(2)
 
+  // SA specific parameters (Stage 4.4)
+  const [initialTemp, setInitialTemp] = useState<number>(100.0)
+  const [finalTemp, setFinalTemp] = useState<number>(0.01)
+  const [coolingSchedule, setCoolingSchedule] = useState<'exponential' | 'linear'>('exponential')
+  const [coolingRate, setCoolingRate] = useState<number>(0.95)
+  const [stepsPerTemp, setStepsPerTemp] = useState<number>(50)
+  const [maxIterations, setMaxIterations] = useState<number>(5000)
+
   // Fetch solvers and problems
   useEffect(() => {
     const initData = async () => {
@@ -157,6 +165,13 @@ export const ClassicalLabPage: React.FC = () => {
         solverConfig.mutation_rate = mutationRate
         solverConfig.crossover_rate = crossoverRate
         solverConfig.elitism_count = elitismCount
+      } else if (selectedSolverId === 'simulated_annealing') {
+        solverConfig.initial_temperature = initialTemp
+        solverConfig.final_temperature = finalTemp
+        solverConfig.cooling_schedule = coolingSchedule
+        solverConfig.cooling_rate = coolingRate
+        solverConfig.steps_per_temperature = stepsPerTemp
+        solverConfig.max_iterations = maxIterations
       }
 
       let payload
@@ -388,6 +403,105 @@ export const ClassicalLabPage: React.FC = () => {
                       onChange={(e) => setElitismCount(parseInt(e.target.value, 10) || 2)}
                       className="font-mono"
                     />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Simulated Annealing Hyperparameters (Stage 4.4) */}
+            {selectedSolverId === 'simulated_annealing' && (
+              <div className="p-4 bg-midnight-950/80 rounded-lg border border-purple-500/20 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-purple-300 font-mono flex items-center gap-2">
+                    <Activity className="h-3.5 w-3.5" />
+                    Annealing Hyperparameters
+                  </span>
+                  <Badge variant="outline" className="text-[10px] border-purple-500/40 text-purple-400">
+                    Stage 4.4
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <Input
+                      label="Initial Temp (T₀)"
+                      type="number"
+                      step="5"
+                      min="1"
+                      value={initialTemp}
+                      onChange={(e) => setInitialTemp(parseFloat(e.target.value) || 100.0)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Final Temp (T_f)"
+                      type="number"
+                      step="0.005"
+                      min="0.0001"
+                      value={finalTemp}
+                      onChange={(e) => setFinalTemp(parseFloat(e.target.value) || 0.01)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Cooling Rate (α)"
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max="0.99"
+                      value={coolingRate}
+                      onChange={(e) => setCoolingRate(parseFloat(e.target.value) || 0.95)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Steps / Temp (L)"
+                      type="number"
+                      step="10"
+                      min="1"
+                      value={stepsPerTemp}
+                      onChange={(e) => setStepsPerTemp(parseInt(e.target.value, 10) || 50)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Max Iterations"
+                      type="number"
+                      step="500"
+                      min="100"
+                      max="50000"
+                      value={maxIterations}
+                      onChange={(e) => setMaxIterations(parseInt(e.target.value, 10) || 5000)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-scientific-muted uppercase tracking-wider block mb-1 font-mono">
+                      Cooling Schedule
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={coolingSchedule === 'exponential' ? 'primary' : 'outline'}
+                        onClick={() => setCoolingSchedule('exponential')}
+                        className="text-xs font-mono"
+                      >
+                        Exponential (T·α)
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={coolingSchedule === 'linear' ? 'primary' : 'outline'}
+                        onClick={() => setCoolingSchedule('linear')}
+                        className="text-xs font-mono"
+                      >
+                        Linear (T - ΔT)
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

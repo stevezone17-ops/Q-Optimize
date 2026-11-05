@@ -7,54 +7,7 @@ from backend.app.solvers.classical.models import SolverMetadata, SolverConfigura
 from backend.app.solvers.classical.exceptions import SolverNotFoundError, SolverNotImplementedError
 from backend.app.solvers.classical.exact import ExactSolver
 from backend.app.solvers.classical.genetic_algorithm import GeneticAlgorithmSolver
-
-
-class SimulatedAnnealingStub(IClassicalSolver):
-    """Stub representation of Simulated Annealing prior to Stage 4.4 implementation."""
-    @property
-    def solver_id(self) -> str:
-        return "simulated_annealing"
-
-    @property
-    def name(self) -> str:
-        return "Simulated Annealing (SA)"
-
-    @property
-    def description(self) -> str:
-        return "Thermodynamic single-solution trajectory with Metropolis acceptance rule and geometric cooling schedules."
-
-    @property
-    def supported_problem_types(self) -> List[ProblemType]:
-        return [ProblemType.MAX_CUT, ProblemType.ASSIGNMENT, ProblemType.TSP]
-
-    @property
-    def is_implemented(self) -> bool:
-        return False
-
-    @property
-    def stage_introduced(self) -> str:
-        return "Stage 4.4"
-
-    def get_config_schema(self) -> Dict[str, Any]:
-        return {
-            "initial_temperature": {"type": "float", "default": 100.0, "description": "Initial system temperature"},
-            "final_temperature": {"type": "float", "default": 0.01, "description": "Stopping temperature"},
-            "cooling_schedule": {"type": "string", "default": "exponential", "description": "Cooling schedule type"},
-            "cooling_rate": {"type": "float", "default": 0.95, "description": "Geometric temperature decay factor"},
-            "iterations_per_temperature": {"type": "integer", "default": 50, "description": "Steps at each temperature step"},
-            "max_iterations": {"type": "integer", "default": 5000, "description": "Safety cutoff iteration count"},
-            "seed": {"type": "integer", "default": 42, "description": "Deterministic random seed"},
-            "time_limit_seconds": {"type": "float", "default": 60.0, "description": "Max execution time"},
-        }
-
-    def solve(
-        self,
-        problem_type: ProblemType,
-        instance: Dict[str, Any],
-        config: Optional[SolverConfiguration] = None,
-        seed: Optional[int] = 42,
-    ) -> SolverResult:
-        super().solve(problem_type, instance, config, seed)
+from backend.app.solvers.classical.simulated_annealing import SimulatedAnnealingSolver
 
 
 class ClassicalSolverRegistry:
@@ -89,7 +42,7 @@ class ClassicalSolverRegistry:
         cls._solvers.clear()
         cls.register(ExactSolver())
         cls.register(GeneticAlgorithmSolver())
-        cls.register(SimulatedAnnealingStub())
+        cls.register(SimulatedAnnealingSolver())
 
 
 # Initialize default registry
