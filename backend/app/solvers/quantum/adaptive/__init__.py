@@ -41,6 +41,15 @@ from backend.app.solvers.quantum.adaptive.strategy_registry import (
     FullAdaptiveQAOAStrategy,
 )
 from backend.app.solvers.quantum.adaptive.strategy_factory import AdaptiveStrategyFactory
+from backend.app.solvers.quantum.adaptive.initializers import (
+    BaseParameterInitializer,
+    RandomInitializer,
+    LinearRampInitializer,
+    FourierInitializer,
+    WarmStartInitializer,
+    CustomInitializer,
+    ParameterInitializerFactory,
+)
 
 __all__ = [
     "AdaptiveQAOAError",
@@ -74,4 +83,11 @@ __all__ = [
     "AdaptiveOptimizerStrategy",
     "FullAdaptiveQAOAStrategy",
     "AdaptiveStrategyFactory",
+    "BaseParameterInitializer",
+    "RandomInitializer",
+    "LinearRampInitializer",
+    "FourierInitializer",
+    "WarmStartInitializer",
+    "CustomInitializer",
+    "ParameterInitializerFactory",
 ]
