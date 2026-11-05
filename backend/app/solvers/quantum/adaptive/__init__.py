@@ -64,6 +64,10 @@ from backend.app.solvers.quantum.adaptive.depth_manager import (
     DepthGrowthEvent,
     AdaptiveDepthManager,
 )
+from backend.app.solvers.quantum.adaptive.convergence_monitor import (
+    ConvergenceMetrics,
+    AdaptiveConvergenceMonitor,
+)
 
 __all__ = [
     "AdaptiveQAOAError",
@@ -112,4 +116,6 @@ __all__ = [
     "AdaptiveOptimizerController",
     "DepthGrowthEvent",
     "AdaptiveDepthManager",
+    "ConvergenceMetrics",
+    "AdaptiveConvergenceMonitor",
 ]
