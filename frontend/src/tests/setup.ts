@@ -124,6 +124,46 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  if (url.includes('/solvers/classical')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve([
+          {
+            solver_id: 'exact',
+            name: 'Exact Classical Solver',
+            description: 'Deterministic global optimization via exhaustive enumeration and branch-and-bound.',
+            supported_problem_types: ['max_cut', 'assignment', 'tsp'],
+            is_implemented: false,
+            stage_introduced: 'Stage 4.2',
+            config_schema: { time_limit_seconds: { type: 'float', default: 60.0 } },
+            default_parameters: { time_limit_seconds: 60.0 },
+          },
+          {
+            solver_id: 'genetic_algorithm',
+            name: 'Genetic Algorithm (GA)',
+            description: 'Evolutionary metaheuristic with problem-specific chromosome representations.',
+            supported_problem_types: ['max_cut', 'assignment', 'tsp'],
+            is_implemented: false,
+            stage_introduced: 'Stage 4.3',
+            config_schema: { population_size: { type: 'integer', default: 100 } },
+            default_parameters: { population_size: 100 },
+          },
+          {
+            solver_id: 'simulated_annealing',
+            name: 'Simulated Annealing (SA)',
+            description: 'Thermodynamic single-solution trajectory with Metropolis acceptance rule.',
+            supported_problem_types: ['max_cut', 'assignment', 'tsp'],
+            is_implemented: false,
+            stage_introduced: 'Stage 4.4',
+            config_schema: { initial_temperature: { type: 'float', default: 100.0 } },
+            default_parameters: { initial_temperature: 100.0 },
+          },
+        ]),
+    })
+  }
+
   return Promise.resolve({
     ok: true,
     status: 200,

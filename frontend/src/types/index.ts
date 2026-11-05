@@ -224,3 +224,68 @@ export type NavigationItemKey =
   | 'my-experiments'
   | 'learn'
   | 'settings'
+
+// ==========================================
+// Phase 4: Classical Optimization Types
+// ==========================================
+
+export type SolverStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'TIMED_OUT'
+
+export type OptimalityStatus = 'proven_optimal' | 'heuristic_feasible' | 'heuristic_infeasible' | 'unknown'
+
+export interface ConvergencePoint {
+  iteration: number
+  best_objective: number
+  current_objective?: number
+  mean_fitness?: number
+  temperature?: number
+  timestamp_offset?: number
+}
+
+export interface SolverMetadata {
+  solver_id: string
+  name: string
+  description: string
+  supported_problem_types: ProblemType[]
+  is_implemented: boolean
+  stage_introduced: string
+  config_schema: Record<string, unknown>
+  default_parameters: Record<string, unknown>
+}
+
+export interface SolverConfiguration {
+  time_limit_seconds?: number
+  seed?: number
+  extra_params?: Record<string, unknown>
+}
+
+export interface SolverRequest {
+  solver_id: string
+  problem_id?: string
+  problem_type?: ProblemType
+  instance?: Record<string, unknown>
+  config?: Record<string, unknown>
+  seed?: number
+}
+
+export interface SolverResult {
+  execution_id: string
+  solver_id: string
+  solver_name: string
+  problem_type: ProblemType
+  status: SolverStatus
+  candidate_solution: unknown
+  objective_value?: number
+  is_feasible: boolean
+  constraint_violations: string[]
+  runtime_seconds: number
+  iterations: number
+  evaluations: number
+  seed?: number
+  optimality_status: OptimalityStatus
+  termination_reason: string
+  convergence_history: ConvergencePoint[]
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
