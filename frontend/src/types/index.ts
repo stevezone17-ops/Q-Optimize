@@ -358,3 +358,155 @@ export interface BenchmarkResult {
   created_at: string
 }
 
+// ---------------------------------------------------------------------------
+// Phase 5: QAOA Quantum Optimization Types
+// ---------------------------------------------------------------------------
+
+export type SimulationMode = 'ideal_shots' | 'statevector' | 'depolarizing_noise'
+export type ClassicalOptimizerType = 'COBYLA' | 'SLSQP' | 'Nelder-Mead' | 'L-BFGS-B'
+export type ParameterInitializationStrategy = 'random' | 'zeros' | 'linear_ramp' | 'custom'
+
+export interface QuantumBackendInfo {
+  backend_id: string
+  name: string
+  backend_type: string
+  is_simulator: boolean
+  is_hardware: boolean
+  hardware_transparency_note: string
+  max_qubits: number
+  supported_methods: string[]
+  is_available: boolean
+  qiskit_version?: string
+  aer_version?: string
+}
+
+export interface QAOAConfiguration {
+  p_depth: number
+  shots: number
+  simulation_mode: SimulationMode
+  optimizer: ClassicalOptimizerType
+  max_iterations: number
+  tolerance?: number
+  init_strategy: ParameterInitializationStrategy
+  initial_gamma?: number[]
+  initial_beta?: number[]
+  noise_probability?: number
+  seed?: number
+  optimization_target?: string
+}
+
+export interface CircuitMetadata {
+  num_qubits: number
+  depth: number
+  gate_counts: Record<string, number>
+  num_parameters: number
+  p_depth: number
+  has_measurements: boolean
+  creation_timestamp?: string
+}
+
+export interface QAOAOptimizationTrace {
+  iteration: number
+  expectation_value: number
+  gamma: number[]
+  beta: number[]
+  variance?: number
+  runtime_ms?: number
+}
+
+export interface DecodedSample {
+  bitstring: string
+  count: number
+  probability: number
+  raw_binary_vector: number[]
+  decoded_solution: Record<string, unknown>
+  objective_value: number
+  is_feasible: boolean
+  constraint_violations: string[]
+  is_best_feasible: boolean
+  is_most_frequent: boolean
+  cut_value?: number
+  partition_s?: string[]
+  partition_v_minus_s?: string[]
+  matching_pairs?: [string, string][]
+  total_cost?: number
+  tour?: string[]
+  tour_length?: number
+}
+
+export interface QAOADecodingSummary {
+  total_samples: number
+  unique_samples: number
+  feasible_samples: number
+  infeasible_samples: number
+  feasible_rate: number
+  best_feasible_solution?: DecodedSample | null
+  best_infeasible_solution?: DecodedSample | null
+  most_frequent_solution: DecodedSample
+  all_decoded_samples: DecodedSample[]
+}
+
+export interface QAOAExecutionResult {
+  execution_id: string
+  solver_id: string
+  solver_name: string
+  problem_type: ProblemType
+  status: SolverStatus
+  optimal_gamma: number[]
+  optimal_beta: number[]
+  optimal_expectation_value: number
+  best_sample: DecodedSample
+  decoding_summary: QAOADecodingSummary
+  circuit_metadata: CircuitMetadata
+  convergence_history: QAOAOptimizationTrace[]
+  total_evaluations: number
+  optimizer_iterations: number
+  runtime_seconds: number
+  backend_info: QuantumBackendInfo
+  hardware_transparency_note: string
+  termination_reason: string
+  is_feasible: boolean
+  constraint_violations: string[]
+  independent_evaluation?: EvaluationResult
+}
+
+export interface QAOAExecutionRecord {
+  execution_id: string
+  solver_id: string
+  solver_name: string
+  problem_type: ProblemType
+  problem_id?: string
+  status: SolverStatus
+  submitted_at: string
+  started_at?: string
+  completed_at?: string
+  runtime_seconds?: number
+  result?: QAOAExecutionResult
+  error?: string
+  config: QAOAConfiguration
+}
+
+export interface QAOAStatusResponse {
+  execution_id: string
+  solver_id: string
+  problem_type: ProblemType
+  status: SolverStatus
+  runtime_seconds?: number
+  is_completed: boolean
+  has_failed: boolean
+  error?: string
+}
+
+export interface QAOAValidationResponse {
+  is_valid: boolean
+  problem_type: ProblemType
+  num_qubits: number
+  p_depth: number
+  shots: number
+  estimated_parameters: number
+  resource_check: string
+  issues: string[]
+  transparency_warning?: string
+}
+
+
