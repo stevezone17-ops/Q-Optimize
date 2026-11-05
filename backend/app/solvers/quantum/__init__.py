@@ -31,6 +31,7 @@ from backend.app.solvers.quantum.backend_manager import QuantumBackendManager
 from backend.app.solvers.quantum.quantum_registry import QuantumSolverRegistry
 from backend.app.solvers.quantum.execution_context import QuantumExecutionContext
 from backend.app.solvers.quantum.hamiltonians import QAOACostHamiltonian, QAOAMixerHamiltonian
+from backend.app.solvers.quantum.circuit_builder import QAOACircuitBuilder
 
 __all__ = [
     "SimulationMode",
@@ -59,4 +60,5 @@ __all__ = [
     "QuantumExecutionContext",
     "QAOACostHamiltonian",
     "QAOAMixerHamiltonian",
+    "QAOACircuitBuilder",
 ]
