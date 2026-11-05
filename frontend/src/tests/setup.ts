@@ -173,7 +173,7 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
             name: 'Genetic Algorithm (GA)',
             description: 'Evolutionary metaheuristic with problem-specific chromosome representations.',
             supported_problem_types: ['max_cut', 'assignment', 'tsp'],
-            is_implemented: false,
+            is_implemented: true,
             stage_introduced: 'Stage 4.3',
             config_schema: { population_size: { type: 'integer', default: 100 } },
             default_parameters: { population_size: 100 },

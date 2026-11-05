@@ -23,6 +23,7 @@ import {
   Clock,
   Target,
   CheckCheck,
+  TrendingUp,
 } from 'lucide-react'
 
 // Built-in small benchmark presets
@@ -76,8 +77,17 @@ export const ClassicalLabPage: React.FC = () => {
   const [isExecuting, setIsExecuting] = useState(false)
   const [executionResult, setExecutionResult] = useState<SolverResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Base parameters
   const [timeLimit, setTimeLimit] = useState<number>(60.0)
   const [seed, setSeed] = useState<number>(42)
+
+  // GA specific parameters
+  const [popSize, setPopSize] = useState<number>(100)
+  const [generations, setGenerations] = useState<number>(200)
+  const [mutationRate, setMutationRate] = useState<number>(0.05)
+  const [crossoverRate, setCrossoverRate] = useState<number>(0.8)
+  const [elitismCount, setElitismCount] = useState<number>(2)
 
   // Fetch solvers and problems
   useEffect(() => {
@@ -137,12 +147,24 @@ export const ClassicalLabPage: React.FC = () => {
     setExecutionResult(null)
 
     try {
+      const solverConfig: Record<string, unknown> = {
+        time_limit_seconds: timeLimit,
+        seed,
+      }
+      if (selectedSolverId === 'genetic_algorithm') {
+        solverConfig.population_size = popSize
+        solverConfig.generations = generations
+        solverConfig.mutation_rate = mutationRate
+        solverConfig.crossover_rate = crossoverRate
+        solverConfig.elitism_count = elitismCount
+      }
+
       let payload
       if (!activeProblem.isPreset) {
         payload = {
           solver_id: selectedSolverId,
           problem_id: selectedProblemId,
-          config: { time_limit_seconds: timeLimit, seed },
+          config: solverConfig,
           seed,
         }
       } else {
@@ -150,7 +172,7 @@ export const ClassicalLabPage: React.FC = () => {
           solver_id: selectedSolverId,
           problem_type: activeProblem.problemType,
           instance: activeProblem.instance,
-          config: { time_limit_seconds: timeLimit, seed },
+          config: solverConfig,
           seed,
         }
       }
@@ -239,7 +261,7 @@ export const ClassicalLabPage: React.FC = () => {
                   {solver.name}
                 </span>
                 {solver.is_implemented ? (
-                  <Badge variant="accent">Ready (Stage 4.2)</Badge>
+                  <Badge variant="accent">Ready ({solver.stage_introduced})</Badge>
                 ) : (
                   <Badge variant="outline">{solver.stage_introduced}</Badge>
                 )}
@@ -299,6 +321,77 @@ export const ClassicalLabPage: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* Genetic Algorithm Specific Controls */}
+            {selectedSolverId === 'genetic_algorithm' && (
+              <div className="pt-2 border-t border-scientific-border/40 space-y-3">
+                <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider block">
+                  Evolutionary Hyperparameters:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Input
+                      label="Population"
+                      type="number"
+                      step="10"
+                      min="10"
+                      max="1000"
+                      value={popSize}
+                      onChange={(e) => setPopSize(parseInt(e.target.value, 10) || 100)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Generations"
+                      type="number"
+                      step="20"
+                      min="5"
+                      max="5000"
+                      value={generations}
+                      onChange={(e) => setGenerations(parseInt(e.target.value, 10) || 200)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Mutation (p_m)"
+                      type="number"
+                      step="0.01"
+                      min="0.0"
+                      max="1.0"
+                      value={mutationRate}
+                      onChange={(e) => setMutationRate(parseFloat(e.target.value) || 0.05)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Crossover (p_c)"
+                      type="number"
+                      step="0.05"
+                      min="0.0"
+                      max="1.0"
+                      value={crossoverRate}
+                      onChange={(e) => setCrossoverRate(parseFloat(e.target.value) || 0.8)}
+                      className="font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Elitism (N)"
+                      type="number"
+                      step="1"
+                      min="0"
+                      max="20"
+                      value={elitismCount}
+                      onChange={(e) => setElitismCount(parseInt(e.target.value, 10) || 2)}
+                      className="font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Parameter Schema Preview */}
             <div className="p-3 bg-midnight-950 rounded-lg border border-scientific-border text-[11px] space-y-2">
@@ -365,7 +458,7 @@ export const ClassicalLabPage: React.FC = () => {
                 <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
                 <span>
                   This algorithm will activate in {selectedSolver?.stage_introduced}. You can execute the
-                  Exact Classical Solver right now!
+                  Exact Classical Solver or Genetic Algorithm right now!
                 </span>
               </div>
             )}
@@ -403,9 +496,13 @@ export const ClassicalLabPage: React.FC = () => {
                   </span>
                 )}
 
-                {executionResult.optimality_status === 'proven_optimal' && (
+                {executionResult.optimality_status === 'proven_optimal' ? (
                   <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold text-[11px]">
                     PROVEN OPTIMAL
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold text-[11px]">
+                    HEURISTIC FEASIBLE
                   </span>
                 )}
               </div>
@@ -441,6 +538,36 @@ export const ClassicalLabPage: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* Convergence Trace Summary if available */}
+            {executionResult.convergence_history && executionResult.convergence_history.length > 1 && (
+              <div className="p-4 rounded-lg bg-midnight-950 border border-scientific-border space-y-2.5">
+                <span className="text-[11px] text-scientific-muted uppercase font-semibold flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-purple-400" />
+                  Convergence Checkpoints ({executionResult.convergence_history.length} recorded):
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                  <div className="p-2 rounded bg-midnight-900 border border-scientific-border/40">
+                    <span className="text-scientific-muted block">Gen 0 Initial</span>
+                    <span className="font-bold text-slate-300">
+                      {executionResult.convergence_history[0].best_objective.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded bg-midnight-900 border border-scientific-border/40">
+                    <span className="text-scientific-muted block">Midpoint</span>
+                    <span className="font-bold text-sky-400">
+                      {executionResult.convergence_history[Math.floor(executionResult.convergence_history.length / 2)].best_objective.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded bg-midnight-900 border border-scientific-border/40">
+                    <span className="text-scientific-muted block">Final Best</span>
+                    <span className="font-bold text-emerald-400">
+                      {executionResult.convergence_history[executionResult.convergence_history.length - 1].best_objective.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Candidate Solution Inspection */}
             <div className="p-4 rounded-lg bg-midnight-950 border border-scientific-border space-y-2">

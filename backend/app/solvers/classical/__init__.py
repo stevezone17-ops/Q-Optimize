@@ -21,6 +21,7 @@ from backend.app.solvers.classical.exceptions import (
 from backend.app.solvers.classical.registry import ClassicalSolverRegistry
 from backend.app.solvers.classical.factory import ClassicalSolverFactory
 from backend.app.solvers.classical.exact import ExactSolver
+from backend.app.solvers.classical.genetic_algorithm import GeneticAlgorithmSolver
 
 __all__ = [
     "SolverStatus",
@@ -32,6 +33,7 @@ __all__ = [
     "SolverResult",
     "IClassicalSolver",
     "ExactSolver",
+    "GeneticAlgorithmSolver",
     "ClassicalSolverError",
     "SolverNotFoundError",
     "SolverNotImplementedError",

@@ -6,54 +6,7 @@ from backend.app.solvers.classical.base import IClassicalSolver
 from backend.app.solvers.classical.models import SolverMetadata, SolverConfiguration, SolverResult
 from backend.app.solvers.classical.exceptions import SolverNotFoundError, SolverNotImplementedError
 from backend.app.solvers.classical.exact import ExactSolver
-
-
-class GeneticAlgorithmStub(IClassicalSolver):
-    """Stub representation of Genetic Algorithm prior to Stage 4.3 implementation."""
-    @property
-    def solver_id(self) -> str:
-        return "genetic_algorithm"
-
-    @property
-    def name(self) -> str:
-        return "Genetic Algorithm (GA)"
-
-    @property
-    def description(self) -> str:
-        return "Evolutionary metaheuristic with problem-specific chromosome representations, crossover, mutation, and elitism."
-
-    @property
-    def supported_problem_types(self) -> List[ProblemType]:
-        return [ProblemType.MAX_CUT, ProblemType.ASSIGNMENT, ProblemType.TSP]
-
-    @property
-    def is_implemented(self) -> bool:
-        return False
-
-    @property
-    def stage_introduced(self) -> str:
-        return "Stage 4.3"
-
-    def get_config_schema(self) -> Dict[str, Any]:
-        return {
-            "population_size": {"type": "integer", "default": 100, "description": "Number of individuals"},
-            "generations": {"type": "integer", "default": 200, "description": "Number of evolutionary generations"},
-            "mutation_rate": {"type": "float", "default": 0.05, "description": "Probability of gene mutation"},
-            "crossover_rate": {"type": "float", "default": 0.8, "description": "Probability of crossover"},
-            "selection_method": {"type": "string", "default": "tournament", "description": "Selection strategy"},
-            "elitism_count": {"type": "integer", "default": 2, "description": "Number of best individuals preserved"},
-            "seed": {"type": "integer", "default": 42, "description": "Deterministic random seed"},
-            "time_limit_seconds": {"type": "float", "default": 60.0, "description": "Max execution time"},
-        }
-
-    def solve(
-        self,
-        problem_type: ProblemType,
-        instance: Dict[str, Any],
-        config: Optional[SolverConfiguration] = None,
-        seed: Optional[int] = 42,
-    ) -> SolverResult:
-        super().solve(problem_type, instance, config, seed)
+from backend.app.solvers.classical.genetic_algorithm import GeneticAlgorithmSolver
 
 
 class SimulatedAnnealingStub(IClassicalSolver):
@@ -135,7 +88,7 @@ class ClassicalSolverRegistry:
         """Reset registry to default built-in solvers."""
         cls._solvers.clear()
         cls.register(ExactSolver())
-        cls.register(GeneticAlgorithmStub())
+        cls.register(GeneticAlgorithmSolver())
         cls.register(SimulatedAnnealingStub())
 
 
