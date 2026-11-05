@@ -124,6 +124,34 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  if (url.includes('/solvers/classical/execute')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          execution_id: 'test-exec-123',
+          solver_id: 'exact',
+          solver_name: 'Exact Classical Solver',
+          problem_type: 'max_cut',
+          status: 'COMPLETED',
+          candidate_solution: { A: 0, B: 1, C: 0, D: 1 },
+          objective_value: 14.0,
+          is_feasible: true,
+          constraint_violations: [],
+          runtime_seconds: 0.002,
+          iterations: 8,
+          evaluations: 8,
+          seed: 42,
+          optimality_status: 'proven_optimal',
+          termination_reason: 'proven_global_optimum',
+          convergence_history: [{ iteration: 8, best_objective: 14.0, timestamp_offset: 0.002 }],
+          metadata: { method: 'exact_exhaustive' },
+          created_at: new Date().toISOString(),
+        }),
+    })
+  }
+
   if (url.includes('/solvers/classical')) {
     return Promise.resolve({
       ok: true,
@@ -135,7 +163,7 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
             name: 'Exact Classical Solver',
             description: 'Deterministic global optimization via exhaustive enumeration and branch-and-bound.',
             supported_problem_types: ['max_cut', 'assignment', 'tsp'],
-            is_implemented: false,
+            is_implemented: true,
             stage_introduced: 'Stage 4.2',
             config_schema: { time_limit_seconds: { type: 'float', default: 60.0 } },
             default_parameters: { time_limit_seconds: 60.0 },

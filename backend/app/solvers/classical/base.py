@@ -107,3 +107,4 @@ class IClassicalSolver(ABC):
             )
         self.check_problem_support(problem_type)
         raise NotImplementedError("Subclasses must implement solve().")
+

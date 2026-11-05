@@ -29,3 +29,4 @@ class SolverTimeoutError(ClassicalSolverError):
 class UnsupportedProblemTypeError(ClassicalSolverError):
     """Raised when a solver does not support the requested problem type."""
     pass
+

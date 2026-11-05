@@ -32,12 +32,13 @@ def test_registry_registration_and_discovery():
     solver_ids = {s.solver_id for s in solvers}
     assert solver_ids == {"exact", "genetic_algorithm", "simulated_annealing"}
 
-    for s in solvers:
-        assert s.is_implemented is False
-        assert len(s.supported_problem_types) == 3
-        assert ProblemType.MAX_CUT in s.supported_problem_types
-        assert ProblemType.ASSIGNMENT in s.supported_problem_types
-        assert ProblemType.TSP in s.supported_problem_types
+    exact_meta = next(s for s in solvers if s.solver_id == "exact")
+    assert exact_meta.is_implemented is True
+    assert exact_meta.stage_introduced == "Stage 4.2"
+
+    ga_meta = next(s for s in solvers if s.solver_id == "genetic_algorithm")
+    assert ga_meta.is_implemented is False
+    assert ga_meta.stage_introduced == "Stage 4.3"
 
 
 def test_solver_factory_get():
@@ -57,10 +58,10 @@ def test_solver_factory_get():
 
 
 def test_unimplemented_solver_solve_raises():
-    """Verify that calling solve() on stubs in Stage 4.1 raises SolverNotImplementedError."""
-    exact_solver = ClassicalSolverFactory.get_solver("exact")
-    with pytest.raises(SolverNotImplementedError, match="Stage 4.2"):
-        exact_solver.solve(
+    """Verify that calling solve() on stubs raises SolverNotImplementedError."""
+    ga_solver = ClassicalSolverFactory.get_solver("genetic_algorithm")
+    with pytest.raises(SolverNotImplementedError, match="Stage 4.3"):
+        ga_solver.solve(
             problem_type=ProblemType.MAX_CUT,
             instance={"nodes": ["A", "B"], "edges": [["A", "B", 1.0]]},
         )
@@ -96,7 +97,7 @@ def test_api_get_classical_solver(client: TestClient):
     assert res.status_code == 200
     data = res.json()
     assert data["solver_id"] == "exact"
-    assert data["is_implemented"] is False
+    assert data["is_implemented"] is True
     assert data["stage_introduced"] == "Stage 4.2"
 
     res_404 = client.get("/api/v1/solvers/classical/unknown_solver")
@@ -127,9 +128,9 @@ def test_api_validate_solver_config(client: TestClient):
 
 
 def test_api_execute_unimplemented_solver_returns_501(client: TestClient):
-    """POST /api/v1/solvers/classical/execute returns 501 Not Implemented in Stage 4.1."""
+    """POST /api/v1/solvers/classical/execute returns 501 Not Implemented for unimplemented algorithms."""
     payload = {
-        "solver_id": "exact",
+        "solver_id": "genetic_algorithm",
         "problem_type": "max_cut",
         "instance": {
             "nodes": ["A", "B"],
@@ -138,4 +139,4 @@ def test_api_execute_unimplemented_solver_returns_501(client: TestClient):
     }
     res = client.post("/api/v1/solvers/classical/execute", json=payload)
     assert res.status_code == 501
-    assert "Stage 4.2" in res.json()["detail"]
+    assert "Stage 4.3" in res.json()["detail"]

@@ -18,3 +18,4 @@ class ClassicalSolverFactory:
     def list_solvers() -> List[SolverMetadata]:
         """List metadata for all registered classical solvers."""
         return ClassicalSolverRegistry.list_all()
+

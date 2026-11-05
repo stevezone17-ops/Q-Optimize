@@ -5,48 +5,7 @@ from backend.app.domain.problems.models import ProblemType
 from backend.app.solvers.classical.base import IClassicalSolver
 from backend.app.solvers.classical.models import SolverMetadata, SolverConfiguration, SolverResult
 from backend.app.solvers.classical.exceptions import SolverNotFoundError, SolverNotImplementedError
-
-
-class ExactSolverStub(IClassicalSolver):
-    """Stub representation of Exact Solver prior to Stage 4.2 implementation."""
-    @property
-    def solver_id(self) -> str:
-        return "exact"
-
-    @property
-    def name(self) -> str:
-        return "Exact Classical Solver"
-
-    @property
-    def description(self) -> str:
-        return "Deterministic global optimization via exhaustive enumeration and branch-and-bound for small instances."
-
-    @property
-    def supported_problem_types(self) -> List[ProblemType]:
-        return [ProblemType.MAX_CUT, ProblemType.ASSIGNMENT, ProblemType.TSP]
-
-    @property
-    def is_implemented(self) -> bool:
-        return False
-
-    @property
-    def stage_introduced(self) -> str:
-        return "Stage 4.2"
-
-    def get_config_schema(self) -> Dict[str, Any]:
-        return {
-            "time_limit_seconds": {"type": "float", "default": 60.0, "description": "Max execution time"},
-            "max_variables": {"type": "integer", "default": 16, "description": "Maximum variable size cutoff"},
-        }
-
-    def solve(
-        self,
-        problem_type: ProblemType,
-        instance: Dict[str, Any],
-        config: Optional[SolverConfiguration] = None,
-        seed: Optional[int] = 42,
-    ) -> SolverResult:
-        super().solve(problem_type, instance, config, seed)
+from backend.app.solvers.classical.exact import ExactSolver
 
 
 class GeneticAlgorithmStub(IClassicalSolver):
@@ -173,9 +132,9 @@ class ClassicalSolverRegistry:
 
     @classmethod
     def reset_defaults(cls) -> None:
-        """Reset registry to default built-in stubs."""
+        """Reset registry to default built-in solvers."""
         cls._solvers.clear()
-        cls.register(ExactSolverStub())
+        cls.register(ExactSolver())
         cls.register(GeneticAlgorithmStub())
         cls.register(SimulatedAnnealingStub())
 

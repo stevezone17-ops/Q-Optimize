@@ -8,6 +8,7 @@ import {
   ProblemType,
   ProblemResponse,
   SolverMetadata,
+  SolverResult,
 } from '../types'
 import { classicalSolverService } from '../services/classicalSolverService'
 import { problemService } from '../services/problemService'
@@ -17,6 +18,11 @@ import {
   Settings,
   AlertCircle,
   Activity,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Target,
+  CheckCheck,
 } from 'lucide-react'
 
 // Built-in small benchmark presets
@@ -67,6 +73,8 @@ export const ClassicalLabPage: React.FC = () => {
   const [registeredProblems, setRegisteredProblems] = useState<ProblemResponse[]>([])
   const [selectedProblemId, setSelectedProblemId] = useState<string>('preset_0')
   const [, setIsLoading] = useState(true)
+  const [isExecuting, setIsExecuting] = useState(false)
+  const [executionResult, setExecutionResult] = useState<SolverResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [timeLimit, setTimeLimit] = useState<number>(60.0)
   const [seed, setSeed] = useState<number>(42)
@@ -122,6 +130,39 @@ export const ClassicalLabPage: React.FC = () => {
 
   const activeProblem = getActiveProblemData()
 
+  const handleExecuteSolver = async () => {
+    if (!selectedSolver?.is_implemented) return
+    setIsExecuting(true)
+    setError(null)
+    setExecutionResult(null)
+
+    try {
+      let payload
+      if (!activeProblem.isPreset) {
+        payload = {
+          solver_id: selectedSolverId,
+          problem_id: selectedProblemId,
+          config: { time_limit_seconds: timeLimit, seed },
+          seed,
+        }
+      } else {
+        payload = {
+          solver_id: selectedSolverId,
+          problem_type: activeProblem.problemType,
+          instance: activeProblem.instance,
+          config: { time_limit_seconds: timeLimit, seed },
+          seed,
+        }
+      }
+      const res = await classicalSolverService.executeSolver(payload)
+      setExecutionResult(res)
+    } catch (err) {
+      setError((err as Error).message || 'Solver execution failed.')
+    } finally {
+      setIsExecuting(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -144,7 +185,10 @@ export const ClassicalLabPage: React.FC = () => {
           <span className="text-xs text-scientific-muted font-mono shrink-0">Problem:</span>
           <select
             value={selectedProblemId}
-            onChange={(e) => setSelectedProblemId(e.target.value)}
+            onChange={(e) => {
+              setSelectedProblemId(e.target.value)
+              setExecutionResult(null)
+            }}
             className="text-xs font-mono px-3 py-1.5 rounded-lg bg-midnight-950 border border-scientific-border text-slate-200 focus:outline-none focus:ring-1 focus:ring-scientific-accent max-w-[280px] truncate"
           >
             <optgroup label="Small Benchmarks (Pre-loaded)">
@@ -180,7 +224,10 @@ export const ClassicalLabPage: React.FC = () => {
           return (
             <div
               key={solver.solver_id}
-              onClick={() => setSelectedSolverId(solver.solver_id)}
+              onClick={() => {
+                setSelectedSolverId(solver.solver_id)
+                setExecutionResult(null)
+              }}
               className={`p-4 rounded-xl border cursor-pointer transition-all ${
                 isSelected
                   ? 'border-scientific-accent bg-midnight-900/90 shadow-md ring-1 ring-scientific-accent/30'
@@ -192,7 +239,7 @@ export const ClassicalLabPage: React.FC = () => {
                   {solver.name}
                 </span>
                 {solver.is_implemented ? (
-                  <Badge variant="accent">Ready</Badge>
+                  <Badge variant="accent">Ready (Stage 4.2)</Badge>
                 ) : (
                   <Badge variant="outline">{solver.stage_introduced}</Badge>
                 )}
@@ -253,7 +300,7 @@ export const ClassicalLabPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Stage-specific parameter preview */}
+            {/* Parameter Schema Preview */}
             <div className="p-3 bg-midnight-950 rounded-lg border border-scientific-border text-[11px] space-y-2">
               <span className="text-scientific-muted uppercase block font-semibold">
                 Parameter Schema Preview:
@@ -265,7 +312,7 @@ export const ClassicalLabPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Right: Execution Dispatch Foundation */}
+        {/* Right: Execution Dispatch Panel */}
         <Card className="bg-midnight-900/60 border-scientific-border">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -289,8 +336,8 @@ export const ClassicalLabPage: React.FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-scientific-muted">Implementation Status:</span>
-                <span className={selectedSolver?.is_implemented ? 'text-emerald-400' : 'text-amber-400'}>
-                  {selectedSolver?.is_implemented ? 'Implemented' : `Scheduled for ${selectedSolver?.stage_introduced}`}
+                <span className={selectedSolver?.is_implemented ? 'text-emerald-400 font-semibold' : 'text-amber-400 font-semibold'}>
+                  {selectedSolver?.is_implemented ? 'Active & Ready' : `Scheduled for ${selectedSolver?.stage_introduced}`}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -303,7 +350,9 @@ export const ClassicalLabPage: React.FC = () => {
               type="button"
               variant="primary"
               className="w-full"
-              disabled={!selectedSolver?.is_implemented}
+              disabled={!selectedSolver?.is_implemented || isExecuting}
+              isLoading={isExecuting}
+              onClick={handleExecuteSolver}
               leftIcon={<Play className="h-4 w-4" />}
             >
               {selectedSolver?.is_implemented
@@ -315,14 +364,97 @@ export const ClassicalLabPage: React.FC = () => {
               <div className="p-3 bg-midnight-950/80 rounded border border-scientific-border/60 text-[11px] text-scientific-muted flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
                 <span>
-                  Stage 4.1 establishes the classical solver registry and typed contracts. Optimization algorithms
-                  are actively implemented in Stages 4.2 (Exact), 4.3 (GA), and 4.4 (SA).
+                  This algorithm will activate in {selectedSolver?.stage_introduced}. You can execute the
+                  Exact Classical Solver right now!
                 </span>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Execution Results Section */}
+      {executionResult && (
+        <Card className="bg-midnight-900/80 border-emerald-500/30 font-mono text-xs space-y-4 animate-in fade-in duration-200">
+          <CardHeader className="border-b border-scientific-border/40 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <CheckCheck className="h-4 w-4 text-emerald-400" />
+                  <CardTitle className="text-sm uppercase tracking-wider text-slate-100">
+                    Optimization Results & Independent Evaluation
+                  </CardTitle>
+                </div>
+                <p className="text-[11px] text-scientific-muted">
+                  Execution ID: <span className="text-slate-300 font-mono">{executionResult.execution_id}</span>
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {executionResult.is_feasible ? (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold flex items-center gap-1 text-[11px]">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    FEASIBLE
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold flex items-center gap-1 text-[11px]">
+                    <XCircle className="h-3.5 w-3.5" />
+                    INFEASIBLE
+                  </span>
+                )}
+
+                {executionResult.optimality_status === 'proven_optimal' && (
+                  <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold text-[11px]">
+                    PROVEN OPTIMAL
+                  </span>
+                )}
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-6 pt-2">
+            {/* Key Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="p-3 rounded-lg bg-midnight-950 border border-scientific-border">
+                <span className="text-[10px] text-scientific-muted uppercase block">Objective Value</span>
+                <span className="font-bold text-sky-400 text-lg">
+                  {executionResult.objective_value !== undefined ? executionResult.objective_value.toFixed(2) : 'N/A'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-midnight-950 border border-scientific-border">
+                <span className="text-[10px] text-scientific-muted uppercase block">Runtime</span>
+                <span className="font-semibold text-white text-lg flex items-center justify-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-scientific-muted" />
+                  {(executionResult.runtime_seconds * 1000).toFixed(1)} ms
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-midnight-950 border border-scientific-border">
+                <span className="text-[10px] text-scientific-muted uppercase block">Evaluations</span>
+                <span className="font-semibold text-purple-400 text-lg">
+                  {executionResult.evaluations.toLocaleString()}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-midnight-950 border border-scientific-border">
+                <span className="text-[10px] text-scientific-muted uppercase block">Termination</span>
+                <span className="font-semibold text-emerald-400 text-xs mt-1 block">
+                  {executionResult.termination_reason}
+                </span>
+              </div>
+            </div>
+
+            {/* Candidate Solution Inspection */}
+            <div className="p-4 rounded-lg bg-midnight-950 border border-scientific-border space-y-2">
+              <span className="text-[11px] text-scientific-muted uppercase font-semibold flex items-center gap-1.5">
+                <Target className="h-3.5 w-3.5 text-scientific-accent" />
+                Solution Candidate Details:
+              </span>
+              <pre className="p-3 bg-midnight-900 rounded border border-scientific-border/80 text-sky-300 font-mono text-xs overflow-x-auto">
+                {JSON.stringify(executionResult.candidate_solution, null, 2)}
+              </pre>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

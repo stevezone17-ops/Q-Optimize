@@ -93,3 +93,4 @@ class SolverResult(BaseModel):
     convergence_history: List[ConvergencePoint] = Field(default_factory=list, description="Convergence trace over iterations")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Algorithm-specific internal metrics")
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+

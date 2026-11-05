@@ -20,6 +20,7 @@ from backend.app.solvers.classical.exceptions import (
 )
 from backend.app.solvers.classical.registry import ClassicalSolverRegistry
 from backend.app.solvers.classical.factory import ClassicalSolverFactory
+from backend.app.solvers.classical.exact import ExactSolver
 
 __all__ = [
     "SolverStatus",
@@ -30,6 +31,7 @@ __all__ = [
     "SolverRequest",
     "SolverResult",
     "IClassicalSolver",
+    "ExactSolver",
     "ClassicalSolverError",
     "SolverNotFoundError",
     "SolverNotImplementedError",

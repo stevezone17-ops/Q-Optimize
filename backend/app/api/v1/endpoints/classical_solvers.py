@@ -137,3 +137,4 @@ async def execute_classical_solver(payload: SolverRequest) -> SolverResult:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e))
     except (SolverConfigurationError, ValueError) as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+
