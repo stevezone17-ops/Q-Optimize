@@ -112,3 +112,25 @@ class QAOAOptimizationResult(BaseModel):
     evaluation_mode: str
     optimizer_name: str
 
+
+class QuantumSamplingResult(BaseModel):
+    """Raw quantum measurement outcomes, empirical bitstring distributions, and execution metadata."""
+    counts: Dict[str, int]
+    probabilities: Dict[str, float]
+    shots: int
+    unique_bitstrings: int
+    most_frequent_bitstring: str
+    most_frequent_count: int
+    most_frequent_probability: float
+    circuit_metadata: CircuitMetadata
+    simulation_mode: str
+    execution_time_seconds: float
+    seed: Optional[int] = None
+    is_noisy: bool = False
+    noise_error_rate: Optional[float] = None
+    hardware_transparency_note: str = (
+        "Execution performed using Qiskit Aer simulation on classical hardware. "
+        "No physical quantum processor was utilized."
+    )
+
+
