@@ -165,3 +165,4 @@ def test_cancel_execution(client: TestClient):
     assert cancel_res.status_code == 200
     data = cancel_res.json()
     assert data["execution_id"] == exec_id
+

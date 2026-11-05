@@ -20,6 +20,12 @@ Use versioned, validated schemas. Every private resource must be queried using t
 ### results
 `_id`, `experiment_id`, `candidate_solution`, `objective_value`, `is_feasible`, `constraint_violations`, `runtime_seconds`, `metrics`, `raw_metadata`, `created_at`.
 
+### executions
+`_id`, `execution_id` (unique), `solver_name`, `problem_type`, `problem_id`, `status` (`PENDING`, `RUNNING`, `COMPLETED`, `CANCELLED`, `FAILED`), `config`, `result` (`candidate_solution`, `objective_value`, `is_feasible`, `runtime_seconds`, `convergence_history`, `extra_metadata`), `error`, `created_at`, `updated_at`.
+
+### benchmarks
+`_id`, `benchmark_id` (unique), `problem_type`, `problem_id`, `problem_name`, `solvers_evaluated`, `num_trials`, `random_seed`, `exact_optimum`, `summaries` (array of per-solver summary metrics: `solver_name`, `num_trials`, `feasibility_rate`, `mean_objective`, `std_objective`, `best_objective`, `worst_objective`, `mean_runtime_seconds`, `std_runtime_seconds`, `optimality_gap_percent`), `trials` (detailed individual trial outcomes), `created_at`.
+
 ### reports
 `_id`, `owner_id`, `experiment_id`, `format`, `storage_reference`, `created_at`.
 
@@ -29,6 +35,11 @@ Use versioned, validated schemas. Every private resource must be queried using t
 - `experiments.owner_id, created_at`.
 - `experiments.status`.
 - `results.experiment_id`.
+- Unique index on `executions.execution_id`.
+- `executions.status, created_at`.
+- `executions.solver_name, problem_type`.
+- Unique index on `benchmarks.benchmark_id`.
+- `benchmarks.problem_id, created_at`.
 - `reports.owner_id, created_at`.
 
 ## Security and evolution

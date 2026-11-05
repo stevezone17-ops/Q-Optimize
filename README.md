@@ -2,12 +2,12 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 3 Complete](https://img.shields.io/badge/Status-Phase%203%20QUBO%20%26%20Ising%20Formulation-38BDF8.svg)](#)
+[![Status: Phase 4 Complete](https://img.shields.io/badge/Status-Phase%204%20Classical%20Engine-10B981.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
-[![Tests: 80 Pytest | 12 Vitest](https://img.shields.io/badge/Tests-92%20Passing-emerald.svg)](#)
+[![Tests: 117 Pytest | 19 Vitest](https://img.shields.io/badge/Tests-136%20Passing-emerald.svg)](#)
 
 ---
 
@@ -31,16 +31,17 @@
 Q-Optimize/
 ├── backend/                  # FastAPI Python backend
 │   ├── app/
-│   │   ├── api/v1/           # Versioned REST endpoints (health, problems, formulations, experiments)
+│   │   ├── api/v1/           # Versioned REST endpoints (health, problems, formulations, solvers)
 │   │   ├── core/             # Configuration, logging, CORS middleware
 │   │   ├── domain/           # Canonical problem schemas & formulation domain models
 │   │   ├── db/               # MongoDB manager with in-memory local fallback
 │   │   ├── services/         # Problem & formulation lifecycle services
 │   │   ├── evaluation/       # Independent objective evaluator & constraint validation engine
 │   │   ├── formulations/     # QUBO builders, penalty managers, Ising converters, verification engine
-│   │   ├── solvers/          # Classical & QAOA solver interfaces (Phases 4 & 5)
+│   │   ├── solvers/          # Classical (Exact, GA, SA, Pipeline, Benchmarking) & QAOA (Phase 5)
+│   │   │   └── classical/    # IClassicalSolver, ExactSolver, GA, SA, Pipeline, BenchmarkEngine
 │   │   └── workers/          # Background task queue interfaces (Phase 8)
-│   └── tests/                # Pytest unit, constraint, formulation, and API test suite (80 tests)
+│   └── tests/                # Pytest unit, constraint, formulation, and solver test suite (117 tests)
 ├── frontend/                 # React 18 + TypeScript + Vite frontend
 │   └── src/
 │       ├── app/              # App root and view management
@@ -49,10 +50,10 @@ Q-Optimize/
 │       ├── features/         # Problem editors, SolutionEvaluatorModal, Formulation Studio components
 │       │   ├── problem-builder/     # MaxCutEditor, AssignmentEditor, TSPEditor
 │       │   └── formulation-studio/  # QuboHeatmap, IsingInspector, VerificationPanel
-│       ├── pages/            # Overview, ProblemBuilder, FormulationStudio, Lab Previews, Learn, Settings
-│       ├── services/         # Centralized API service and typed endpoints (problemService, formulationService)
+│       ├── pages/            # Overview, ProblemBuilder, FormulationStudio, ClassicalLabPage, Learn, Settings
+│       ├── services/         # Centralized API service (problemService, formulationService, classicalService)
 │       ├── hooks/            # useBackendHealth polling and diagnostic hook
-│       └── tests/            # Vitest and Testing Library test suite (12 tests)
+│       └── tests/            # Vitest and Testing Library test suite (19 tests)
 ├── research/                 # Reproducible research datasets, configs, and notebooks
 ├── docs/                     # Supplemental documentation
 └── project_docs/             # Canonical project requirements and specifications
@@ -60,7 +61,52 @@ Q-Optimize/
 
 ---
 
-## 3. Implemented Capabilities (Phases 1, 2, & 3)
+## 3. Implemented Capabilities (Phases 1, 2, 3, & 4)
+
+### Phase 4: Classical Optimization Engine & Benchmarking Suite
+1. **Classical Solver Architecture & Pydantic Contracts:**
+   - Standardized `IClassicalSolver` interface with abstract `solve(problem, config, cancellation_token)` and `get_metadata()`.
+   - Dynamic schema validation using typed `SolverRequest`, `SolverResult`, `SolverStatus`, and parameter specifications.
+   - Decoupled `ClassicalSolverRegistry` and `ClassicalSolverFactory` with discovery REST endpoint `GET /api/v1/solvers/classical`.
+
+2. **Deterministic Exact Solver (`ExactSolver`):**
+   - **Max-Cut:** Symmetry-reduced binary enumeration ($2^{n-1}$ states with fixed $x_0 = 0$) guaranteeing global optimum.
+   - **Assignment Problem:** $O(n^3)$ polynomial-time Hungarian algorithm using SciPy's `linear_sum_assignment`.
+   - **Travelling Salesperson Problem:** Permutation enumeration fixing start city ($x_0 = 0$) evaluating $(n-1)!$ Hamiltonian cycles.
+   - Enforces strict safety cutoffs ($n \le 18$ for Max-Cut, $n \le 10$ for TSP) with immediate actionable feedback.
+   - Solution marked with `is_optimal=True` serving as ground truth baseline for heuristic comparison.
+
+3. **Genetic Algorithm Engine (`GeneticAlgorithmSolver`):**
+   - Problem-specific representations ensuring 100% validity by construction:
+     - **Max-Cut:** Binary chromosomes with uniform / single-point crossover and bit-flip mutation.
+     - **Assignment & TSP:** Permutation chromosomes with **Order Crossover (OX)** and swap/inversion mutations preserving bijection constraints.
+   - Roulette wheel and tournament selection strategies with elitism preservation.
+   - Monotonically tracking convergence history across generations with reproducible random seeding.
+
+4. **Simulated Annealing Engine (`SimulatedAnnealingSolver`):**
+   - Metropolis acceptance probability for uphill moves: $P(\Delta E, T) = \exp(-\Delta E / T)$ where $\Delta E = E_{\text{new}} - E_{\text{current}}$.
+   - Configurable exponential ($T_{k+1} = \alpha T_k$) and linear ($T_{k+1} = T_k - \beta$) cooling schedules.
+   - Domain-specific neighborhood moves: 1-flip for Max-Cut, pairwise swap for Assignment, and 2-opt edge inversion / vertex swap for TSP.
+   - Step-by-step temperature decay tracking and convergence curves.
+
+5. **Classical Execution Pipeline:**
+   - Thread-pooled asynchronous execution engine using `ThreadPoolExecutor(max_workers=8)` avoiding event-loop blocking.
+   - Lifecycle tracking: `PENDING` $\to$ `RUNNING` $\to$ `COMPLETED` / `CANCELLED` / `FAILED`.
+   - Thread-safe cooperative cancellation tokens (`threading.Event`) for early termination.
+   - Execution persistence across in-memory cache and MongoDB.
+
+6. **Classical Benchmark Engine:**
+   - Multi-solver comparative evaluation executing multiple solvers against identical problem instances.
+   - Multi-trial stochastic repetition calculating statistical distributions (mean, std dev, min, max, runtime).
+   - Exact optimality gap calculation against proven global optimum:
+     $$\text{optimality\_gap} = \frac{|f_{\text{heuristic}} - f^*|}{|f^*| + 1\times 10^{-9}} \times 100\%$$
+   - 100% independent feasibility verification across all generated solutions.
+
+7. **Classical Optimization Lab (Frontend UI):**
+   - **Single Solver Lab:** Interactive solver selector, hyperparameter sliders, synchronous/asynchronous execution, independent evaluator verification callout, and convergence charts.
+   - **Domain Visualizers:** Partition split cards ($S$ vs $V \setminus S$) for Max-Cut, agent-to-task assignment tables, and route sequence loops for TSP.
+   - **Comparative Benchmark Suite:** Multi-solver comparison with stochastic trials, ranked leaderboards (🥇, 🥈, 🥉), feasibility rates, and optimality gaps.
+   - **Execution Audit History:** Tabular execution log with status badges and full result inspection modal.
 
 ### Phase 3: QUBO Generation, Constraint Penalties & Ising Hamiltonian Modeling
 1. **Canonical QUBO Builder & Representation:**
@@ -128,6 +174,16 @@ Q-Optimize/
 | `GET` | `/api/v1/formulations/{id}` | Retrieve saved formulation by ID |
 | `GET` | `/api/v1/formulations/{id}/metadata`| Retrieve formulation metadata, variable counts, and assumptions |
 | `GET` | `/api/v1/formulations/{id}/export` | Export formulation in `dense`, `sparse`, `ising`, or `full` format |
+| `GET` | `/api/v1/solvers/classical` | List all registered classical solvers and their parameter schemas |
+| `POST` | `/api/v1/solvers/classical/execute` | Execute classical solver synchronously on stored or ad-hoc problem |
+| `POST` | `/api/v1/solvers/classical/execute/async` | Dispatch solver execution to background worker queue |
+| `GET` | `/api/v1/solvers/classical/executions` | List recent classical solver executions |
+| `GET` | `/api/v1/solvers/classical/executions/{id}` | Retrieve execution details, candidate solution, and metrics |
+| `GET` | `/api/v1/solvers/classical/executions/{id}/status` | Lightweight status polling for execution progress |
+| `POST` | `/api/v1/solvers/classical/executions/{id}/cancel` | Cooperatively cancel active solver run |
+| `POST` | `/api/v1/solvers/classical/benchmark` | Run comparative multi-solver benchmark with stochastic trials |
+| `GET` | `/api/v1/solvers/classical/benchmarks` | List past benchmark comparison runs |
+| `GET` | `/api/v1/solvers/classical/benchmarks/{id}` | Retrieve detailed benchmark trial breakdown and statistics |
 
 ---
 
@@ -163,21 +219,21 @@ npm run dev
 ### Running Test Suites
 
 ```bash
-# Backend test suite (80 tests across schemas, evaluators, constraints, QUBO, Ising, verification, and APIs)
+# Backend test suite (117 tests across schemas, evaluators, constraints, QUBO, Ising, solvers, pipeline, benchmarks, APIs)
 python -m pytest backend/tests -v
 
-# Frontend test suite (12 tests across App shell, Problem Builder, and Formulation Studio)
-node -e "process.chdir('frontend'); require('child_process').execSync('npm.cmd run test', {stdio: 'inherit'});"
+# Frontend test suite (19 tests across App shell, Problem Builder, Formulation Studio, and Classical Lab)
+npm test --prefix frontend
 
 # Production build check
-node -e "process.chdir('frontend'); require('child_process').execSync('npm.cmd run build', {stdio: 'inherit'});"
+npm run build --prefix frontend
 ```
 
 ---
 
-## 6. Known Limitations (Phase 3 Boundaries)
-- **Exhaustive State Verification:** The verification engine runs exhaustive truth tables on up to $n = 12$ variables ($4,096$ states) to prevent timeouts. Larger instances rely on structural property checks.
-- **Solvers and Circuits:** Classical solvers (SA, Tabu, GA, Branch & Bound) and Quantum QAOA circuits (AerSimulator, ansatz layers) remain strictly scheduled for Phases 4 and 5.
+## 6. Known Limitations (Phase 4 Boundaries)
+- **Exact Solver Instance Limits:** `ExactSolver` enforces safety thresholds ($n \le 18$ for Max-Cut, $n \le 10$ for TSP) to prevent factorial/exponential computational explosions.
+- **Quantum Execution:** Phase 4 focuses strictly on classical exact and heuristic baselines. Quantum QAOA simulation circuits and Qiskit/Aer integration are scheduled for Phase 5.
 - **Natural Language Parsing:** Remains strictly draft-only; human confirmation is mandatory before canonical creation.
 
 ---

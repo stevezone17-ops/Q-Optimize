@@ -5,19 +5,62 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
 
 ---
 
-## 2. Test Suites Overview (Phases 1, 2, & 3 Active)
+## 2. Test Suites Overview (Phases 1, 2, 3, & 4 Active)
 
 | Suite | Runner | Test Files | Total Tests | Status |
 |---|---|---|---|---|
-| Backend Domain & Formulas | Pytest (Python 3.12) | 16 test modules | 80 tests | **100% Passing** |
-| Frontend Component & UI | Vitest + RTL | 3 test suites | 12 tests | **100% Passing** |
+| Backend Domain, Formulas & Classical Solvers | Pytest (Python 3.12) | 22 test modules | 117 tests | **100% Passing** |
+| Frontend Component & UI Suite | Vitest + RTL | 4 test suites | 19 tests | **100% Passing** |
 | Production Build Check | Vite + TypeScript | `tsc && vite build` | 0 errors | **Clean Build** |
 
 ---
 
-## 3. Backend Test Coverage Breakdown (80 Pytest Tests)
+## 3. Backend Test Coverage Breakdown (117 Pytest Tests)
 
-### 3.1 Phase 3 Formulation & Mathematical Test Modules (28 New Tests)
+### 3.1 Phase 4 Classical Optimization Engine Test Modules (37 New Tests)
+1. **Classical Architecture & Registry (`test_classical_solver_architecture.py` - 8 tests):**
+   - Validates `IClassicalSolver` interface compliance, abstract base class contracts, and parameter schema extraction.
+   - Tests `ClassicalSolverRegistry` registration, retrieval, and error handling for unknown solvers.
+   - Tests `ClassicalSolverFactory` instantiation and configuration overrides.
+   - Tests `GET /api/v1/solvers/classical` solver discovery endpoint and parameter introspection.
+
+2. **Exact Classical Solver (`test_exact_solver.py` - 6 tests):**
+   - Max-Cut exact enumeration with $2^{n-1}$ symmetry reduction (pinning $x_0 = 0$).
+   - Assignment problem exact global optimum via the Hungarian algorithm ($O(n^3)$ via SciPy).
+   - TSP exact global optimum via permutation enumeration with start city pinning.
+   - Verification of `is_optimal=True` flag and safety bounds ($n \le 18$ for Max-Cut, $n \le 10$ for TSP) rejecting intractable instances with explicit HTTP 400.
+   - Verification against Phase 2 independent evaluators (`MaxCutEvaluator`, `AssignmentEvaluator`, `TSPEvaluator`).
+
+3. **Genetic Algorithm Solver (`test_genetic_algorithm.py` - 6 tests):**
+   - Binary chromosome representation and single-point/uniform crossover for Max-Cut.
+   - Permutation chromosome representation with Order Crossover (OX) and swap/inversion mutations for Assignment and TSP, guaranteeing 100% feasibility by construction.
+   - Deterministic seed reproducibility across multi-run executions.
+   - Convergence history tracking monotonically non-deteriorating best-so-far fitness curves.
+   - REST endpoint execution via `POST /api/v1/solvers/classical/execute`.
+
+4. **Simulated Annealing Solver (`test_simulated_annealing.py` - 6 tests):**
+   - Metropolis acceptance probability $P(\Delta E, T) = \exp(-\Delta E / T)$ for uphill exploratory moves.
+   - Exponential cooling schedule ($T_{k+1} = \alpha T_k$) and linear cooling schedule ($T_{k+1} = T_k - \beta$).
+   - Domain-specific neighborhood operators: 1-flip for Max-Cut, pairwise agent swap for Assignment, and 2-opt edge inversion / vertex swap for TSP.
+   - Convergence history tracking with step-by-step temperature decay curves.
+   - Independent solution evaluation cross-checking.
+
+5. **Classical Execution Pipeline (`test_classical_execution_pipeline.py` - 6 tests):**
+   - Decoupled background execution via `ThreadPoolExecutor(max_workers=8)` and `threading.Event`.
+   - Full lifecycle state transitions: `PENDING` $\to$ `RUNNING` $\to$ `COMPLETED` / `CANCELLED` / `FAILED`.
+   - Cooperative cancellation tokens stopping iterative heuristics cleanly mid-run.
+   - Storage persistence across in-memory dictionary and MongoDB.
+   - REST endpoints: `POST /execute`, `POST /execute/async`, `GET /executions`, `GET /executions/{id}`, `GET /executions/{id}/status`, `POST /executions/{id}/cancel`.
+
+6. **Classical Benchmarking Engine (`test_classical_benchmarking.py` - 5 tests):**
+   - Multi-solver simultaneous comparative execution on identical problem instances.
+   - Multi-trial stochastic repetition computing statistical variance (mean, std, min, max).
+   - Exact global optimum baseline calculation with optimality gap evaluation:
+     $$\text{optimality\_gap} = \frac{|f_{\text{heuristic}} - f^*|}{|f^*| + 1\times 10^{-9}} \times 100\%$$
+   - 100% independent feasibility verification across all benchmark trials.
+   - REST endpoints: `POST /benchmark`, `GET /benchmarks`, `GET /benchmarks/{id}`.
+
+### 3.2 Phase 3 Formulation & Mathematical Test Modules (28 Tests - Verified Passing)
 1. **QUBO Foundation (`test_qubo_foundation.py` - 7 tests):**
    - Validates upper-triangular canonical indexing ($i < j$).
    - Symmetric off-diagonal normalization (routing $(u, v) \to (\min, \max)$ without doubling).
@@ -74,12 +117,12 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
 
 ---
 
-## 4. Frontend Test Coverage Breakdown (12 Vitest Tests)
+## 4. Frontend Test Coverage Breakdown (19 Vitest Tests)
 
 1. **App Shell & Routing (`App.test.tsx` - 3 tests):**
    - Renders landing page hero with hybrid quantum-classical overview.
    - Navigates from landing page to workspace with sidebar and header.
-   - Navigates across workspace tabs (Overview, Problem Builder, Formulation Studio).
+   - Navigates across workspace tabs (Overview, Problem Builder, Formulation Studio, Classical Lab).
 
 2. **Problem Builder Feature (`ProblemBuilder.test.tsx` - 4 tests):**
    - Renders Max-Cut node/edge visualizers and metrics.
@@ -93,6 +136,15 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
    - Switches between QUBO, Ising Spin Hamiltonian, and Mathematical Verification tabs.
    - Executes exhaustive mathematical verification on the verification tab and displays the `MATHEMATICALLY VERIFIED` badge.
    - Renders penalty configuration inputs (Row/Column Lagrange multipliers) when selecting constrained problem presets.
+
+4. **Classical Optimization Lab (`ClassicalLab.test.tsx` - 7 tests):**
+   - Renders Classical Lab header, problem selection controls, and benchmark presets.
+   - Renders classical solver selection cards with algorithm categorization badges.
+   - Switches solver selection to Genetic Algorithm and displays evolutionary hyperparameters (population size, generations, mutation rate, selection method, elitism).
+   - Switches solver selection to Simulated Annealing and displays annealing hyperparameters (initial temperature, cooling rate, steps per temp, cooling schedule).
+   - Executes exact classical solver and renders results panel with proven optimal status, independent evaluator verification callout, and domain solution visualizer.
+   - Switches to Comparative Benchmark Suite tab, enables multi-solver selection, configures stochastic trials, executes suite, and verifies ranked results table.
+   - Switches to Execution Audit History tab, renders past solver execution logs, and verifies inspection modal.
 
 ---
 

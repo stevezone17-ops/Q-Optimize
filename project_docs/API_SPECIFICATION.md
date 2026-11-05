@@ -30,6 +30,18 @@ Base path: `/api/v1`. All endpoints use standard JSON, strict Pydantic model val
 | `GET` | `/formulations/{id}` | Phase 3 | Retrieve stored formulation by ID |
 | `GET` | `/formulations/{id}/metadata` | Phase 3 | Retrieve formulation metadata, variable counts, and assumptions |
 | `GET` | `/formulations/{id}/export` | Phase 3 | Export formulation in dense, sparse, ising, or full JSON |
+| `GET` | `/solvers/classical` | Phase 4 | List registered classical solvers, schemas, and readiness |
+| `GET` | `/solvers/classical/{id}` | Phase 4 | Retrieve metadata and configuration schema for specific solver |
+| `POST` | `/solvers/classical/validate` | Phase 4 | Validate solver configuration and problem compatibility |
+| `POST` | `/solvers/classical/execute` | Phase 4 | Execute solver synchronously or dispatch in background |
+| `POST` | `/solvers/classical/execute/async` | Phase 4 | Submit background execution returning tracking record (202) |
+| `GET` | `/solvers/classical/executions` | Phase 4 | List recent classical solver executions |
+| `GET` | `/solvers/classical/executions/{id}` | Phase 4 | Retrieve full execution record, runtime, and result |
+| `GET` | `/solvers/classical/executions/{id}/status` | Phase 4 | Lightweight execution status polling endpoint |
+| `POST` | `/solvers/classical/executions/{id}/cancel` | Phase 4 | Cooperatively cancel active or pending execution |
+| `POST` | `/solvers/classical/benchmark` | Phase 4 | Execute multi-solver benchmark suite with optimality gap |
+| `GET` | `/solvers/classical/benchmarks` | Phase 4 | List recent comparative benchmark results |
+| `GET` | `/solvers/classical/benchmarks/{id}` | Phase 4 | Retrieve full multi-solver benchmark comparison by ID |
 | `POST` | `/experiments` | Phase 6 | Create and enqueue optimization experiment |
 | `GET` | `/experiments` | Phase 6 | List own experiments |
 | `GET` | `/experiments/{id}` | Phase 6 | Status, configuration, and summary |
@@ -140,3 +152,119 @@ Exports the formulation in specified scientific formats.
 - `sparse`: Dictionary of linear terms, quadratic terms, and offset.
 - `ising`: LaTeX Hamiltonian string and spin mapping table.
 - `full`: Complete formulation document including metadata.
+
+---
+
+## 4. Phase 4 Classical Engine Endpoints Detail
+
+### 4.1 Execute Classical Solver: `POST /api/v1/solvers/classical/execute`
+Executes an algorithm (Exact, GA, SA) against a stored problem or ad-hoc instance. Supports synchronous execution (default) or background dispatch (`"background": true`).
+
+**Request Payload:**
+```json
+{
+  "solver_id": "genetic_algorithm",
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["A", "B", "C", "D"],
+    "edges": [["A", "B", 1.0], ["B", "C", 2.0], ["C", "D", 1.0], ["D", "A", 2.0]]
+  },
+  "config": {
+    "population_size": 100,
+    "generations": 200,
+    "mutation_rate": 0.05
+  },
+  "seed": 42,
+  "background": false
+}
+```
+
+**Response Payload (`200 OK` for sync):**
+```json
+{
+  "execution_id": "exec-9f8d7c6b5a4e",
+  "solver_id": "genetic_algorithm",
+  "solver_name": "Genetic Algorithm (GA)",
+  "problem_type": "max_cut",
+  "status": "COMPLETED",
+  "candidate_solution": { "A": 0, "B": 1, "C": 0, "D": 1 },
+  "objective_value": 6.0,
+  "is_feasible": true,
+  "constraint_violations": [],
+  "runtime_seconds": 0.012,
+  "iterations": 200,
+  "evaluations": 20000,
+  "seed": 42,
+  "optimality_status": "heuristic_feasible",
+  "termination_reason": "max_generations_reached",
+  "convergence_history": [
+    { "iteration": 0, "best_objective": 4.0, "mean_fitness": 3.2, "timestamp_offset": 0.001 },
+    { "iteration": 200, "best_objective": 6.0, "mean_fitness": 5.8, "timestamp_offset": 0.012 }
+  ],
+  "metadata": { "population_size": 100, "mutation_rate": 0.05 }
+}
+```
+
+### 4.2 Run Classical Benchmark: `POST /api/v1/solvers/classical/benchmark`
+Runs a multi-solver comparative benchmark suite across multiple trials, establishing exact ground truth and computing true optimality gaps.
+
+**Request Payload:**
+```json
+{
+  "name": "Classical Solver Comparison",
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["A", "B", "C", "D"],
+    "edges": [["A", "B", 3.0], ["B", "C", 2.0], ["C", "D", 4.0], ["D", "A", 1.0], ["A", "C", 5.0]]
+  },
+  "solver_ids": ["exact", "genetic_algorithm", "simulated_annealing"],
+  "trials": 3,
+  "base_seed": 42
+}
+```
+
+**Response Payload (`200 OK`):**
+```json
+{
+  "benchmark_id": "bench-7c6b5a4e3d2f",
+  "name": "Classical Solver Comparison",
+  "problem_type": "max_cut",
+  "exact_optimum": 14.0,
+  "total_runtime_seconds": 0.045,
+  "summaries": [
+    {
+      "solver_id": "exact",
+      "solver_name": "Exact Classical Solver",
+      "trials_count": 1,
+      "best_objective": 14.0,
+      "mean_objective": 14.0,
+      "worst_objective": 14.0,
+      "std_objective": 0.0,
+      "feasibility_rate": 1.0,
+      "mean_runtime_ms": 1.2,
+      "min_runtime_ms": 1.2,
+      "max_runtime_ms": 1.2,
+      "mean_evaluations": 8.0,
+      "optimality_gap_percent": 0.0,
+      "best_solution": { "A": 0, "B": 1, "C": 0, "D": 1 }
+    },
+    {
+      "solver_id": "genetic_algorithm",
+      "solver_name": "Genetic Algorithm (GA)",
+      "trials_count": 3,
+      "best_objective": 14.0,
+      "mean_objective": 13.67,
+      "worst_objective": 13.0,
+      "std_objective": 0.47,
+      "feasibility_rate": 1.0,
+      "mean_runtime_ms": 14.5,
+      "min_runtime_ms": 13.2,
+      "max_runtime_ms": 15.8,
+      "mean_evaluations": 600.0,
+      "optimality_gap_percent": 0.0,
+      "best_solution": { "A": 0, "B": 1, "C": 0, "D": 1 }
+    }
+  ],
+  "created_at": "2026-11-05T13:30:00Z"
+}
+```

@@ -8,15 +8,25 @@ Allowed statuses: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `COMPLETED`, `NEEDS R
 | 1 | Product shell and UI | COMPLETED | Phase 0 | PASSED | Dark-first scientific UI, Problem Builder, Landing Page, Navigation, Draft Parser, Typed API |
 | 2 | Canonical problem domain | COMPLETED | Phase 0 | PASSED | Canonical problem models, independent evaluators, constraint validation engine, metadata extraction, frontend evaluator |
 | 3 | QUBO and Ising formulations | COMPLETED | Phase 2 | PASSED | Canonical QUBO builder, upper-triangular indexing, penalty manager, Max-Cut/Assignment/TSP formulations, Ising analytical converter, exhaustive $2^n$ state verification, Formulation Studio UI |
-| 4 | Classical solvers | IN PROGRESS | Phase 2 | PASSED (Stage 4.7) | Stages 4.1–4.7 complete: Exact, GA, SA solvers, execution pipeline, benchmarking engine, rich Classical Lab UI (Single Solver Lab, Domain Visualizers, Multi-Solver Benchmark Suite, Audit History), 117 Pytest + 19 Vitest passing |
-| 5 | QAOA engine | NOT STARTED | Phase 3 | Not run | Interface specifications defined |
+| 4 | Classical solvers | COMPLETED | Phase 2 | PASSED | Complete Phase 4 Classical Engine: Architecture, Exact, GA, SA solvers, background pipeline, benchmarking engine, Classical Lab UI, 117 Pytest + 19 Vitest passing |
+| 5 | QAOA engine | NOT STARTED | Phase 3, Phase 4 | Not run | Interface specifications defined; classical baselines ready |
 | 6 | Adaptive QAOA research | NOT STARTED | Phase 5 | Not run | |
 | 7 | AI and ML modules | NOT STARTED | Phases 2, 4, 5 | Not run | Draft parser workflow established |
 | 8 | Experiments and visualizations | NOT STARTED | Phases 4–7 | Not run | Empty states prepared |
 | 9 | Hardening and delivery | NOT STARTED | Prior phases | Not run | |
 
 ## Current milestone
-Phase 3 (QUBO Generation, Constraint Penalty Modeling, and QUBO-to-Ising Hamiltonian Conversion) implemented and mathematically verified. Canonical upper-triangular QUBO representation, squared constraint expansion, penalty sufficiency bounds, Max-Cut / Square Assignment / Position-based TSP formulations, analytical spin mapping ($x_i = (1 - Z_i)/2$), exhaustive truth-table verification across all $2^n$ states ($n \le 12$), API endpoints, and interactive Formulation Studio in the frontend are fully operational.
+Phase 4 (Classical Optimization Engine) fully implemented, benchmarked, and verified across all eight stages (4.1–4.8). The platform now features:
+- Standardized `IClassicalSolver` interface and Pydantic models.
+- Deterministic `ExactSolver` establishing true global optimums (Hungarian for Assignment, symmetry-reduced branch-and-bound for Max-Cut, permutation search for TSP).
+- `GeneticAlgorithmSolver` with binary & permutation chromosomes, Order Crossover (OX), elitism, and seed reproducibility.
+- `SimulatedAnnealingSolver` with Metropolis acceptance, exponential/linear cooling, and 2-opt/swap neighborhood operators.
+- `ClassicalExecutionPipeline` providing thread-pooled asynchronous dispatch, cooperative cancellation, and persistent execution history.
+- `ClassicalBenchmarkEngine` evaluating multi-solver statistical variance and exact optimality gaps ($|f - f^*| / |f^*| \times 100\%$).
+- Comprehensive React/TypeScript Classical Optimization Lab with Single Solver Lab, Domain Solution Visualizers, Comparative Benchmark Suite, and Execution Audit History.
+- 100% test pass rate (117 backend Pytest tests, 19 frontend Vitest tests, clean production build).
+
+Next milestone: Phase 5 (QAOA Quantum Optimization Engine).
 
 ## Change log
 | Date | Change | Evidence/commit |
@@ -32,6 +42,7 @@ Phase 3 (QUBO Generation, Constraint Penalty Modeling, and QUBO-to-Ising Hamilto
 | 2026-11-05 | Stage 4.5 Classical Execution Pipeline: ClassicalExecutionPipeline with thread-pooled background dispatch, lifecycle tracking (PENDING, RUNNING, COMPLETED, CANCELLED, FAILED), MongoDB/memory persistence, cooperative cancellation, lightweight status polling endpoint (/status), recent executions listing (/executions), typed client service, and 112 Pytest + 17 Vitest tests passing | Git commit `feat: integrate classical solver execution pipeline` |
 | 2026-11-05 | Stage 4.6 Classical Benchmarking & Evaluation: ClassicalBenchmarkEngine supporting multi-solver simultaneous evaluation, multi-trial stochastic sampling, statistical variance (mean, standard deviation, min, max), 100% independent feasibility verification, exact optimality gap calculation relative to global optimum ($|f - f^*| / |f^*| \times 100\%$), persistent benchmark storage (/benchmark, /benchmarks, /benchmarks/{id}), and 117 Pytest + 17 Vitest tests passing | Git commit `feat: implement classical benchmarking and performance evaluation` |
 | 2026-11-05 | Stage 4.7 Classical Optimization Lab Frontend: Three-mode UI (Single Solver Lab, Comparative Benchmark Suite, Execution Audit History), domain-specific solution visualizers (Partition S vs V\S for Max-Cut, Agent->Task matching grid for Assignment, Route chip sequences for TSP), convergence trace cards, live background execution polling, side-by-side benchmark comparison tables with rank badges and optimality gap indicators, and 117 Pytest + 19 Vitest tests passing | Git commit `feat: complete classical optimization lab frontend` |
+| 2026-11-05 | Stage 4.8 Integration & Verification: Complete Phase 4 classical engine verification, documentation updates (CLASSICAL_ENGINE.md, API_SPECIFICATION.md, DATABASE_SCHEMA.md, TESTING_STRATEGY.md, IMPLEMENTATION_ROADMAP.md, PROGRESS_TRACKER.md, README.md), Phase 4 Completion Report, and 117 Pytest + 19 Vitest tests passing | Git commit `test: complete classical optimization engine integration and verification` |
 
 ## Blockers and decisions
 - **Decided:** Upper-triangular matrix convention ($i < j$) is strictly enforced across all internal representations and export routines, preventing double-counting of quadratic terms in symmetric formulations.

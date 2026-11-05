@@ -565,3 +565,4 @@ class GeneticAlgorithmSolver(IClassicalSolver):
             p2_idx = (p2_idx + 1) % n
 
         return child
+

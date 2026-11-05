@@ -41,12 +41,15 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 **Exit:** mathematical consistency, energy equivalence, and truth-table verification tests pass. (Achieved & Verified)
 
 ## Phase 4 — Classical solvers
-- [ ] Exact small-instance solver.
-- [ ] Genetic Algorithm.
-- [ ] Simulated Annealing.
-- [ ] Relevant greedy baseline.
-- [ ] Common result contract and multi-seed runs.
-**Exit:** candidates are independently evaluated.
+- [x] Classical solver architecture, `IClassicalSolver` interface, and Pydantic execution models.
+- [x] Exact small-instance solver (symmetry-reduced $2^{n-1}$ Max-Cut, Hungarian $O(n^3)$ Assignment, pinned TSP enumeration).
+- [x] Genetic Algorithm solver with problem-specific chromosomes (binary, permutation with OX crossover and 2-opt/swap mutations).
+- [x] Simulated Annealing solver with Metropolis acceptance, exponential and linear cooling, and domain neighborhood moves.
+- [x] Classical execution pipeline with thread-pooled background workers, cooperative cancellation, and lifecycle persistence.
+- [x] Classical benchmarking engine with multi-solver comparative evaluations, stochastic trials, and exact optimality gap metrics.
+- [x] Interactive Classical Optimization Lab in frontend (Single Solver Lab, Comparative Benchmark Suite, Execution Audit History).
+- [x] Comprehensive test coverage and verification (117 backend pytest + 19 frontend vitest passing).
+**Exit:** candidates are independently evaluated against ground-truth problem definitions; exact baseline benchmarks established. (Achieved & Verified)
 
 ## Phase 5 — QAOA
 - [ ] Qiskit/Aer integration.

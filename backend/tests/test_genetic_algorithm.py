@@ -184,3 +184,4 @@ def test_api_execute_ga_solver_endpoint(client: TestClient):
     assert data["is_feasible"] is True
     assert data["objective_value"] > 0.0
     assert len(data["convergence_history"]) > 0
+

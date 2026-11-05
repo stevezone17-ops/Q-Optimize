@@ -174,3 +174,4 @@ def test_benchmark_assignment_problem(client: TestClient):
     for s in data["summaries"]:
         assert s["feasibility_rate"] == 1.0
         assert s["optimality_gap_percent"] is not None
+
