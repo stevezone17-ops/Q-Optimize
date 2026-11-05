@@ -97,3 +97,18 @@ class QuantumExecutionStatus(str, Enum):
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
     TIMED_OUT = "TIMED_OUT"
+
+
+class QAOAOptimizationResult(BaseModel):
+    """Output from the classical variational parameter optimization loop."""
+    optimal_gamma: List[float]
+    optimal_beta: List[float]
+    best_expected_energy: float
+    initial_expected_energy: float
+    total_evaluations: int
+    iterations: int
+    convergence_history: List[QuantumConvergencePoint] = Field(default_factory=list)
+    termination_reason: str
+    evaluation_mode: str
+    optimizer_name: str
+

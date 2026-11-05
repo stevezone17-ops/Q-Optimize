@@ -14,6 +14,7 @@ from backend.app.solvers.quantum.models import (
     CircuitMetadata,
     QuantumConvergencePoint,
     QuantumExecutionStatus,
+    QAOAOptimizationResult,
 )
 from backend.app.solvers.quantum.exceptions import (
     QuantumSolverError,
@@ -32,6 +33,7 @@ from backend.app.solvers.quantum.quantum_registry import QuantumSolverRegistry
 from backend.app.solvers.quantum.execution_context import QuantumExecutionContext
 from backend.app.solvers.quantum.hamiltonians import QAOACostHamiltonian, QAOAMixerHamiltonian
 from backend.app.solvers.quantum.circuit_builder import QAOACircuitBuilder
+from backend.app.solvers.quantum.optimizer import QAOAOptimizer
 
 __all__ = [
     "SimulationMode",
@@ -61,4 +63,6 @@ __all__ = [
     "QAOACostHamiltonian",
     "QAOAMixerHamiltonian",
     "QAOACircuitBuilder",
+    "QAOAOptimizer",
+    "QAOAOptimizationResult",
 ]
