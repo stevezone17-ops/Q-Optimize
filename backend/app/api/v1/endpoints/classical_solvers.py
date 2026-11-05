@@ -1,7 +1,8 @@
 """API endpoints for discovering, validating, and executing classical optimization solvers."""
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from backend.app.domain.problems.models import ProblemType
@@ -12,6 +13,8 @@ from backend.app.solvers.classical.models import (
     SolverRequest,
     SolverResult,
     SolverConfiguration,
+    ExecutionRecord,
+    ExecutionStatusResponse,
 )
 from backend.app.solvers.classical.exceptions import (
     SolverNotFoundError,
@@ -19,6 +22,7 @@ from backend.app.solvers.classical.exceptions import (
     SolverConfigurationError,
     UnsupportedProblemTypeError,
 )
+from backend.app.solvers.classical.execution import ClassicalExecutionPipeline
 
 router = APIRouter()
 
@@ -46,6 +50,55 @@ async def list_classical_solvers() -> List[SolverMetadata]:
     problem types, configuration schemas, and implementation statuses.
     """
     return ClassicalSolverFactory.list_solvers()
+
+
+@router.get("/executions", response_model=List[ExecutionRecord])
+async def list_classical_executions(limit: int = 50) -> List[ExecutionRecord]:
+    """
+    List recent classical solver execution records, ordered newest first.
+    """
+    return await ClassicalExecutionPipeline.list_executions(limit=limit)
+
+
+@router.get("/executions/{execution_id}", response_model=ExecutionRecord)
+async def get_classical_execution(execution_id: str) -> ExecutionRecord:
+    """
+    Retrieve full execution details, status, and result payload for a specific execution ID.
+    """
+    record = await ClassicalExecutionPipeline.get_execution(execution_id)
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution with ID '{execution_id}' was not found.",
+        )
+    return record
+
+
+@router.get("/executions/{execution_id}/status", response_model=ExecutionStatusResponse)
+async def get_classical_execution_status(execution_id: str) -> ExecutionStatusResponse:
+    """
+    Lightweight polling endpoint returning execution status and timing without large result payloads.
+    """
+    status_resp = await ClassicalExecutionPipeline.get_status(execution_id)
+    if not status_resp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Execution with ID '{execution_id}' was not found.",
+        )
+    return status_resp
+
+
+@router.post("/executions/{execution_id}/cancel")
+async def cancel_classical_execution(execution_id: str) -> Dict[str, Any]:
+    """
+    Cooperatively cancel an active or pending background execution.
+    """
+    success = await ClassicalExecutionPipeline.cancel_execution(execution_id)
+    return {
+        "execution_id": execution_id,
+        "cancelled": success,
+        "message": "Execution cancellation signal sent successfully." if success else "Execution was not running or could not be cancelled.",
+    }
 
 
 @router.get("/{solver_id}", response_model=SolverMetadata)
@@ -82,53 +135,37 @@ async def validate_solver_config(payload: SolverValidationRequest) -> SolverVali
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.post("/execute", response_model=SolverResult, status_code=status.HTTP_200_OK)
-async def execute_classical_solver(payload: SolverRequest) -> SolverResult:
+@router.post("/execute", response_model=Union[SolverResult, ExecutionRecord])
+async def execute_classical_solver(payload: SolverRequest):
     """
     Execute a classical optimization algorithm against a stored canonical problem or
-    ad-hoc instance definition.
+    ad-hoc instance definition. Supports both synchronous execution and background dispatch.
     """
     try:
-        solver = ClassicalSolverFactory.get_solver(payload.solver_id)
+        if payload.background:
+            record = await ClassicalExecutionPipeline.submit_async(payload)
+            return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=record.model_dump())
 
-        # Resolve problem definition
-        target_problem_type: ProblemType
-        target_instance: Dict[str, Any]
+        return await ClassicalExecutionPipeline.execute_sync(payload)
 
-        if payload.problem_id:
-            stored_problem = await ProblemService.get_problem(payload.problem_id)
-            if not stored_problem:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Problem with ID '{payload.problem_id}' not found.",
-                )
-            target_problem_type = stored_problem.problem_type
-            target_instance = stored_problem.instance
-        elif payload.problem_type and payload.instance:
-            target_problem_type = payload.problem_type
-            target_instance = payload.instance
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Must provide either 'problem_id' or both 'problem_type' and 'instance'.",
-            )
+    except SolverNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except UnsupportedProblemTypeError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except SolverNotImplementedError as e:
+        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e))
+    except (SolverConfigurationError, ValueError) as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
-        solver.check_problem_support(target_problem_type)
 
-        if not solver.is_implemented:
-            raise SolverNotImplementedError(
-                f"Solver '{solver.name}' ({solver.solver_id}) is scheduled for implementation in {solver.stage_introduced}. "
-                "Current stage: Stage 4.1 (Architecture & Interfaces)."
-            )
-
-        parsed_config = solver.validate_config(payload.config)
-        return solver.solve(
-            problem_type=target_problem_type,
-            instance=target_instance,
-            config=parsed_config,
-            seed=payload.seed,
-        )
-
+@router.post("/execute/async", response_model=ExecutionRecord, status_code=status.HTTP_202_ACCEPTED)
+async def execute_classical_solver_async(payload: SolverRequest) -> ExecutionRecord:
+    """
+    Explicitly submit a classical optimization task to execute asynchronously in the background.
+    Returns 202 Accepted with an ExecutionRecord tracking ID immediately.
+    """
+    try:
+        return await ClassicalExecutionPipeline.submit_async(payload)
     except SolverNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except UnsupportedProblemTypeError as e:

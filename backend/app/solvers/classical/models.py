@@ -63,6 +63,7 @@ class SolverRequest(BaseModel):
     instance: Optional[Dict[str, Any]] = Field(None, description="Ad-hoc instance definition if not using problem_id")
     config: Dict[str, Any] = Field(default_factory=dict, description="Solver configuration parameters")
     seed: Optional[int] = Field(42, description="Deterministic random seed")
+    background: bool = Field(False, description="Run solver asynchronously in background if True")
 
     @field_validator("solver_id")
     @classmethod
@@ -93,4 +94,34 @@ class SolverResult(BaseModel):
     convergence_history: List[ConvergencePoint] = Field(default_factory=list, description="Convergence trace over iterations")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Algorithm-specific internal metrics")
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class ExecutionRecord(BaseModel):
+    """Full lifecycle tracking record for a classical solver run."""
+    execution_id: str = Field(default_factory=lambda: f"exec-{uuid.uuid4().hex[:12]}")
+    solver_id: str
+    solver_name: str
+    problem_type: ProblemType
+    problem_id: Optional[str] = None
+    status: SolverStatus = SolverStatus.PENDING
+    submitted_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    runtime_seconds: Optional[float] = None
+    result: Optional[SolverResult] = None
+    error: Optional[str] = None
+    seed: Optional[int] = None
+    config: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ExecutionStatusResponse(BaseModel):
+    """Lightweight status response for execution polling."""
+    execution_id: str
+    solver_id: str
+    problem_type: ProblemType
+    status: SolverStatus
+    runtime_seconds: Optional[float] = None
+    is_completed: bool = False
+    has_failed: bool = False
+    error: Optional[str] = None
 

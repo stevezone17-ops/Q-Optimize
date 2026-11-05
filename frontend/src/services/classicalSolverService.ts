@@ -4,6 +4,8 @@ import {
   SolverRequest,
   SolverResult,
   ProblemType,
+  ExecutionRecord,
+  ExecutionStatusResponse,
 } from '../types'
 
 export const classicalSolverService = {
@@ -40,13 +42,53 @@ export const classicalSolverService = {
   },
 
   /**
-   * Execute a classical solver against a problem instance.
+   * Execute a classical solver synchronously against a problem instance.
    */
   async executeSolver(payload: SolverRequest): Promise<SolverResult> {
     return request<SolverResult>('/solvers/classical/execute', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
+  },
+
+  /**
+   * Submit an asynchronous/background classical solver run.
+   */
+  async submitAsync(payload: SolverRequest): Promise<ExecutionRecord> {
+    return request<ExecutionRecord>('/solvers/classical/execute/async', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  /**
+   * Retrieve full execution record and results.
+   */
+  async getExecution(executionId: string): Promise<ExecutionRecord> {
+    return request<ExecutionRecord>(`/solvers/classical/executions/${executionId}`)
+  },
+
+  /**
+   * Lightweight execution status check for polling.
+   */
+  async getExecutionStatus(executionId: string): Promise<ExecutionStatusResponse> {
+    return request<ExecutionStatusResponse>(`/solvers/classical/executions/${executionId}/status`)
+  },
+
+  /**
+   * Cooperatively cancel a pending or running background execution.
+   */
+  async cancelExecution(executionId: string): Promise<{ execution_id: string; cancelled: boolean; message: string }> {
+    return request(`/solvers/classical/executions/${executionId}/cancel`, {
+      method: 'POST',
+    })
+  },
+
+  /**
+   * List recent execution records.
+   */
+  async listExecutions(limit = 50): Promise<ExecutionRecord[]> {
+    return request<ExecutionRecord[]>(`/solvers/classical/executions?limit=${limit}`)
   },
 }
 

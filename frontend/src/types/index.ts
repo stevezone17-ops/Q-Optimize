@@ -266,6 +266,7 @@ export interface SolverRequest {
   instance?: Record<string, unknown>
   config?: Record<string, unknown>
   seed?: number
+  background?: boolean
 }
 
 export interface SolverResult {
@@ -287,5 +288,33 @@ export interface SolverResult {
   convergence_history: ConvergencePoint[]
   metadata: Record<string, unknown>
   created_at: string
+}
+
+export interface ExecutionRecord {
+  execution_id: string
+  solver_id: string
+  solver_name: string
+  problem_type: ProblemType
+  problem_id?: string
+  status: SolverStatus
+  submitted_at: string
+  started_at?: string
+  completed_at?: string
+  runtime_seconds?: number
+  result?: SolverResult
+  error?: string
+  seed?: number
+  config: Record<string, unknown>
+}
+
+export interface ExecutionStatusResponse {
+  execution_id: string
+  solver_id: string
+  problem_type: ProblemType
+  status: SolverStatus
+  runtime_seconds?: number
+  is_completed: boolean
+  has_failed: boolean
+  error?: string
 }
 

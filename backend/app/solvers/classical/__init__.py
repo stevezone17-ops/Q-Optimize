@@ -8,6 +8,8 @@ from backend.app.solvers.classical.models import (
     SolverMetadata,
     SolverRequest,
     SolverResult,
+    ExecutionRecord,
+    ExecutionStatusResponse,
 )
 from backend.app.solvers.classical.base import IClassicalSolver
 from backend.app.solvers.classical.exceptions import (
@@ -23,6 +25,7 @@ from backend.app.solvers.classical.factory import ClassicalSolverFactory
 from backend.app.solvers.classical.exact import ExactSolver
 from backend.app.solvers.classical.genetic_algorithm import GeneticAlgorithmSolver
 from backend.app.solvers.classical.simulated_annealing import SimulatedAnnealingSolver
+from backend.app.solvers.classical.execution import ClassicalExecutionPipeline
 
 __all__ = [
     "SolverStatus",
@@ -32,6 +35,9 @@ __all__ = [
     "SolverMetadata",
     "SolverRequest",
     "SolverResult",
+    "ExecutionRecord",
+    "ExecutionStatusResponse",
+    "ClassicalExecutionPipeline",
     "IClassicalSolver",
     "ExactSolver",
     "GeneticAlgorithmSolver",
