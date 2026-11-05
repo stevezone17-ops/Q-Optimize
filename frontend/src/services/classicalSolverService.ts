@@ -90,5 +90,29 @@ export const classicalSolverService = {
   async listExecutions(limit = 50): Promise<ExecutionRecord[]> {
     return request<ExecutionRecord[]>(`/solvers/classical/executions?limit=${limit}`)
   },
+
+  /**
+   * Run a multi-solver classical benchmark suite.
+   */
+  async runBenchmark(payload: import('../types').BenchmarkRequest): Promise<import('../types').BenchmarkResult> {
+    return request<import('../types').BenchmarkResult>('/solvers/classical/benchmark', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  /**
+   * Retrieve a benchmark result by ID.
+   */
+  async getBenchmark(benchmarkId: string): Promise<import('../types').BenchmarkResult> {
+    return request<import('../types').BenchmarkResult>(`/solvers/classical/benchmarks/${benchmarkId}`)
+  },
+
+  /**
+   * List recent benchmark suites.
+   */
+  async listBenchmarks(limit = 50): Promise<import('../types').BenchmarkResult[]> {
+    return request<import('../types').BenchmarkResult[]>(`/solvers/classical/benchmarks?limit=${limit}`)
+  },
 }
 

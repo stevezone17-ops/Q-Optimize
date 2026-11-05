@@ -318,3 +318,43 @@ export interface ExecutionStatusResponse {
   error?: string
 }
 
+export interface BenchmarkRequest {
+  name?: string
+  problem_id?: string
+  problem_type?: ProblemType
+  instance?: Record<string, unknown>
+  solver_ids: string[]
+  solver_configs?: Record<string, Record<string, unknown>>
+  trials?: number
+  base_seed?: number
+}
+
+export interface SolverBenchmarkSummary {
+  solver_id: string
+  solver_name: string
+  trials_count: number
+  best_objective: number
+  mean_objective: number
+  worst_objective: number
+  std_objective: number
+  feasibility_rate: number
+  mean_runtime_ms: number
+  min_runtime_ms: number
+  max_runtime_ms: number
+  mean_evaluations: number
+  optimality_gap_percent?: number | null
+  best_solution?: unknown
+  convergence_sample?: ConvergencePoint[]
+}
+
+export interface BenchmarkResult {
+  benchmark_id: string
+  name: string
+  problem_type: ProblemType
+  problem_id?: string
+  exact_optimum?: number | null
+  summaries: SolverBenchmarkSummary[]
+  total_runtime_seconds: number
+  created_at: string
+}
+

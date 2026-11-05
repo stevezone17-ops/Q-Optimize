@@ -23,6 +23,11 @@ from backend.app.solvers.classical.exceptions import (
     UnsupportedProblemTypeError,
 )
 from backend.app.solvers.classical.execution import ClassicalExecutionPipeline
+from backend.app.solvers.classical.benchmarking import (
+    BenchmarkRequest,
+    BenchmarkResult,
+    ClassicalBenchmarkEngine,
+)
 
 router = APIRouter()
 
@@ -99,6 +104,41 @@ async def cancel_classical_execution(execution_id: str) -> Dict[str, Any]:
         "cancelled": success,
         "message": "Execution cancellation signal sent successfully." if success else "Execution was not running or could not be cancelled.",
     }
+
+
+@router.post("/benchmark", response_model=BenchmarkResult)
+async def run_classical_benchmark(payload: BenchmarkRequest) -> BenchmarkResult:
+    """
+    Execute a multi-solver benchmark suite comparing requested algorithms across multiple trials.
+    """
+    try:
+        return await ClassicalBenchmarkEngine.run_benchmark(payload)
+    except (SolverNotFoundError, UnsupportedProblemTypeError, ValueError) as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@router.get("/benchmarks", response_model=List[BenchmarkResult])
+async def list_classical_benchmarks(limit: int = 50) -> List[BenchmarkResult]:
+    """
+    List recent multi-solver classical benchmark results.
+    """
+    return await ClassicalBenchmarkEngine.list_benchmarks(limit=limit)
+
+
+@router.get("/benchmarks/{benchmark_id}", response_model=BenchmarkResult)
+async def get_classical_benchmark(benchmark_id: str) -> BenchmarkResult:
+    """
+    Retrieve full benchmark comparison results and statistical summaries by ID.
+    """
+    res = await ClassicalBenchmarkEngine.get_benchmark(benchmark_id)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Benchmark with ID '{benchmark_id}' was not found.",
+        )
+    return res
 
 
 @router.get("/{solver_id}", response_model=SolverMetadata)

@@ -26,6 +26,12 @@ from backend.app.solvers.classical.exact import ExactSolver
 from backend.app.solvers.classical.genetic_algorithm import GeneticAlgorithmSolver
 from backend.app.solvers.classical.simulated_annealing import SimulatedAnnealingSolver
 from backend.app.solvers.classical.execution import ClassicalExecutionPipeline
+from backend.app.solvers.classical.benchmarking import (
+    BenchmarkRequest,
+    BenchmarkResult,
+    SolverBenchmarkSummary,
+    ClassicalBenchmarkEngine,
+)
 
 __all__ = [
     "SolverStatus",
@@ -38,6 +44,10 @@ __all__ = [
     "ExecutionRecord",
     "ExecutionStatusResponse",
     "ClassicalExecutionPipeline",
+    "BenchmarkRequest",
+    "BenchmarkResult",
+    "SolverBenchmarkSummary",
+    "ClassicalBenchmarkEngine",
     "IClassicalSolver",
     "ExactSolver",
     "GeneticAlgorithmSolver",
