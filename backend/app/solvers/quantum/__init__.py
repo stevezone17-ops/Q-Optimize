@@ -18,6 +18,10 @@ from backend.app.solvers.quantum.models import (
     QuantumSamplingResult,
     DecodedSample,
     QAOADecodingSummary,
+    QAOAExecutionRequest,
+    QAOAExecutionResult,
+    QAOAExecutionRecord,
+    QAOAStatusResponse,
 )
 from backend.app.solvers.quantum.exceptions import (
     QuantumSolverError,
@@ -39,6 +43,7 @@ from backend.app.solvers.quantum.circuit_builder import QAOACircuitBuilder
 from backend.app.solvers.quantum.optimizer import QAOAOptimizer
 from backend.app.solvers.quantum.execution_engine import QuantumExecutionEngine
 from backend.app.solvers.quantum.solution_decoder import QAOASolutionDecoder
+from backend.app.solvers.quantum.pipeline import QAOAExecutionPipeline
 
 __all__ = [
     "SimulationMode",
@@ -75,4 +80,9 @@ __all__ = [
     "QAOASolutionDecoder",
     "DecodedSample",
     "QAOADecodingSummary",
+    "QAOAExecutionPipeline",
+    "QAOAExecutionRequest",
+    "QAOAExecutionResult",
+    "QAOAExecutionRecord",
+    "QAOAStatusResponse",
 ]

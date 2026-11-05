@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 import uuid
 from pydantic import BaseModel, Field, field_validator
+from backend.app.domain.problems.models import ProblemType
 from backend.app.solvers.quantum.config import (
     SimulationMode,
     QuantumBackendType,
@@ -160,6 +161,71 @@ class QAOADecodingSummary(BaseModel):
     best_infeasible_solution: Optional[DecodedSample] = None
     most_frequent_solution: DecodedSample
     all_decoded_samples: List[DecodedSample] = Field(default_factory=list)
+
+
+class QAOAExecutionRequest(BaseModel):
+    """Execution request payload for QAOA quantum solver."""
+    problem_id: Optional[str] = Field(None, description="ID of a persisted problem instance")
+    problem_type: Optional[ProblemType] = Field(None, description="Problem family (max_cut, assignment, tsp)")
+    instance: Optional[Dict[str, Any]] = Field(None, description="Ad-hoc problem instance definition")
+    config: QAOAConfiguration = Field(default_factory=QAOAConfiguration, description="QAOA and simulation hyperparameters")
+    penalty_coefficients: Optional[Dict[str, float]] = Field(None, description="Optional custom penalty overrides for QUBO")
+
+
+class QAOAExecutionResult(BaseModel):
+    """Standardized result returned from a QAOA execution."""
+    execution_id: str
+    solver_id: str = "qaoa"
+    solver_name: str = "Quantum Approximate Optimization Algorithm (QAOA)"
+    problem_type: ProblemType
+    status: QuantumExecutionStatus
+    best_solution: Optional[DecodedSample] = None
+    candidate_solution: Any = None
+    objective_value: Optional[float] = None
+    is_feasible: bool = False
+    constraint_violations: List[str] = Field(default_factory=list)
+    qubo_energy: Optional[float] = None
+    ising_energy: Optional[float] = None
+    optimal_gamma: List[float] = Field(default_factory=list)
+    optimal_beta: List[float] = Field(default_factory=list)
+    optimization_result: QAOAOptimizationResult
+    sampling_result: QuantumSamplingResult
+    decoding_summary: QAOADecodingSummary
+    runtime_seconds: float
+    hardware_transparency_note: str = (
+        "Execution performed using Qiskit Aer simulation on classical hardware. "
+        "No physical quantum processor was utilized."
+    )
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+class QAOAExecutionRecord(BaseModel):
+    """Lifecycle tracking record persisted in MongoDB and memory."""
+    execution_id: str = Field(default_factory=lambda: f"qexec-{uuid.uuid4().hex[:12]}")
+    solver_id: str = "qaoa"
+    problem_type: ProblemType
+    problem_id: Optional[str] = None
+    status: QuantumExecutionStatus = QuantumExecutionStatus.PENDING
+    submitted_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    runtime_seconds: Optional[float] = None
+    result: Optional[QAOAExecutionResult] = None
+    error: Optional[str] = None
+    config: Dict[str, Any] = Field(default_factory=dict)
+
+
+class QAOAStatusResponse(BaseModel):
+    """Lightweight polling response for long-running QAOA simulations."""
+    execution_id: str
+    solver_id: str = "qaoa"
+    problem_type: ProblemType
+    status: QuantumExecutionStatus
+    runtime_seconds: Optional[float] = None
+    is_completed: bool = False
+    has_failed: bool = False
+    error: Optional[str] = None
+
 
 
 
