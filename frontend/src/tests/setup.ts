@@ -124,6 +124,113 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  if (url.includes('/solvers/classical/benchmark')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          benchmark_id: 'test-bench-123',
+          name: 'Multi-Solver Classical Benchmark',
+          problem_type: 'max_cut',
+          exact_optimum: 14.0,
+          total_runtime_seconds: 0.125,
+          created_at: new Date().toISOString(),
+          summaries: [
+            {
+              solver_id: 'exact',
+              solver_name: 'Exact Classical Solver',
+              trials_count: 1,
+              best_objective: 14.0,
+              mean_objective: 14.0,
+              worst_objective: 14.0,
+              std_objective: 0.0,
+              feasibility_rate: 1.0,
+              mean_runtime_ms: 1.5,
+              min_runtime_ms: 1.5,
+              max_runtime_ms: 1.5,
+              mean_evaluations: 8,
+              optimality_gap_percent: 0.0,
+              best_solution: { A: 0, B: 1, C: 0, D: 1 },
+              convergence_sample: [{ iteration: 8, best_objective: 14.0 }],
+            },
+            {
+              solver_id: 'genetic_algorithm',
+              solver_name: 'Genetic Algorithm (GA)',
+              trials_count: 2,
+              best_objective: 14.0,
+              mean_objective: 13.5,
+              worst_objective: 13.0,
+              std_objective: 0.5,
+              feasibility_rate: 1.0,
+              mean_runtime_ms: 12.3,
+              min_runtime_ms: 11.0,
+              max_runtime_ms: 13.6,
+              mean_evaluations: 200,
+              optimality_gap_percent: 0.0,
+              best_solution: { A: 0, B: 1, C: 0, D: 1 },
+              convergence_sample: [{ iteration: 0, best_objective: 10.0 }, { iteration: 20, best_objective: 14.0 }],
+            },
+            {
+              solver_id: 'simulated_annealing',
+              solver_name: 'Simulated Annealing (SA)',
+              trials_count: 2,
+              best_objective: 14.0,
+              mean_objective: 14.0,
+              worst_objective: 14.0,
+              std_objective: 0.0,
+              feasibility_rate: 1.0,
+              mean_runtime_ms: 8.7,
+              min_runtime_ms: 8.0,
+              max_runtime_ms: 9.4,
+              mean_evaluations: 150,
+              optimality_gap_percent: 0.0,
+              best_solution: { A: 0, B: 1, C: 0, D: 1 },
+              convergence_sample: [{ iteration: 0, best_objective: 8.0, temperature: 100.0 }, { iteration: 50, best_objective: 14.0, temperature: 0.1 }],
+            },
+          ],
+        }),
+    })
+  }
+
+  if (url.includes('/solvers/classical/executions')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve([
+          {
+            execution_id: 'exec-hist-1',
+            solver_id: 'exact',
+            solver_name: 'Exact Classical Solver',
+            problem_type: 'max_cut',
+            status: 'COMPLETED',
+            runtime_seconds: 0.003,
+            submitted_at: new Date(Date.now() - 60000).toISOString(),
+            result: {
+              execution_id: 'exec-hist-1',
+              solver_id: 'exact',
+              solver_name: 'Exact Classical Solver',
+              problem_type: 'max_cut',
+              status: 'COMPLETED',
+              candidate_solution: { A: 0, B: 1, C: 0, D: 1 },
+              objective_value: 14.0,
+              is_feasible: true,
+              constraint_violations: [],
+              runtime_seconds: 0.003,
+              iterations: 8,
+              evaluations: 8,
+              optimality_status: 'proven_optimal',
+              termination_reason: 'proven_global_optimum',
+              convergence_history: [],
+              metadata: {},
+              created_at: new Date(Date.now() - 60000).toISOString(),
+            },
+          },
+        ]),
+    })
+  }
+
   if (url.includes('/solvers/classical/execute')) {
     return Promise.resolve({
       ok: true,

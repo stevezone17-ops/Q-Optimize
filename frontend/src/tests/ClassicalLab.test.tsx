@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { ClassicalLabPage } from '../pages/ClassicalLabPage'
 
-describe('Classical Lab Feature (Stages 4.1 - 4.4)', () => {
+describe('Classical Lab Feature (Stages 4.1 - 4.7)', () => {
   it('renders classical lab header and problem selection controls', async () => {
     render(<ClassicalLabPage />)
     expect(screen.getByText('Classical Optimization Lab')).toBeInTheDocument()
@@ -76,6 +76,40 @@ describe('Classical Lab Feature (Stages 4.1 - 4.4)', () => {
     })
     expect(screen.getByText('PROVEN OPTIMAL')).toBeInTheDocument()
     expect(screen.getByText('FEASIBLE')).toBeInTheDocument()
-    expect(screen.getByText('14.00')).toBeInTheDocument()
+    expect(screen.getAllByText('14.00').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('switches to comparative benchmark tab and executes multi-solver benchmark suite', async () => {
+    render(<ClassicalLabPage />)
+
+    // Switch to Comparative Benchmark tab
+    const benchTab = screen.getByRole('button', { name: /Comparative Benchmark/i })
+    fireEvent.click(benchTab)
+
+    expect(screen.getByText('Multi-Solver Comparative Benchmark Suite')).toBeInTheDocument()
+    expect(screen.getByText('Include Solvers in Benchmark:')).toBeInTheDocument()
+
+    const runBenchBtn = screen.getByRole('button', { name: /Run Comparative Benchmark/i })
+    fireEvent.click(runBenchBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Benchmark Results: Multi-Solver Classical Benchmark/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Exact Global Optimum: 14.00/i)).toBeInTheDocument()
+    expect(screen.getByText('🥇 1st')).toBeInTheDocument()
+  })
+
+  it('switches to execution audit history tab and renders recorded runs', async () => {
+    render(<ClassicalLabPage />)
+
+    // Switch to Execution Audit tab
+    const auditTab = screen.getByRole('button', { name: /Execution Audit/i })
+    fireEvent.click(auditTab)
+
+    expect(screen.getByText('Execution Audit & History')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('exec-hist-1')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Inspect Result')).toBeInTheDocument()
   })
 })
