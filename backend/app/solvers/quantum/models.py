@@ -134,3 +134,32 @@ class QuantumSamplingResult(BaseModel):
     )
 
 
+class DecodedSample(BaseModel):
+    """A decoded optimization solution candidate derived from a measured quantum bitstring."""
+    bitstring: str
+    frequency_count: int
+    probability: float
+    candidate_solution: Any
+    is_feasible: bool
+    objective_value: float
+    constraint_violations: List[str] = Field(default_factory=list)
+    qubo_energy: float
+    ising_energy: float
+    is_repaired: bool = False
+    raw_candidate_solution: Optional[Any] = None
+
+
+class QAOADecodingSummary(BaseModel):
+    """Aggregated decoding and evaluation statistics across all measured quantum bitstrings."""
+    total_samples: int
+    unique_samples: int
+    feasible_samples: int
+    infeasible_samples: int
+    feasible_rate: float
+    best_feasible_solution: Optional[DecodedSample] = None
+    best_infeasible_solution: Optional[DecodedSample] = None
+    most_frequent_solution: DecodedSample
+    all_decoded_samples: List[DecodedSample] = Field(default_factory=list)
+
+
+
