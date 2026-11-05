@@ -199,3 +199,127 @@ To ensure absolute mathematical rigor and prevent silent formulation errors:
    For feasible solutions, verify that $E_{\text{QUBO}}(x)$ corresponds to the independently evaluated original objective value (e.g. $-\text{Cut}(x)$ for Max-Cut, matching cost for Assignment, tour distance for TSP).
 4. **Feasibility Barrier Verification:**
    Verify that all infeasible bitstrings have penalty energies strictly exceeding feasible optimums, confirming penalty parameter sufficiency.
+
+---
+
+## 7. Phase 5: QAOA Variational Quantum Optimization Engine
+
+### 7.1 Algorithmic Foundations of QAOA
+The Quantum Approximate Optimization Algorithm (QAOA) is a hybrid quantum-classical variational algorithm designed to find near-optimal solutions to combinatorial optimization problems mapped to Ising Hamiltonians.
+
+1. **Initial State (Uniform Superposition):**
+   Starting with $n$ qubits initialized in $|0\rangle^{\otimes n}$, apply Hadamard gates $H^{\otimes n}$ to generate the equal superposition:
+   \[
+   |\psi_0\rangle = \frac{1}{\sqrt{2^n}} \sum_{x \in \{0, 1\}^n} |x\rangle
+   \]
+
+2. **Alternating Unitary Layers ($p$ depth):**
+   For $l = 1, \dots, p$, sequentially apply problem cost and mixer unitaries parameterized by variational angles $\gamma_l \in [0, 2\pi]$ and $\beta_l \in [0, \pi]$:
+   \[
+   |\psi(\vec{\gamma}, \vec{\beta})\rangle = \prod_{l=1}^p \left( e^{-i \beta_l H_M} e^{-i \gamma_l H_C} \right) |\psi_0\rangle
+   \]
+
+3. **Expectation Objective:**
+   Evaluate the variational expectation value:
+   \[
+   F_p(\vec{\gamma}, \vec{\beta}) = \langle \psi(\vec{\gamma}, \vec{\beta}) | H_C | \psi(\vec{\gamma}, \vec{\beta}) \rangle
+   \]
+   A classical optimization routine iteratively updates $(\vec{\gamma}, \vec{\beta})$ to minimize $F_p$.
+
+---
+
+## 8. QAOA Hamiltonians & Gate Synthesis
+
+### 8.1 Cost Hamiltonian Unitary Decomposition
+The cost Hamiltonian $H_C = \sum_i h_i Z_i + \sum_{i < j} J_{ij} Z_i Z_j + C$ decomposes into commuting single-qubit and two-qubit rotation unitaries:
+\[
+e^{-i \gamma H_C} = e^{-i \gamma C} \prod_{i=1}^n e^{-i \gamma h_i Z_i} \prod_{1 \le i < j \le n} e^{-i \gamma J_{ij} Z_i Z_j}
+\]
+
+Under standard Qiskit gate definitions:
+- $R_Z(\phi) = \exp(-i \frac{\phi}{2} Z)$
+- $R_{ZZ}(\theta) = \exp(-i \frac{\theta}{2} Z \otimes Z)$
+
+Therefore, the exact required rotation angles are scaled by a factor of 2:
+- **Linear term on qubit $i$:** $R_Z(2 \gamma h_i)$
+- **Coupling term on qubits $(i, j)$:** $R_{ZZ}(2 \gamma J_{ij})$
+- **Global scalar phase:** $e^{-i \gamma C}$
+
+### 8.2 Mixer Hamiltonian Unitary Decomposition
+The standard transverse-field mixer is defined as the sum of Pauli-$X$ operators:
+\[
+H_M = \sum_{i=1}^n X_i
+\]
+Because $[X_i, X_j] = 0$ for $i \ne j$, the mixer unitary decomposes into independent single-qubit $R_X$ gates:
+\[
+e^{-i \beta H_M} = \prod_{i=1}^n e^{-i \beta X_i} = \prod_{i=1}^n R_X(2 \beta)
+\]
+
+---
+
+## 9. Parameterized Circuit Construction & Resource Limits
+
+The `QAOACircuitBuilder` constructs standard Qiskit `QuantumCircuit` instances parameterized with `ParameterVector("gamma", p)` and `ParameterVector("beta", p)`:
+- Uniform Hadamard initialization: $H$ gate on all $n$ qubits.
+- Alternating application of cost $U(H_C, \gamma_l)$ and mixer $U(H_M, \beta_l)$ layers for $l = 1, \dots, p$.
+- Fast parameter binding via `.assign_parameters()` without rebuilding circuit graphs.
+- Measurement mapping: `measure_all()` onto classical registers in little-endian order.
+
+**Platform Resource Safety Guardrails:**
+- Qubit ceiling: $n \le 20$ (Qiskit Aer CPU statevector and shot limit).
+- Depth ceiling: $p \le 10$.
+- Shot ceiling: $\text{shots} \le 50,000$.
+
+---
+
+## 10. Classical Parameter Optimization Loop
+
+The `QAOAOptimizer` implements classical outer-loop optimization over the variational parameters $(\vec{\gamma}, \vec{\beta}) \in \mathbb{R}^{2p}$:
+- **Supported Optimizers:**
+  - `COBYLA` (Constrained Optimization BY Linear Approximation) — default derivative-free optimizer robust to finite sampling shot noise.
+  - `SLSQP` (Sequential Least Squares Programming) — bounded gradient/approximation optimizer.
+  - `Nelder-Mead` — downhill simplex direct search method.
+  - `L-BFGS-B` — limited-memory quasi-Newton optimization.
+- **Initialization Strategies:**
+  - `linear_ramp`: Trotterized adiabatic ramp $\gamma_l = \frac{l}{p} \cdot \Delta t$, $\beta_l = (1 - \frac{l}{p}) \cdot \Delta t$.
+  - `random`: Uniformly sampled $\gamma_l \in [0, 2\pi]$ and $\beta_l \in [0, \pi]$.
+  - `zeros`: Initialization at origin $[0, \dots, 0]$.
+- **Expectation Modes:**
+  - `statevector`: Exact analytical expectation $\langle \psi | H_C | \psi \rangle$ via Qiskit Aer statevector simulator.
+  - `shots`: Empirical expectation computed by sampling $N_{\text{shots}}$ bitstrings and evaluating $\frac{1}{N} \sum_{k} E(x^{(k)})$.
+
+---
+
+## 11. Solution Decoding & Independent Verification
+
+Measurement outcomes from Qiskit Aer are returned as count dictionaries of binary bitstrings.
+
+### 11.1 Little-Endian Bit-Order Mapping
+In Qiskit, bitstrings are indexed from right to left (qubit 0 is at index $n-1$, qubit $n-1$ is at index 0):
+\[
+x_k = \text{int}(\text{bitstring}[n - 1 - k]) \quad \text{for } k = 0, \dots, n-1
+\]
+
+### 11.2 Domain-Specific Solution Reconstruction
+- **Max-Cut:** Bit 0 maps to Partition Set $V \setminus S$, bit 1 maps to Partition Set $S$.
+- **Assignment:** Decision variable $x_{i, j}$ maps agent $i$ to task $j$.
+- **TSP:** Decision variable $x_{i, p}$ maps city $i$ to position $p$.
+
+### 11.3 Independent Verification & Best Feasible Candidate Selection
+Rather than blindly selecting the most frequently sampled bitstring, `QAOASolutionDecoder`:
+1. Evaluates all unique measured bitstrings.
+2. Validates hard constraints using Phase 2 constraint validators.
+3. Evaluates true problem objective values using Phase 2 independent objective evaluators (`MaxCutEvaluator`, `AssignmentEvaluator`, `TSPEvaluator`).
+4. Selects the `best_feasible_solution` based on true problem direction (maximization for Max-Cut, minimization for Assignment/TSP).
+
+---
+
+## 12. Hybrid Quantum-Classical Benchmarking
+
+The `HybridBenchmarkEngine` evaluates QAOA side-by-side against deterministic and heuristic classical solvers:
+- **Approximation Ratio ($r$):**
+  - For maximization (Max-Cut): $r = \frac{C_{\text{QAOA}}}{C_{\text{exact}}}$.
+  - For minimization (Assignment, TSP): $r = \frac{C_{\text{exact}}}{C_{\text{QAOA}}}$.
+- **Optimality Gap:** $|f - f^*| / |f^*| \times 100\%$.
+- **Computational Budget:** Classical evaluations vs. simulated quantum circuit executions ($N_{\text{evals}} \times \text{shots}$).
+- **Scientific Hardware Transparency Guarantee:** All execution records and UI views clearly report that simulations run on CPU Qiskit Aer simulators, with no quantum supremacy claimed.

@@ -42,6 +42,19 @@ Base path: `/api/v1`. All endpoints use standard JSON, strict Pydantic model val
 | `POST` | `/solvers/classical/benchmark` | Phase 4 | Execute multi-solver benchmark suite with optimality gap |
 | `GET` | `/solvers/classical/benchmarks` | Phase 4 | List recent comparative benchmark results |
 | `GET` | `/solvers/classical/benchmarks/{id}` | Phase 4 | Retrieve full multi-solver benchmark comparison by ID |
+| `GET` | `/solvers/quantum` | Phase 5 | Discover registered quantum solvers and backends |
+| `GET` | `/solvers/quantum/backends` | Phase 5 | List quantum backends with hardware transparency metadata |
+| `GET` | `/solvers/quantum/qaoa` | Phase 5 | Retrieve QAOA algorithm metadata and hyperparameter schema |
+| `POST` | `/solvers/quantum/validate` | Phase 5 | Pre-flight validation of QAOA requests against qubit and shot limits |
+| `POST` | `/solvers/quantum/qaoa/execute` | Phase 5 | Synchronous end-to-end QAOA execution and decoding |
+| `POST` | `/solvers/quantum/qaoa/execute/async` | Phase 5 | Asynchronous thread-pooled QAOA execution dispatch |
+| `GET` | `/solvers/quantum/qaoa/executions` | Phase 5 | List recent QAOA simulation executions |
+| `GET` | `/solvers/quantum/qaoa/executions/{id}` | Phase 5 | Retrieve full QAOA execution results, optimal angles, and histogram |
+| `GET` | `/solvers/quantum/qaoa/executions/{id}/status` | Phase 5 | Lightweight polling endpoint for in-flight execution progress |
+| `POST` | `/solvers/quantum/qaoa/executions/{id}/cancel` | Phase 5 | Cooperatively cancel pending or running QAOA simulation |
+| `POST` | `/solvers/quantum/benchmark` | Phase 5 | Run comparative hybrid quantum-classical benchmark suite |
+| `GET` | `/solvers/quantum/benchmarks` | Phase 5 | List recent hybrid quantum-classical benchmark suites |
+| `GET` | `/solvers/quantum/benchmarks/{id}` | Phase 5 | Retrieve comparative hybrid benchmark details by ID |
 | `POST` | `/experiments` | Phase 6 | Create and enqueue optimization experiment |
 | `GET` | `/experiments` | Phase 6 | List own experiments |
 | `GET` | `/experiments/{id}` | Phase 6 | Status, configuration, and summary |
@@ -268,3 +281,135 @@ Runs a multi-solver comparative benchmark suite across multiple trials, establis
   "created_at": "2026-11-05T13:30:00Z"
 }
 ```
+
+---
+
+## 5. Phase 5 Quantum Solver Endpoints Detail
+
+### 5.1 Execute QAOA: `POST /api/v1/solvers/quantum/qaoa/execute`
+Executes end-to-end QAOA circuit construction, classical parameter optimization, measurement sampling, and solution decoding on Qiskit Aer.
+
+**Request Payload:**
+```json
+{
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["A", "B", "C"],
+    "edges": [["A", "B", 2.0], ["B", "C", 3.0], ["A", "C", 1.0]]
+  },
+  "config": {
+    "p_depth": 1,
+    "shots": 1024,
+    "simulation_mode": "ideal_shots",
+    "optimizer": "COBYLA",
+    "max_iterations": 30,
+    "init_strategy": "linear_ramp",
+    "seed": 42
+  }
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "execution_id": "qexec-7b3f1c29e4d0",
+  "solver_id": "qaoa",
+  "solver_name": "Quantum Approximate Optimization Algorithm (QAOA)",
+  "problem_type": "max_cut",
+  "status": "COMPLETED",
+  "optimal_gamma": [0.3927],
+  "optimal_beta": [0.7854],
+  "optimal_expectation_value": -3.5,
+  "best_sample": {
+    "bitstring": "101",
+    "count": 420,
+    "probability": 0.41,
+    "raw_binary_vector": [1, 0, 1],
+    "decoded_solution": { "partition_s": ["A", "C"], "partition_v_minus_s": ["B"], "cut_value": 5.0 },
+    "objective_value": 5.0,
+    "is_feasible": true,
+    "constraint_violations": [],
+    "is_best_feasible": true,
+    "is_most_frequent": true
+  },
+  "decoding_summary": {
+    "total_samples": 1024,
+    "unique_samples": 8,
+    "feasible_samples": 1024,
+    "infeasible_samples": 0,
+    "feasible_rate": 1.0,
+    "all_decoded_samples": [...]
+  },
+  "circuit_metadata": {
+    "num_qubits": 3,
+    "depth": 8,
+    "gate_counts": { "h": 3, "rz": 3, "rzz": 3, "rx": 3 },
+    "num_parameters": 2,
+    "p_depth": 1,
+    "has_measurements": true
+  },
+  "runtime_seconds": 0.125,
+  "hardware_transparency_note": "Execution performed using Qiskit Aer simulation on classical hardware. No physical quantum processor was utilized."
+}
+```
+
+### 5.2 Comparative Hybrid Benchmark: `POST /api/v1/solvers/quantum/benchmark`
+Executes comparative evaluation across classical solvers and QAOA on a target problem instance.
+
+**Request Payload:**
+```json
+{
+  "name": "Triangle Max-Cut Hybrid Benchmark",
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["A", "B", "C"],
+    "edges": [["A", "B", 2.0], ["B", "C", 3.0], ["A", "C", 1.0]]
+  },
+  "include_solvers": ["exact", "simulated_annealing", "qaoa"],
+  "qaoa_config": {
+    "p_depth": 1,
+    "shots": 500,
+    "max_iterations": 15
+  },
+  "trials": 2,
+  "base_seed": 42
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "benchmark_id": "hbench-9a8b7c6d5e4f",
+  "name": "Triangle Max-Cut Hybrid Benchmark",
+  "problem_type": "max_cut",
+  "exact_optimum": 5.0,
+  "total_runtime_seconds": 0.28,
+  "summaries": [
+    {
+      "solver_id": "exact",
+      "solver_name": "Exact Classical Solver",
+      "solver_category": "classical_exact",
+      "is_quantum_simulator": false,
+      "best_objective": 5.0,
+      "approximation_ratio": 1.0,
+      "optimality_gap_percent": 0.0,
+      "feasibility_rate": 1.0,
+      "mean_runtime_ms": 1.1
+    },
+    {
+      "solver_id": "qaoa",
+      "solver_name": "Quantum Approximate Optimization Algorithm (QAOA)",
+      "solver_category": "quantum_variational",
+      "is_quantum_simulator": true,
+      "best_objective": 5.0,
+      "approximation_ratio": 1.0,
+      "optimality_gap_percent": 0.0,
+      "feasibility_rate": 1.0,
+      "mean_runtime_ms": 62.4,
+      "circuit_metadata": { "num_qubits": 3, "depth": 8 }
+    }
+  ],
+  "hardware_transparency_note": "Quantum variational algorithm (QAOA) runs on classical CPU simulation via Qiskit Aer. No physical quantum hardware speedup is claimed."
+}
+```
+

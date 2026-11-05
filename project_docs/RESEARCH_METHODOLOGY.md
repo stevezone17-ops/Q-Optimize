@@ -70,3 +70,25 @@ If an infeasible state achieves an energy lower than the optimal feasible state,
 ## 8. Reproducibility & Research Integrity
 - Every experiment record preserves the exact QUBO upper-triangular matrix, variable ordering array, penalty parameters, random seeds, and raw bitstring count distribution.
 - **Strict Prohibition:** Simulator-based experiments do not establish physical quantum advantage and will never be presented as physical quantum speedup.
+
+---
+
+## 9. QAOA Experimental Protocols & Benchmarking Standards (Phase 5)
+
+### 9.1 Variational Angle Search & Convergence Protocols
+- Parameter search is initialized using standardized strategies (`linear_ramp`, `random`, `zeros`).
+- Multi-trial stochastic restarts ($k \in [1, 10]$) are executed with deterministic seed schedules ($seed_k = base\_seed + k \times 17$).
+- Classical optimizer iterations track expectation value trajectories $\langle H_C \rangle_k$ and parameter distances $\Delta \vec{\gamma}, \Delta \vec{\beta}$.
+
+### 9.2 Fair Multi-Paradigm Comparison Protocol
+When comparing QAOA against classical heuristics (GA, SA) and exact methods:
+1. **Identical Canonical Instances:** All solvers consume the exact same problem graph or cost matrix.
+2. **Computational Work Accounting:** Total function evaluations are recorded alongside wall-clock time:
+   - Classical: Objective function evaluations.
+   - Quantum Simulation: Classical optimizer function evaluations $\times$ shots per evaluation.
+3. **Approximation Ratio Standardization:**
+   - Maximization (Max-Cut): $r = \frac{C_{\text{best}}}{C_{\text{exact}}}$.
+   - Minimization (Assignment, TSP): $r = \frac{C_{\text{exact}}}{C_{\text{best}}}$.
+   - Optimality Gap: $\text{gap} = \frac{|C_{\text{best}} - C_{\text{exact}}|}{|C_{\text{exact}}| + 10^{-9}} \times 100\%$.
+4. **Hardware Transparency:**
+   All QAOA experiments are conducted via Qiskit Aer numerical simulation on host CPU. Wall-clock runtimes include simulation matrix multiplication overhead and are reported as classical simulation latencies, never as physical quantum coherence time.

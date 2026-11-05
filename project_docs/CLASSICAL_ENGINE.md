@@ -132,3 +132,11 @@ The React/TypeScript frontend (`ClassicalLabPage.tsx`) offers three integrated m
 1. **Single Solver Lab:** Interactive algorithm selection, hyperparameter tuning, live execution dispatch, ground truth evaluator verification, and domain visualizers (Partition $S$ vs $V \setminus S$, Assignment matching grid, TSP route chip loops).
 2. **Comparative Benchmark Suite:** Multi-solver selection, trials configuration, and side-by-side comparison tables featuring rank badges (🥇, 🥈, 🥉), feasibility rates, mean runtimes, and optimality gap badges.
 3. **Execution Audit History:** Tabular audit log of previous runs with one-click result inspection into the main viewer.
+
+---
+
+## 7. Hybrid Quantum-Classical Integration (Stage 5.9)
+The Classical Optimization Engine directly powers the baseline comparison suite of the Phase 5 Quantum Engine (`HybridBenchmarkEngine`):
+- `ExactSolver` establishes the verified global optimum $f^*$ to compute the quantum **Approximation Ratio** ($r = C_{\text{QAOA}} / C^*$ for Max-Cut, $r = C^* / C_{\text{QAOA}}$ for Assignment/TSP).
+- `GeneticAlgorithmSolver` and `SimulatedAnnealingSolver` provide realistic classical heuristic competitors with equivalent function evaluation budgets and runtime baselines.
+- The hybrid benchmark suite persists in `hybrid_benchmarks` and is accessible in both the Classical Lab and Quantum Lab.

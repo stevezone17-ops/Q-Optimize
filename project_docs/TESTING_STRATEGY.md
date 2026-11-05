@@ -115,9 +115,27 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
 - `test_constraints.py` (8 tests): Constraint validation engine, structured violation objects.
 - `test_evaluation_api.py` (4 tests): Ad-hoc and stored problem evaluation endpoints.
 
+### 3.3 Phase 4 Classical Engine Regressions (37 Tests - Verified Passing)
+- `test_classical_infrastructure.py` (8 tests): Solver interfaces, contracts, registry, factory.
+- `test_exact_solver.py` (6 tests): Deterministic exact search across Max-Cut, Assignment, TSP.
+- `test_genetic_algorithm_solver.py` (6 tests): Binary and permutation chromosomes, Order Crossover (OX), elitism.
+- `test_simulated_annealing_solver.py` (6 tests): Metropolis acceptance, exponential/linear cooling, 2-opt moves.
+- `test_classical_pipeline.py` (6 tests): Thread-pooled background execution, polling, cancellation.
+- `test_classical_benchmarking.py` (5 tests): Multi-solver statistical benchmarking and optimality gaps.
+
+### 3.4 Phase 5 QAOA Quantum Engine Test Suites (42 Tests - Verified Passing)
+- `test_quantum_infrastructure.py` (8 tests): QuantumBackendManager, AerSimulator availability, hardware transparency note enforcement, QuantumResourceLimits bounds (qubit and shot ceilings), QuantumExecutionContext cooperative cancellation and execution timeout handling.
+- `test_qaoa_hamiltonians.py` (6 tests): QAOACostHamiltonian derived from Phase 3 Ising models, linear RZ(2*gamma*h_i) and coupling RZZ(2*gamma*J_ij) rotation synthesis, QAOAMixerHamiltonian RX(2*beta) transverse-field decomposition, SparsePauliOp operator conversions, exhaustive mathematical energy equivalence across all 2^n basis states against Phase 3 QUBO.
+- `test_qaoa_circuit_builder.py` (6 tests): QAOACircuitBuilder with ParameterVector (gamma, beta), Hadamard uniform superposition initialization, alternating cost and mixer layers, parameter binding without graph rebuilding, measurement registration, structural circuit metadata extraction, resource limit enforcement.
+- `test_qaoa_optimizer.py` (4 tests): QAOAOptimizer supporting COBYLA, SLSQP, Nelder-Mead, L-BFGS-B; initialization strategies (random, zeros, linear ramp, custom); exact statevector expectation and finite-shot expectation evaluation; convergence history tracing; cancellation handling.
+- `test_qaoa_execution_engine.py` (5 tests): QuantumExecutionEngine with Aer transpilation, multi-shot measurement sampling, probability normalization, most frequent bitstring detection, optional depolarizing noise modeling, resource limits enforcement.
+- `test_qaoa_solution_decoder.py` (5 tests): QAOASolutionDecoder with little-endian bit-order mapping, domain-specific reconstruction (Max-Cut partitions, Assignment matching pairs, TSP closed loops), constraint validation via Phase 2 validators, objective evaluation via Phase 2 evaluators, selection by true optimization sense, energy cross-verification.
+- `test_qaoa_pipeline_and_api.py` (5 tests): QAOAExecutionPipeline with thread-pooled background dispatch, lifecycle tracking (PENDING, RUNNING, COMPLETED, CANCELLED, FAILED), MongoDB/memory persistence, cooperative cancellation, lightweight status polling endpoint (/status), recent executions listing (/executions), synchronous and asynchronous REST endpoints.
+- `test_hybrid_benchmarking.py` (3 tests): HybridBenchmarkEngine comparing QAOA against ExactSolver, GeneticAlgorithmSolver, and SimulatedAnnealingSolver; computing approximation ratio (r), optimality gaps, statistical variance across trials, computational evaluations budget, and classical Aer simulator overhead; REST endpoints (/benchmark, /benchmarks, /benchmarks/{id}).
+
 ---
 
-## 4. Frontend Test Coverage Breakdown (19 Vitest Tests)
+## 4. Frontend Test Coverage Breakdown (26 Vitest Tests)
 
 1. **App Shell & Routing (`App.test.tsx` - 3 tests):**
    - Renders landing page hero with hybrid quantum-classical overview.
@@ -145,6 +163,15 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
    - Executes exact classical solver and renders results panel with proven optimal status, independent evaluator verification callout, and domain solution visualizer.
    - Switches to Comparative Benchmark Suite tab, enables multi-solver selection, configures stochastic trials, executes suite, and verifies ranked results table.
    - Switches to Execution Audit History tab, renders past solver execution logs, and verifies inspection modal.
+
+5. **Quantum Optimization Lab (`QuantumLab.test.tsx` - 7 tests):**
+   - Renders Quantum Lab header, Phase 5 Active badge, and problem/backend selector.
+   - Renders mandatory scientific hardware transparency notice banner.
+   - Renders QAOA ansatz and optimizer configuration controls (depth p, shots, simulation mode, optimizer).
+   - Renders circuit blueprint and resource bounds card (qubits, 2p parameters, gate decomposition).
+   - Executes QAOA simulation and displays results with executive metrics, optimal variational parameters, and independent evaluation verification.
+   - Switches to Execution Audit tab and displays persistent execution records.
+   - Switches to Comparative Benchmark tab and executes hybrid quantum-classical benchmarking suite.
 
 ---
 

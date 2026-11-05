@@ -26,6 +26,12 @@ Use versioned, validated schemas. Every private resource must be queried using t
 ### benchmarks
 `_id`, `benchmark_id` (unique), `problem_type`, `problem_id`, `problem_name`, `solvers_evaluated`, `num_trials`, `random_seed`, `exact_optimum`, `summaries` (array of per-solver summary metrics: `solver_name`, `num_trials`, `feasibility_rate`, `mean_objective`, `std_objective`, `best_objective`, `worst_objective`, `mean_runtime_seconds`, `std_runtime_seconds`, `optimality_gap_percent`), `trials` (detailed individual trial outcomes), `created_at`.
 
+### quantum_executions
+`_id`, `execution_id` (unique), `solver_id` (`qaoa`), `problem_type`, `problem_id`, `status` (`PENDING`, `RUNNING`, `COMPLETED`, `CANCELLED`, `FAILED`), `config` (`p_depth`, `shots`, `simulation_mode`, `optimizer`, `max_iterations`, `init_strategy`, `noise_probability`, `seed`), `result` (`optimal_gamma`, `optimal_beta`, `optimal_expectation_value`, `best_solution`, `decoding_summary`, `circuit_metadata`, `convergence_history`, `runtime_seconds`, `hardware_transparency_note`), `submitted_at`, `started_at`, `completed_at`, `error`.
+
+### hybrid_benchmarks
+`_id`, `benchmark_id` (unique), `name`, `problem_type`, `problem_id`, `exact_optimum`, `summaries` (array of `HybridSolverBenchmarkSummary`: `solver_id`, `solver_name`, `solver_category`, `is_quantum_simulator`, `trials_count`, `best_objective`, `mean_objective`, `worst_objective`, `std_objective`, `feasibility_rate`, `approximation_ratio`, `optimality_gap_percent`, `mean_runtime_ms`, `mean_evaluations`, `best_solution`, `circuit_metadata`, `hardware_transparency_note`), `total_runtime_seconds`, `hardware_transparency_note`, `created_at`.
+
 ### reports
 `_id`, `owner_id`, `experiment_id`, `format`, `storage_reference`, `created_at`.
 
@@ -40,6 +46,10 @@ Use versioned, validated schemas. Every private resource must be queried using t
 - `executions.solver_name, problem_type`.
 - Unique index on `benchmarks.benchmark_id`.
 - `benchmarks.problem_id, created_at`.
+- Unique index on `quantum_executions.execution_id`.
+- `quantum_executions.status, submitted_at`.
+- Unique index on `hybrid_benchmarks.benchmark_id`.
+- `hybrid_benchmarks.problem_type, created_at`.
 - `reports.owner_id, created_at`.
 
 ## Security and evolution
