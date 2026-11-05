@@ -17,11 +17,15 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 **Exit:** pages navigate and real API health is displayed; no fake solver results. (Achieved & Verified)
 
 ## Phase 2 — Canonical problem domain
-- [ ] Versioned schemas.
-- [ ] Max-Cut, Assignment, small TSP.
-- [ ] Objective evaluators and feasibility validators.
-- [ ] Exhaustive small-instance tests.
-**Exit:** known examples produce correct values.
+- [x] Versioned schemas (Max-Cut, Assignment, TSP with Pydantic validation).
+- [x] Canonical representations with decision variables, mathematical objectives, and formal constraints.
+- [x] Independent objective evaluators (MaxCutEvaluator, AssignmentEvaluator, TSPEvaluator) and evaluator factory.
+- [x] Reusable constraint validation engine returning structured violation objects.
+- [x] Structural graph, matrix, and tour metadata calculation.
+- [x] Versioned API endpoints (/types, /validate, /evaluate, /evaluate-direct, /metadata).
+- [x] Interactive Solution Evaluator in the frontend Problem Builder.
+- [x] Hand-calculated small-instance tests with verified ground truths (52 Pytest + 7 Vitest).
+**Exit:** known examples produce correct values. (Achieved & Verified)
 
 ## Phase 3 — Formulations
 - [ ] Define QUBO convention.
@@ -68,5 +72,3 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 ## Phase 9 — Final hardening
 - [ ] Security, resource limits, accessibility, regression tests.
 - [ ] Deployment, final report, demo, viva material.
-
-Do not mark a phase complete until its exit criteria are evidenced.

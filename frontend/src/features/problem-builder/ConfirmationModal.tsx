@@ -39,7 +39,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     constraintsSummary = '1-to-1 matching: Exactly one task per agent, exactly one agent per task.'
   } else if (problemType === 'tsp') {
     const tsp = instance as TSPInstance
-    entitySummary = `${tsp.cities.length} Cities (${tsp.cities.join(', ')}), ${tsp.cities.length * tsp.cities.length} pairwise distances`
+    entitySummary = `${tsp.cities.length} Cities (${tsp.cities.join(', ')}), ${tsp.cities.length * tsp.cities.length} pairwise distances${tsp.start_city ? `, Starting City: ${tsp.start_city}` : ''}`
     constraintsSummary = 'Closed Hamiltonian cycle: Visit each city once, return to start, no sub-tours.'
   }
 

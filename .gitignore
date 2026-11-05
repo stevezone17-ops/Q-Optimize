@@ -47,6 +47,8 @@ coverage/
 frontend/dist/
 frontend/dist-ssr/
 *.tsbuildinfo
+.vite/
+frontend/.vite/
 
 # IDE & OS
 .vscode/

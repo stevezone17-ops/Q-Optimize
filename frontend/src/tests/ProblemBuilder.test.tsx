@@ -27,12 +27,21 @@ describe('Problem Builder Feature', () => {
     expect(screen.getByText(/Hamiltonian Cycle Tour Evaluation/i)).toBeInTheDocument()
   })
 
-  it('opens confirmation modal when clicking review button', () => {
+  it('opens confirmation modal when clicking review button', async () => {
     render(<ProblemBuilderPage />)
     const reviewBtn = screen.getByRole('button', { name: /Review & Confirm Problem/i })
     fireEvent.click(reviewBtn)
 
-    expect(screen.getByText('Confirm Canonical Problem Definition')).toBeInTheDocument()
-    expect(screen.getByText('Confirm & Save Problem')).toBeInTheDocument()
+    expect(await screen.findByText('Confirm Canonical Problem Definition')).toBeInTheDocument()
+    expect(await screen.findByText('Confirm & Save Problem')).toBeInTheDocument()
+  })
+
+  it('opens independent solution evaluator modal when clicking test solution button', () => {
+    render(<ProblemBuilderPage />)
+    const testBtn = screen.getByRole('button', { name: /Test \/ Evaluate Solution/i })
+    fireEvent.click(testBtn)
+
+    expect(screen.getByText('Independent Objective & Constraint Evaluator')).toBeInTheDocument()
+    expect(screen.getByText('Evaluate Objective & Feasibility')).toBeInTheDocument()
   })
 })

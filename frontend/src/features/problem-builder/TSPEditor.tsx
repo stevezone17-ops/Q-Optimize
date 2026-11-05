@@ -182,6 +182,30 @@ export const TSPEditor: React.FC<TSPEditorProps> = ({
             <AlertTriangle className="h-3 w-3" /> {localError}
           </p>
         )}
+
+        {/* Starting City Selector */}
+        <div className="pt-2 border-t border-scientific-border/40 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs text-scientific-muted font-mono">
+            Designated Starting City (Optional):
+          </span>
+          <select
+            value={value.start_city || ''}
+            onChange={(e) =>
+              onChange({
+                ...value,
+                start_city: e.target.value ? e.target.value : undefined,
+              })
+            }
+            className="text-xs font-mono px-2.5 py-1 rounded bg-midnight-950 border border-scientific-border text-slate-200 focus:outline-none focus:ring-1 focus:ring-scientific-accent"
+          >
+            <option value="">(Default: First City / Any)</option>
+            {value.cities.map((city) => (
+              <option key={`start-opt-${city}`} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Distance Matrix Grid */}

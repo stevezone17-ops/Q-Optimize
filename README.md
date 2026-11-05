@@ -2,11 +2,12 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 1 Complete](https://img.shields.io/badge/Status-Phase%201%20Foundation-38BDF8.svg)](#)
+[![Status: Phase 2 Complete](https://img.shields.io/badge/Status-Phase%202%20Problem%20Domain-38BDF8.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
+[![Tests: 52 Pytest | 7 Vitest](https://img.shields.io/badge/Tests-59%20Passing-emerald.svg)](#)
 
 ---
 
@@ -22,7 +23,7 @@
 
 ---
 
-## 2. Platform Architecture (Phase 1 Foundation)
+## 2. Platform Architecture
 
 ```text
 Q-Optimize/
@@ -33,21 +34,21 @@ Q-Optimize/
 │   │   ├── domain/           # Canonical problem schemas (Max-Cut, Assignment, TSP)
 │   │   ├── db/               # MongoDB manager with in-memory local fallback
 │   │   ├── services/         # Problem validation and draft parsing services
+│   │   ├── evaluation/       # Independent objective evaluator & constraint validation engine
 │   │   ├── formulations/     # Formulation interfaces (Phase 3)
 │   │   ├── solvers/          # Classical & QAOA solver interfaces (Phases 4 & 5)
-│   │   ├── evaluation/       # Independent evaluator interfaces (Phase 2)
 │   │   └── workers/          # Background task queue interfaces (Phase 8)
-│   └── tests/                # Pytest unit and integration test suite
+│   └── tests/                # Pytest unit, constraint, and API test suite (52 tests)
 ├── frontend/                 # React 18 + TypeScript + Vite frontend
 │   └── src/
 │       ├── app/              # App root and view management
 │       ├── components/ui/    # Accessible dark-first scientific UI component library
 │       ├── components/layout/# AppLayout, Sidebar (9 workspace tabs), Header
-│       ├── features/         # MaxCutEditor, AssignmentEditor, TSPEditor, NaturalLanguageDraft
+│       ├── features/         # MaxCutEditor, AssignmentEditor, TSPEditor, SolutionEvaluatorModal
 │       ├── pages/            # LandingPage, Overview, ProblemBuilder, Lab Previews, Learn, Settings
 │       ├── services/         # Centralized API service and typed endpoints
 │       ├── hooks/            # useBackendHealth polling and diagnostic hook
-│       └── tests/            # Vitest and Testing Library test suite
+│       └── tests/            # Vitest and Testing Library test suite (7 tests)
 ├── research/                 # Reproducible research datasets, configs, and notebooks
 ├── docs/                     # Supplemental documentation
 └── project_docs/             # Canonical project requirements and specifications
@@ -55,37 +56,64 @@ Q-Optimize/
 
 ---
 
-## 3. Implemented Capabilities (Phase 1)
+## 3. Implemented Capabilities (Phases 1 & 2)
 
-1. **Scientific Dark-First UI/UX:**
-   - Deep midnight navy (`#06080F`), slate charcoal (`#0A0F1D`), electric sky-blue accents (`#38BDF8`), violet highlights (`#8B5CF6`), and amber telemetry tags (`#F59E0B`).
-   - Accessible responsive layout with subtle scientific grid patterns and smooth Framer Motion transitions.
+### Phase 2: Problem Domain & Independent Optimization Modeling
+1. **Canonical Optimization Problem Domain:**
+   - Standardized representation for optimization problems: identifier, name, type, decision variables (`VariableSpec`), mathematical objective (`ObjectiveSpec`), formal constraints (`ConstraintSpec`), metadata, and validation status.
+   - Decoupled from solver algorithms (QAOA, classical heuristics).
 
-2. **Landing Page:**
-   - Interactive hero explaining hybrid quantum-classical computing.
-   - 4-stage optimization workflow breakdown (Canonical Definition &rarr; QUBO/Ising &rarr; Dual Solvers &rarr; Independent Verification).
-   - Overview of combinatorial problem families and classical baselines.
+2. **Mathematical Problem Models:**
+   - **Max-Cut:**
+     $$\max \sum_{(i,j)\in E} w_{ij}(x_i+x_j-2x_ix_j) \quad \text{where } x_i \in \{0,1\}$$
+     Validates unique vertices, endpoints, weighted/unweighted edges ($w=1.0$ default), non-finite weights, duplicate edges, self-loops, and disconnected graphs.
+   - **Linear Assignment Problem:**
+     $$\min \sum_{i=1}^n \sum_{j=1}^m c_{ij}x_{ij} \quad \text{where } x_{ij} \in \{0,1\}$$
+     Validates agent/task identifiers, square and rectangular cost matrices, rejects invalid/NaN costs, verifies 1-to-1 matching feasibility.
+   - **Travelling Salesperson Problem (TSP):**
+     $$\min \sum_{k=0}^{N-1} D[\text{tour}[k], \text{tour}[k+1]] \quad \text{with } \text{tour}[N] = \text{tour}[0]$$
+     Validates city identifiers, square non-negative distance matrices with zero diagonal, symmetric/asymmetric metrics, optional designated starting city, and closed Hamiltonian cycles.
 
-3. **Workspace & Navigation:**
-   - Full 9-section sidebar: **Overview**, **Problem Builder**, **Formulation Studio**, **Quantum Lab**, **Classical Lab**, **Comparison Lab**, **My Experiments**, **Learn**, and **Settings**.
-   - Real-time backend connectivity pill indicating FastAPI status and latency.
+3. **Independent Objective Evaluation Engine:**
+   - `MaxCutEvaluator`: Calculates crossing edge weight sum, cut fraction, partitions ($S_0, S_1$), and verifies complete binary node assignment.
+   - `AssignmentEvaluator`: Calculates total matching cost, verifies agent and task usage bounds, returns assignment pairs and unassigned entities.
+   - `TSPEvaluator`: Calculates total tour distance, validates Hamiltonian cycle traversal, verifies return to start, and checks designated starting city constraints.
+   - `EvaluatorFactory`: Dynamic resolver mapping problem types to independent evaluators.
 
-4. **Interactive Problem Builder:**
-   - **Max-Cut:** Vertices manager, weighted edge list with duplicate & self-loop prevention, live topology graph canvas preview ($|V|$, $|E|$, density, total weight).
-   - **Assignment Problem:** Agent and task dimension manager, interactive cost matrix ($C_{ij}$) with row/column checks.
-   - **Travelling Salesperson (TSP):** City manager, symmetric/asymmetric distance matrix ($D_{ij}$), non-zero diagonal prevention.
-   - **Natural Language Draft:** Draft-only workflow requiring explicit human verification and confirmation before persistence.
-   - **Review & Confirmation Screen:** Displays extracted entities, objective direction, constraints, and assumptions prior to database persistence.
+4. **Reusable Constraint Validation Engine:**
+   - `ConstraintValidator`: Tests binary domain constraints ($x_i \in \{0, 1\}$), complete graph partitions, 1-to-1 matching constraints (no duplicate agents/tasks), and Hamiltonian tour constraints (no duplicate visits, no omitted cities, closed loop).
+   - Returns structured `ConstraintViolation` objects detailing constraint ID, explanation, expected, and actual values.
 
-5. **FastAPI Backend:**
-   - Versioned REST API (`/api/v1`) with `/health` diagnostic endpoint.
-   - Strict Pydantic v2 schemas and validation for all three initial problem types.
-   - Database manager with MongoDB connectivity and automatic in-memory fallback for offline development.
-   - Structured logging, CORS middleware, and safe global exception handling.
+5. **Structural Statistics & Metadata Extraction:**
+   - Graph density, edge weights (min, max, average), vertex degree distribution, and connected components count (BFS) for Max-Cut.
+   - Agent/task counts, squareness, and cost statistics for Assignment.
+   - Distance symmetry check, min/max/average distance, and edge counts for TSP.
+
+6. **Interactive Solution Evaluator in Frontend:**
+   - Dedicated modal in the Problem Builder allowing researchers to configure candidate solutions (partitions, agent matchings, or tour paths) and evaluate them in real time against the backend independent evaluator.
+   - Displays feasibility badges, exact objective values, violation details, and domain breakdowns.
 
 ---
 
-## 4. Getting Started
+## 4. API Endpoints (Phase 2 Active)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/health` | Service health and MongoDB/memory status |
+| `GET` | `/api/v1/problems/types` | List supported problem families with formulas and constraints |
+| `POST` | `/api/v1/problems/validate` | Validate an ad-hoc problem definition without saving |
+| `POST` | `/api/v1/problems/evaluate-direct` | Evaluate a candidate solution against an ad-hoc instance |
+| `POST` | `/api/v1/problems` | Create and validate a canonical problem |
+| `GET` | `/api/v1/problems` | List registered problems |
+| `GET` | `/api/v1/problems/{id}` | Retrieve problem definition by ID |
+| `GET` | `/api/v1/problems/{id}/metadata` | Retrieve structural statistics and canonical metadata |
+| `POST` | `/api/v1/problems/{id}/validate` | Validate stored problem against domain constraints |
+| `POST` | `/api/v1/problems/{id}/evaluate` | Evaluate candidate solution against stored problem |
+| `POST` | `/api/v1/problems/parse-draft` | Natural language problem drafting (draft-only, human-confirmed) |
+
+---
+
+## 5. Getting Started
 
 ### Prerequisites
 - **Python:** 3.12+
@@ -95,86 +123,44 @@ Q-Optimize/
 ### Backend Setup
 
 ```bash
-# Navigate to backend directory
 cd backend
-
-# Create and activate virtual environment (optional but recommended)
 python -m venv venv
-# Windows:
+# On Windows:
 .\venv\Scripts\activate
-# Linux/macOS:
+# On Linux/macOS:
 source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Copy environment example
-copy .env.example .env
-
-# Run FastAPI development server
 uvicorn backend.app.main:app --reload --port 8000
 ```
-
-The API documentation will be available at `http://localhost:8000/docs`.
 
 ### Frontend Setup
 
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start Vite development server
 npm run dev
 ```
 
-The web application will be live at `http://localhost:5173`.
+### Running Test Suites
 
----
-
-## 5. Running Automated Tests
-
-### Backend Test Suite
 ```bash
+# Backend test suite (52 tests across schemas, evaluators, constraints, APIs)
 python -m pytest backend/tests -v
-```
-Validates:
-- Health and environment diagnostics endpoints (`/health` and `/api/v1/health`).
-- Pydantic schema validation for Max-Cut, Assignment, and TSP (including self-loop detection, dimension mismatch, and diagonal checks).
-- Problem creation, retrieval, and natural language draft extraction endpoints.
 
-### Frontend Test Suite
-```bash
-cd frontend
-npm run test
-```
-Validates:
-- Landing page rendering and hero banner assertions.
-- Workspace navigation and sidebar switching.
-- Problem Builder inputs, family tab switching, and review modal presentation.
+# Frontend test suite (7 tests)
+node -e "process.chdir('frontend'); require('child_process').execSync('npm.cmd run test', {stdio: 'inherit'});"
 
-### Production Build & Type Checking
-```bash
-cd frontend
-npm run build
+# Production build check
+node -e "process.chdir('frontend'); require('child_process').execSync('npm.cmd run build', {stdio: 'inherit'});"
 ```
 
 ---
 
-## 6. Implementation Roadmap
-
-- [x] **Phase 0:** Project setup, environment configuration, health endpoints.
-- [x] **Phase 1:** Platform foundation, scientific dark-first UI, Problem Builder, draft parsing, API integration.
-- [ ] **Phase 2:** Canonical problem domain evaluators and feasibility validators.
-- [ ] **Phase 3:** QUBO and Ising formulation engine with exhaustive equivalence testing.
-- [ ] **Phase 4:** Classical solver baselines (Exact small-instance, Genetic Algorithm, Simulated Annealing).
-- [ ] **Phase 5:** Quantum engine with Qiskit Aer QAOA statevector simulation.
-- [ ] **Phase 6:** Adaptive QAOA parameter strategies.
-- [ ] **Phase 7:** Machine learning-assisted solver recommendation.
-- [ ] **Phase 8:** Background worker experiment queue, comparison analytics, and export.
-- [ ] **Phase 9:** Security hardening, resource quotas, and final delivery.
+## 6. Known Limitations (Phase 2 Boundaries)
+- **Solvers and Formulations:** QUBO/Ising matrix generation (Phase 3), Classical heuristic solvers (Phase 4), and QAOA circuit simulations (Phase 5) are deliberately not implemented in this phase to preserve clean architectural boundaries.
+- **Natural Language Parsing:** Remains strictly draft-only; human confirmation is mandatory before canonical creation.
+- **Tour Coordinates:** Planar 2D visualization coordinates for TSP are optional; distance matrices serve as the primary source of truth.
 
 ---
 

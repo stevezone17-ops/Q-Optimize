@@ -15,6 +15,7 @@ import { TSPEditor } from '../features/problem-builder/TSPEditor'
 import { NaturalLanguageDraft } from '../features/problem-builder/NaturalLanguageDraft'
 import { ProblemPreview } from '../features/problem-builder/ProblemPreview'
 import { ConfirmationModal } from '../features/problem-builder/ConfirmationModal'
+import { SolutionEvaluatorModal } from '../features/problem-builder/SolutionEvaluatorModal'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
@@ -23,6 +24,7 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
+  Play,
 } from 'lucide-react'
 
 const DEFAULT_MAX_CUT: MaxCutInstance = {
@@ -72,6 +74,8 @@ export const ProblemBuilderPage: React.FC = () => {
   // Validation & Submission state
   const [validationError, setValidationError] = useState<string | null>(null)
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+  const [isEvaluatorOpen, setIsEvaluatorOpen] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [savedProblem, setSavedProblem] = useState<ProblemResponse | null>(null)
 
@@ -87,8 +91,8 @@ export const ProblemBuilderPage: React.FC = () => {
     }
   }
 
-  // Client-side validation before opening review modal
-  const handleValidateAndReview = () => {
+  // Backend mathematical and schema validation before opening review modal
+  const handleValidateAndReview = async () => {
     setValidationError(null)
     setSavedProblem(null)
 
@@ -97,32 +101,28 @@ export const ProblemBuilderPage: React.FC = () => {
       return
     }
 
-    if (problemType === 'max_cut') {
-      if (maxCutData.nodes.length < 2) {
-        setValidationError('Max-Cut requires at least 2 nodes.')
-        return
-      }
-      if (maxCutData.edges.length === 0) {
-        setValidationError('Please define at least one edge in the graph.')
-        return
-      }
-    } else if (problemType === 'assignment') {
-      if (assignmentData.agents.length < 1 || assignmentData.tasks.length < 1) {
-        setValidationError('Assignment requires at least 1 agent and 1 task.')
-        return
-      }
-      if (assignmentData.cost_matrix.length !== assignmentData.agents.length) {
-        setValidationError('Cost matrix rows do not match agent count.')
-        return
-      }
-    } else if (problemType === 'tsp') {
-      if (tspData.cities.length < 3) {
-        setValidationError('TSP requires at least 3 cities for a closed cycle.')
-        return
-      }
-    }
+    setIsValidating(true)
+    try {
+      const valRes = await problemService.validateProblemDirect(
+        problemType,
+        getCurrentInstance() as unknown as Record<string, unknown>
+      )
 
-    setIsConfirmationOpen(true)
+      if (!valRes.is_valid) {
+        setValidationError(
+          valRes.issues.join(' | ') || 'Problem definition failed backend mathematical validation.'
+        )
+        return
+      }
+
+      setIsConfirmationOpen(true)
+    } catch (err) {
+      setValidationError(
+        (err as Error).message || 'Failed to connect to backend validation service.'
+      )
+    } finally {
+      setIsValidating(false)
+    }
   }
 
   // Final confirmation to backend API
@@ -315,23 +315,44 @@ export const ProblemBuilderPage: React.FC = () => {
           )}
 
           {/* Bottom Action Footer */}
-          <div className="flex items-center justify-between p-4 rounded-xl border border-scientific-border bg-midnight-900/60">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-xl border border-scientific-border bg-midnight-900/60">
             <div className="flex items-center gap-2 text-xs text-scientific-muted font-mono">
               <ShieldCheck className="h-4 w-4 text-emerald-400" />
               <span>Independent Pydantic schema validation runs on review</span>
             </div>
 
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleValidateAndReview}
-              rightIcon={<ArrowRight className="h-4 w-4" />}
-            >
-              Review & Confirm Problem
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => setIsEvaluatorOpen(true)}
+                leftIcon={<Play className="h-4 w-4 text-sky-400" />}
+              >
+                Test / Evaluate Solution
+              </Button>
+
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleValidateAndReview}
+                isLoading={isValidating}
+                rightIcon={<ArrowRight className="h-4 w-4" />}
+              >
+                Review & Confirm Problem
+              </Button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Independent Solution Evaluator Modal */}
+      <SolutionEvaluatorModal
+        isOpen={isEvaluatorOpen}
+        onClose={() => setIsEvaluatorOpen(false)}
+        problemType={problemType}
+        instance={getCurrentInstance()}
+        problemName={problemName}
+      />
 
       {/* Confirmation Modal */}
       <ConfirmationModal

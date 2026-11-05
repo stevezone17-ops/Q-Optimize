@@ -13,7 +13,13 @@ Base path: `/api/v1`. Use JSON, Pydantic validation, consistent errors, paginati
 | GET | `/auth/me` | Current user |
 | POST | `/problems` | Create problem |
 | GET | `/problems` | List own problems |
+| GET | `/problems/types` | List supported problem types with metadata, variables, and constraints |
+| POST | `/problems/validate` | Directly validate a problem definition without persistence |
+| POST | `/problems/evaluate-direct` | Directly evaluate candidate solution against an ad-hoc problem instance |
 | GET | `/problems/{id}` | Get own problem |
+| GET | `/problems/{id}/metadata` | Get structural statistics and canonical metadata |
+| POST | `/problems/{id}/validate` | Validate an existing problem against domain constraints |
+| POST | `/problems/{id}/evaluate` | Independently evaluate candidate solution against stored problem |
 | PATCH | `/problems/{id}` | Update own problem |
 | DELETE | `/problems/{id}` | Delete own problem |
 | POST | `/problems/parse-draft` | AI-assisted draft |
@@ -34,6 +40,17 @@ Base path: `/api/v1`. Use JSON, Pydantic validation, consistent errors, paginati
   "instance": {
     "nodes": ["A", "B", "C"],
     "edges": [["A", "B", 1.0], ["B", "C", 1.0]]
+  }
+}
+```
+
+## Example candidate evaluation request
+```json
+{
+  "candidate": {
+    "A": 0,
+    "B": 1,
+    "C": 0
   }
 }
 ```
