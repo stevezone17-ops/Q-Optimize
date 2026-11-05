@@ -30,6 +30,7 @@ from backend.app.solvers.quantum.exceptions import (
 from backend.app.solvers.quantum.backend_manager import QuantumBackendManager
 from backend.app.solvers.quantum.quantum_registry import QuantumSolverRegistry
 from backend.app.solvers.quantum.execution_context import QuantumExecutionContext
+from backend.app.solvers.quantum.hamiltonians import QAOACostHamiltonian, QAOAMixerHamiltonian
 
 __all__ = [
     "SimulationMode",
@@ -56,4 +57,6 @@ __all__ = [
     "QuantumBackendManager",
     "QuantumSolverRegistry",
     "QuantumExecutionContext",
+    "QAOACostHamiltonian",
+    "QAOAMixerHamiltonian",
 ]
