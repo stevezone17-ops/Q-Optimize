@@ -56,6 +56,10 @@ from backend.app.solvers.quantum.adaptive.transfer import (
     TransferParametersResponse,
     ParameterTransferService,
 )
+from backend.app.solvers.quantum.adaptive.optimizer_controller import (
+    OptimizerTransitionRecord,
+    AdaptiveOptimizerController,
+)
 
 __all__ = [
     "AdaptiveQAOAError",
@@ -100,4 +104,6 @@ __all__ = [
     "TransferParametersRequest",
     "TransferParametersResponse",
     "ParameterTransferService",
+    "OptimizerTransitionRecord",
+    "AdaptiveOptimizerController",
 ]
