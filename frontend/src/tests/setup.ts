@@ -569,6 +569,62 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  if (url.includes('/solvers/quantum/benchmark')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          benchmark_id: 'hbench-mock-1234',
+          name: 'Hybrid Quantum-Classical Benchmark - Max-Cut 3-Node Triangle (3 Qubits)',
+          problem_type: 'max_cut',
+          exact_optimum: 5.0,
+          summaries: [
+            {
+              solver_id: 'exact',
+              solver_name: 'Exact Solver (Baseline)',
+              solver_category: 'classical_exact',
+              is_quantum_simulator: false,
+              trials_count: 1,
+              best_objective: 5.0,
+              mean_objective: 5.0,
+              worst_objective: 5.0,
+              std_objective: 0.0,
+              feasibility_rate: 1.0,
+              approximation_ratio: 1.0,
+              optimality_gap_percent: 0.0,
+              mean_runtime_ms: 1.2,
+              min_runtime_ms: 1.2,
+              max_runtime_ms: 1.2,
+              mean_evaluations: 4,
+            },
+            {
+              solver_id: 'qaoa',
+              solver_name: 'QAOA (Qiskit Aer)',
+              solver_category: 'quantum_variational',
+              is_quantum_simulator: true,
+              trials_count: 2,
+              best_objective: 5.0,
+              mean_objective: 4.8,
+              worst_objective: 4.6,
+              std_objective: 0.2,
+              feasibility_rate: 1.0,
+              approximation_ratio: 1.0,
+              optimality_gap_percent: 0.0,
+              mean_runtime_ms: 45.3,
+              min_runtime_ms: 42.1,
+              max_runtime_ms: 48.5,
+              mean_evaluations: 20,
+              hardware_transparency_note: 'Simulation run on Aer.',
+            },
+          ],
+          total_runtime_seconds: 0.25,
+          hardware_transparency_note: 'Quantum variational algorithm runs on classical CPU simulation via Qiskit Aer.',
+          created_at: new Date().toISOString(),
+        }),
+    })
+  }
+
   if (url.includes('/solvers/quantum')) {
     return Promise.resolve({
       ok: true,

@@ -169,7 +169,7 @@ class QAOAExecutionPipeline:
         best_sample = decoding_summary.best_feasible_solution or decoding_summary.most_frequent_solution
 
         status = QuantumExecutionStatus.COMPLETED
-        if cancellation_event.is_set():
+        if cancellation_event and cancellation_event.is_set():
             status = QuantumExecutionStatus.CANCELLED
 
         return QAOAExecutionResult(

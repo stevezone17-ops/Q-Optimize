@@ -5,6 +5,11 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from backend.app.solvers.quantum.pipeline import QAOAExecutionPipeline
 from backend.app.solvers.quantum.backend_manager import QuantumBackendManager
+from backend.app.solvers.quantum.benchmarking import (
+    HybridBenchmarkEngine,
+    HybridBenchmarkRequest,
+    HybridBenchmarkResult,
+)
 from backend.app.solvers.quantum.models import (
     QuantumBackendInfo,
     QAOAExecutionRequest,
@@ -157,3 +162,43 @@ async def cancel_qaoa_execution(execution_id: str):
     if not status_resp:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Quantum execution '{execution_id}' not found.")
     return status_resp
+
+
+# ---------------------------------------------------------------------------
+# Hybrid Quantum-Classical Benchmarking Endpoints (Stage 5.9)
+# ---------------------------------------------------------------------------
+
+@router.post("/benchmark", response_model=HybridBenchmarkResult)
+async def run_hybrid_benchmark(req: HybridBenchmarkRequest):
+    """
+    Execute comparative hybrid benchmark comparing QAOA against classical solvers
+    (ExactSolver, GeneticAlgorithmSolver, SimulatedAnnealingSolver) on a shared problem instance.
+    """
+    try:
+        return await HybridBenchmarkEngine.run_benchmark(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Hybrid benchmark failed: {str(exc)}",
+        )
+
+
+@router.get("/benchmarks", response_model=List[HybridBenchmarkResult])
+async def list_hybrid_benchmarks(limit: int = Query(25, ge=1, le=100)):
+    """Retrieve recent hybrid quantum-classical benchmark suites."""
+    return await HybridBenchmarkEngine.list_benchmarks(limit=limit)
+
+
+@router.get("/benchmarks/{benchmark_id}", response_model=HybridBenchmarkResult)
+async def get_hybrid_benchmark(benchmark_id: str):
+    """Retrieve full comparative results for a specific hybrid benchmark suite."""
+    bench = await HybridBenchmarkEngine.get_benchmark(benchmark_id)
+    if not bench:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Hybrid benchmark '{benchmark_id}' not found.",
+        )
+    return bench
+

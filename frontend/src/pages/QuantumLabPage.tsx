@@ -13,6 +13,7 @@ import {
   SimulationMode,
   ClassicalOptimizerType,
   ParameterInitializationStrategy,
+  HybridBenchmarkResult,
 } from '../types'
 import { quantumSolverService, QAOAExecutionPayload } from '../services/quantumSolverService'
 import { problemService } from '../services/problemService'
@@ -35,6 +36,7 @@ import {
   Binary,
   AlertTriangle,
   Info,
+  Award,
 } from 'lucide-react'
 
 // Built-in small benchmark presets
@@ -91,7 +93,7 @@ const PRESET_BENCHMARKS = [
   },
 ]
 
-type LabTab = 'lab' | 'history'
+type LabTab = 'lab' | 'benchmark' | 'history'
 
 export const QuantumLabPage: React.FC = () => {
   // Navigation
@@ -111,6 +113,17 @@ export const QuantumLabPage: React.FC = () => {
   const [pollingStatus, setPollingStatus] = useState<string | null>(null)
   const [executionResult, setExecutionResult] = useState<QAOAExecutionResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Hybrid Benchmarking State (Stage 5.9)
+  const [hybridResult, setHybridResult] = useState<HybridBenchmarkResult | null>(null)
+  const [isBenchmarking, setIsBenchmarking] = useState<boolean>(false)
+  const [benchSolvers, setBenchSolvers] = useState<string[]>([
+    'exact',
+    'genetic_algorithm',
+    'simulated_annealing',
+    'qaoa',
+  ])
+  const [benchTrials, setBenchTrials] = useState<number>(2)
 
   // QAOA Hyperparameters
   const [pDepth, setPDepth] = useState<number>(1)
@@ -275,6 +288,37 @@ export const QuantumLabPage: React.FC = () => {
     }
   }
 
+  // Run Hybrid Benchmark Suite (Stage 5.9)
+  const handleRunHybridBenchmark = async () => {
+    setError(null)
+    setIsBenchmarking(true)
+    setHybridResult(null)
+
+    try {
+      const res = await quantumSolverService.runHybridBenchmark({
+        name: `Hybrid Quantum-Classical Benchmark - ${activeProblem.name}`,
+        problem_id: activeProblem.isPreset ? undefined : selectedProblemId,
+        problem_type: activeProblem.problemType,
+        instance: activeProblem.instance,
+        include_solvers: benchSolvers,
+        qaoa_config: {
+          p_depth: pDepth,
+          shots,
+          optimizer,
+          max_iterations: maxIterations,
+          seed,
+        },
+        trials: benchTrials,
+        base_seed: seed,
+      })
+      setHybridResult(res)
+    } catch (err: any) {
+      setError(err.message || 'Hybrid benchmark failed.')
+    } finally {
+      setIsBenchmarking(false)
+    }
+  }
+
   // Render Domain-Specific Solution
   const renderDomainSolution = (sample: any) => {
     const sol = sample.decoded_solution || {}
@@ -435,6 +479,16 @@ export const QuantumLabPage: React.FC = () => {
           >
             <Play className="h-3.5 w-3.5" />
             QAOA Simulator
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'benchmark' ? 'primary' : 'ghost'}
+            onClick={() => setActiveTab('benchmark')}
+            className="text-xs font-mono flex items-center gap-1.5"
+          >
+            <BarChart2 className="h-3.5 w-3.5" />
+            Comparative Benchmark
           </Button>
           <Button
             type="button"
@@ -1124,7 +1178,229 @@ export const QuantumLabPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: EXECUTION AUDIT HISTORY */}
+      {/* TAB 2: COMPARATIVE HYBRID BENCHMARKING (Stage 5.9) */}
+      {activeTab === 'benchmark' && (
+        <div className="space-y-6">
+          <Card className="bg-midnight-900/60 border-scientific-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs uppercase tracking-wider font-mono flex items-center gap-2">
+                  <BarChart2 className="h-4 w-4 text-emerald-400" />
+                  Comparative Hybrid Benchmark Setup
+                </CardTitle>
+                <Badge variant="outline" className="font-mono text-xs text-sky-400">
+                  {activeProblem.problemType.toUpperCase()}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-slate-300 mb-1.5">Target Problem</label>
+                  <select
+                    value={selectedProblemId}
+                    onChange={(e) => setSelectedProblemId(e.target.value)}
+                    className="w-full px-3 py-2 bg-midnight-950 border border-scientific-border rounded-lg text-xs font-mono text-slate-200 focus:outline-none focus:border-scientific-accent"
+                  >
+                    <optgroup label="Preset Benchmarks">
+                      {PRESET_BENCHMARKS.map((p, idx) => (
+                        <option key={`preset_${idx}`} value={`preset_${idx}`}>
+                          {p.name} [{p.problem_type}]
+                        </option>
+                      ))}
+                    </optgroup>
+                    {registeredProblems.length > 0 && (
+                      <optgroup label="User Defined Canonical Problems">
+                        {registeredProblems.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.problem_type})
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <Input
+                    label="Stochastic Trials (Per Heuristic / QAOA)"
+                    type="number"
+                    min="1"
+                    max="5"
+                    step="1"
+                    value={benchTrials}
+                    onChange={(e) => setBenchTrials(parseInt(e.target.value, 10) || 1)}
+                    className="font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Solvers Included */}
+              <div className="p-3 bg-midnight-950 rounded-lg border border-scientific-border space-y-2">
+                <span className="text-xs font-mono font-semibold text-slate-300 block">
+                  Select Solvers to Benchmark:
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono text-slate-300">
+                  {[
+                    { id: 'exact', name: 'Exact Solver (Baseline)' },
+                    { id: 'genetic_algorithm', name: 'Genetic Algorithm' },
+                    { id: 'simulated_annealing', name: 'Simulated Annealing' },
+                    { id: 'qaoa', name: 'QAOA (Qiskit Aer)' },
+                  ].map((s) => {
+                    const isChecked = benchSolvers.includes(s.id)
+                    return (
+                      <label key={s.id} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setBenchSolvers([...benchSolvers, s.id])
+                            } else {
+                              setBenchSolvers(benchSolvers.filter((x) => x !== s.id))
+                            }
+                          }}
+                          className="rounded bg-midnight-900 border-scientific-border text-sky-500 focus:ring-0"
+                        />
+                        <span>{s.name}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <Button
+                type="button"
+                onClick={handleRunHybridBenchmark}
+                disabled={isBenchmarking || benchSolvers.length === 0}
+                className="w-full text-xs font-mono font-bold flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-500"
+              >
+                {isBenchmarking ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                    Executing Hybrid Benchmark Suite...
+                  </>
+                ) : (
+                  <>
+                    <BarChart2 className="h-4 w-4 fill-white text-white" />
+                    Run Comparative Benchmark ({benchSolvers.length} Solvers)
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Benchmark Results */}
+          {hybridResult && (
+            <div className="space-y-4">
+              <Card className="bg-midnight-900/60 border-scientific-border">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-sm font-bold font-mono text-slate-100 flex items-center gap-2">
+                        <Award className="h-4 w-4 text-amber-400" />
+                        {hybridResult.name}
+                      </CardTitle>
+                      <span className="text-[11px] font-mono text-scientific-muted">
+                        Total Benchmark Runtime: {hybridResult.total_runtime_seconds.toFixed(2)}s • Exact Optimum:{' '}
+                        <strong className="text-emerald-400">
+                          {hybridResult.exact_optimum !== null ? hybridResult.exact_optimum : 'N/A'}
+                        </strong>
+                      </span>
+                    </div>
+                    <Badge variant="accent" className="font-mono text-xs">
+                      {hybridResult.benchmark_id}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs font-mono text-left">
+                      <thead>
+                        <tr className="border-b border-scientific-border text-scientific-muted">
+                          <th className="pb-2">Rank</th>
+                          <th className="pb-2">Solver</th>
+                          <th className="pb-2">Category</th>
+                          <th className="pb-2">Best Obj</th>
+                          <th className="pb-2">Approx Ratio (r)</th>
+                          <th className="pb-2">Optimality Gap</th>
+                          <th className="pb-2">Feasible %</th>
+                          <th className="pb-2">Mean Runtime</th>
+                          <th className="pb-2">Evaluations</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-scientific-border/40 text-slate-300">
+                        {hybridResult.summaries.map((s, idx) => {
+                          const rankIcon = idx === 0 ? '🥇 1st' : idx === 1 ? '🥈 2nd' : idx === 2 ? '🥉 3rd' : `#${idx + 1}`
+                          return (
+                            <tr key={s.solver_id} className="hover:bg-midnight-950/60">
+                              <td className="py-2.5 font-bold text-slate-100">{rankIcon}</td>
+                              <td className="py-2.5">
+                                <span className="font-bold text-slate-200">{s.solver_name}</span>
+                                {s.is_quantum_simulator && (
+                                  <Badge variant="outline" className="ml-2 text-[10px] text-sky-400 border-sky-400/40">
+                                    Qiskit Aer
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="py-2.5">
+                                <span className="text-[10px] uppercase text-scientific-muted">
+                                  {s.solver_category.replace('_', ' ')}
+                                </span>
+                              </td>
+                              <td className="py-2.5 font-bold text-emerald-400">
+                                {s.best_objective.toFixed(2)}
+                              </td>
+                              <td className="py-2.5 text-sky-300 font-bold">
+                                {s.approximation_ratio !== null && s.approximation_ratio !== undefined
+                                  ? s.approximation_ratio.toFixed(3)
+                                  : '—'}
+                              </td>
+                              <td className="py-2.5">
+                                {s.optimality_gap_percent !== null && s.optimality_gap_percent !== undefined ? (
+                                  <span
+                                    className={
+                                      s.optimality_gap_percent === 0
+                                        ? 'text-emerald-400 font-bold'
+                                        : 'text-amber-400'
+                                    }
+                                  >
+                                    {s.optimality_gap_percent.toFixed(2)}%
+                                  </span>
+                                ) : (
+                                  '—'
+                                )}
+                              </td>
+                              <td className="py-2.5 text-slate-200">
+                                {(s.feasibility_rate * 100).toFixed(0)}%
+                              </td>
+                              <td className="py-2.5 text-slate-200">
+                                {s.mean_runtime_ms.toFixed(1)} ms
+                              </td>
+                              <td className="py-2.5 text-slate-200">{s.mean_evaluations}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Scientific Disclaimer */}
+                  <div className="mt-4 p-3 bg-midnight-950 rounded border border-scientific-border text-[11px] font-mono text-scientific-muted">
+                    <span className="text-slate-400 font-bold uppercase block mb-1">
+                      Platform Transparency Standard:
+                    </span>
+                    <p>{hybridResult.hardware_transparency_note}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: EXECUTION AUDIT HISTORY */}
       {activeTab === 'history' && (
         <Card className="bg-midnight-900/60 border-scientific-border">
           <CardHeader>

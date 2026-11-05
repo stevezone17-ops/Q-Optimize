@@ -44,6 +44,12 @@ from backend.app.solvers.quantum.optimizer import QAOAOptimizer
 from backend.app.solvers.quantum.execution_engine import QuantumExecutionEngine
 from backend.app.solvers.quantum.solution_decoder import QAOASolutionDecoder
 from backend.app.solvers.quantum.pipeline import QAOAExecutionPipeline
+from backend.app.solvers.quantum.benchmarking import (
+    HybridBenchmarkEngine,
+    HybridBenchmarkRequest,
+    HybridBenchmarkResult,
+    HybridSolverBenchmarkSummary,
+)
 
 __all__ = [
     "SimulationMode",

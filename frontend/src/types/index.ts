@@ -509,4 +509,55 @@ export interface QAOAValidationResponse {
   transparency_warning?: string
 }
 
+// ---------------------------------------------------------------------------
+// Stage 5.9: Hybrid Quantum-Classical Benchmarking Types
+// ---------------------------------------------------------------------------
+
+export interface HybridBenchmarkRequest {
+  name?: string
+  problem_id?: string
+  problem_type?: ProblemType
+  instance?: Record<string, unknown>
+  include_solvers?: string[]
+  qaoa_config?: Partial<QAOAConfiguration>
+  classical_configs?: Record<string, Record<string, unknown>>
+  trials?: number
+  base_seed?: number
+}
+
+export interface HybridSolverBenchmarkSummary {
+  solver_id: string
+  solver_name: string
+  solver_category: string
+  is_quantum_simulator: boolean
+  trials_count: number
+  best_objective: number
+  mean_objective: number
+  worst_objective: number
+  std_objective: number
+  feasibility_rate: number
+  approximation_ratio?: number | null
+  optimality_gap_percent?: number | null
+  mean_runtime_ms: number
+  min_runtime_ms: number
+  max_runtime_ms: number
+  mean_evaluations: number
+  best_solution?: unknown
+  circuit_metadata?: CircuitMetadata
+  hardware_transparency_note?: string
+}
+
+export interface HybridBenchmarkResult {
+  benchmark_id: string
+  name: string
+  problem_type: ProblemType
+  problem_id?: string
+  exact_optimum?: number | null
+  summaries: HybridSolverBenchmarkSummary[]
+  total_runtime_seconds: number
+  hardware_transparency_note: string
+  created_at: string
+}
+
+
 

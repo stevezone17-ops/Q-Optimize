@@ -68,4 +68,24 @@ describe('Quantum Lab Feature (Phase 5 - Stage 5.8)', () => {
     expect(screen.getByText('qexec-hist-1')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Inspect Result/i })).toBeInTheDocument()
   })
+
+  it('switches to Comparative Benchmark tab and executes hybrid benchmarking', async () => {
+    render(<QuantumLabPage />)
+
+    const benchBtn = screen.getByRole('button', { name: /Comparative Benchmark/i })
+    fireEvent.click(benchBtn)
+
+    expect(screen.getByText('Comparative Hybrid Benchmark Setup')).toBeInTheDocument()
+    expect(screen.getByText('Select Solvers to Benchmark:')).toBeInTheDocument()
+
+    const runBtn = screen.getByRole('button', { name: /Run Comparative Benchmark/i })
+    fireEvent.click(runBtn)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Hybrid Quantum-Classical Benchmark/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText('🥇 1st')).toBeInTheDocument()
+    expect(screen.getAllByText('Exact Solver (Baseline)').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('QAOA (Qiskit Aer)').length).toBeGreaterThanOrEqual(1)
+  })
 })

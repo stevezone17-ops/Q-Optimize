@@ -7,6 +7,8 @@ import {
   QAOAStatusResponse,
   QAOAValidationResponse,
   ProblemType,
+  HybridBenchmarkRequest,
+  HybridBenchmarkResult,
 } from '../types'
 
 export interface QAOAExecutionPayload {
@@ -97,5 +99,29 @@ export const quantumSolverService = {
    */
   async listExecutions(limit = 25): Promise<QAOAExecutionRecord[]> {
     return request<QAOAExecutionRecord[]>(`/solvers/quantum/qaoa/executions?limit=${limit}`)
+  },
+
+  /**
+   * Run a comparative hybrid quantum-classical benchmark suite.
+   */
+  async runHybridBenchmark(payload: HybridBenchmarkRequest): Promise<HybridBenchmarkResult> {
+    return request<HybridBenchmarkResult>('/solvers/quantum/benchmark', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  },
+
+  /**
+   * Retrieve past hybrid benchmarks list.
+   */
+  async listHybridBenchmarks(limit = 25): Promise<HybridBenchmarkResult[]> {
+    return request<HybridBenchmarkResult[]>(`/solvers/quantum/benchmarks?limit=${limit}`)
+  },
+
+  /**
+   * Retrieve a specific hybrid benchmark by ID.
+   */
+  async getHybridBenchmark(benchmarkId: string): Promise<HybridBenchmarkResult> {
+    return request<HybridBenchmarkResult>(`/solvers/quantum/benchmarks/${benchmarkId}`)
   },
 }
