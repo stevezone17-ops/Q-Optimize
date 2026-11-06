@@ -323,3 +323,155 @@ The `HybridBenchmarkEngine` evaluates QAOA side-by-side against deterministic an
 - **Optimality Gap:** $|f - f^*| / |f^*| \times 100\%$.
 - **Computational Budget:** Classical evaluations vs. simulated quantum circuit executions ($N_{\text{evals}} \times \text{shots}$).
 - **Scientific Hardware Transparency Guarantee:** All execution records and UI views clearly report that simulations run on CPU Qiskit Aer simulators, with no quantum supremacy claimed.
+
+
+---
+
+## 13. Phase 6: Adaptive QAOA Research & Dynamic Parameter Strategies
+
+### 13.1 Research Motivation & Paradigm
+Standard QAOA fixes circuit depth $p$ before optimization and optimizes $2p$ continuous angles $(\vec{\gamma}, \vec{\beta})$ from random or trotterized initializations using a static classical optimizer. For deeper circuits ($p \ge 2$), standard QAOA faces several fundamental limitations:
+1. **Barren plateaus & local minima:** Random initializations in higher-dimensional angle landscapes lead to poor local convergence.
+2. **Fixed computational expressibility:** Under-parameterized circuits ($p=1$) cannot represent complex ground states, while arbitrarily high fixed depths ($p \ge 4$) suffer from optimization overhead.
+3. **Rigid optimizer schedules:** A single classical optimizer cannot balance broad initial exploratory search with high-precision local refinement.
+
+Phase 6 implements a modular, scientifically grounded **Adaptive QAOA Research Architecture** where layer depth, parameter initializations, and classical optimizers dynamically adapt during optimization based on live energy feedback.
+
+```
+       ┌────────────────────────────────────────────────────────┐
+       │             Adaptive QAOA Variational Loop             │
+       └────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       ┌────────────────────────────────────────────────────────┐
+       │ 1. Parameter Initialization (Fourier, Ramp, WarmStart) │
+       └────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       ┌────────────────────────────────────────────────────────┐
+       │ 2. Layer Construction & Qiskit Aer Circuit Execution   │
+       └────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+       ┌────────────────────────────────────────────────────────┐
+       │ 3. Convergence & Stagnation Monitor (Energy Trajectory)│
+       └────────────────────────────────────────────────────────┘
+                                    │
+              ┌─────────────────────┼─────────────────────┐
+              ▼                     ▼                     ▼
+      [Continue Local]      [Switch Optimizer]     [Expand Depth p->p+1]
+      Same depth & solver   Coarse -> Fine local   Warm-start transfer
+              │                     │                     │
+              └─────────────────────┼─────────────────────┘
+                                    │
+                                    ▼
+       ┌────────────────────────────────────────────────────────┐
+       │ 4. Termination & Independent Phase 2 Solution Decoding │
+       └────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 14. Adaptive Parameter Initialization Strategies
+
+The `ParameterInitializerFactory` and strategy classes in `backend/app/solvers/quantum/adaptive/initializers.py` generate initial angles $(\vec{\gamma}, \vec{\beta}) \in \mathbb{R}^{2p}$:
+
+### 14.1 Linear Adiabatic Ramp Initializer
+Discretizes the adiabatic evolution schedule from driver Hamiltonian $H_M$ to problem Hamiltonian $H_C$:
+\[
+\gamma_l = \frac{l}{p} \cdot \Delta t, \quad \beta_l = \left(1 - \frac{l}{p}\right) \cdot \Delta t \quad \text{for } l = 1, \dots, p
+\]
+where $\Delta t = 0.75$ radians by default.
+
+### 14.2 Fourier Parameterization Initializer
+Re-parameterizes the $2p$ variational angles using discrete cosine and sine frequency components $\vec{u}, \vec{v} \in \mathbb{R}^q$ (where $q < p$ for deep circuits):
+\[
+\gamma_l = \sum_{k=1}^q u_k \sin\left[ \left(k - \frac{1}{2}\right) \left(l - \frac{1}{2}\right) \frac{\pi}{p} \right]
+\]
+\[
+\beta_l = \sum_{k=1}^q v_k \cos\left[ \left(k - \frac{1}{2}\right) \left(l - \frac{1}{2}\right) \frac{\pi}{p} \right]
+\]
+This smooth frequency representation drastically reduces parameter space dimension while enforcing adiabatic continuity.
+
+### 14.3 Warm-Start Initializer
+Extracts optimal angles $(\vec{\gamma}^*, \vec{\beta}^*)$ from an existing depth-$p_1$ run or related problem instance, applying dimension-matching interpolation to seed depth $p_2$.
+
+---
+
+## 15. Warm-Start Parameter Transfer & Inter-Depth Interpolation
+
+The `ParameterTransferService` (`backend/app/solvers/quantum/adaptive/transfer.py`) maps optimized angle vectors $(\vec{\gamma}^{(p)}, \vec{\beta}^{(p)})$ to target depth $p+1$ (or cross-instance):
+
+1. **Linear Interpolation:**
+   Maps continuous coordinate $t \in [0, 1]$ across layers, creating smooth parameter curves:
+   \[
+   \gamma^{(p+1)}_k = \text{interp}\left( \frac{k - 1}{p}, \vec{\gamma}^{(p)} \right)
+   \]
+2. **Layer Padding:**
+   Retains first $p$ optimized layers and appends near-zero perturbations for new layer $p+1$.
+3. **Adiabatic Extension:**
+   Extrapolates the final derivative $\frac{d\gamma}{dl}$ to compute the boundary parameters of the newly inserted layer.
+
+The service performs automated compatibility checks returning a `TransferCompatibilityReport` with a confidence score before applying transitions.
+
+---
+
+## 16. Dynamic Classical Optimizer Scheduling & Arbitration
+
+The `AdaptiveOptimizerController` (`backend/app/solvers/quantum/adaptive/optimizer_controller.py`) manages transitions across classical optimizers:
+- **Static Mode:** Maintains a single fixed optimizer throughout the run.
+- **Adaptive Fallback Mode:** Optimizes with a fast, derivative-free optimizer (`COBYLA`). Upon detecting energy stagnation exceeding a patience window, smoothly transfers parameter coordinates to a local refinement optimizer (`Nelder-Mead` or `SLSQP`).
+- **Multi-Stage Mode:** Runs coarse global simplex exploration followed by high-precision quasi-Newton gradient descent.
+- **Audit Logging:** Every optimizer transition is logged with step index, elapsed time, pre-switch energy, and post-switch energy.
+
+---
+
+## 17. Dynamic Circuit Depth Management & Layer Progression
+
+The `AdaptiveDepthManager` (`backend/app/solvers/quantum/adaptive/depth_manager.py`) arbitrates dynamic circuit growth:
+- **Growth Trigger:** Layer expansion $p \to p+1$ is triggered when relative energy improvement falls below threshold $\epsilon$ over the stagnation window:
+  \[
+  \frac{|E_t - E_{t - W}|}{\max(1.0, |E_{t - W}|)} < \epsilon
+  \]
+- **Warm-Start Injection:** The existing optimal parameters at depth $p$ are smoothly interpolated to initialize the expanded $2(p+1)$ parameter vector.
+- **Ceiling Guardrail:** Hard ceiling of $p \le 10$ prevents circuit depth explosion on classical simulators.
+
+---
+
+## 18. Convergence Monitoring & Multi-Objective Termination
+
+The `AdaptiveConvergenceMonitor` (`backend/app/solvers/quantum/adaptive/convergence_monitor.py`) tracks the variational energy trajectory $\langle H_C \rangle_t$ and decides tactical actions:
+- `CONTINUE_OPTIMIZATION`: Energy improving sufficiently; continue active optimizer.
+- `SWITCH_OPTIMIZER`: Stagnation observed; transition to fallback optimizer.
+- `EXPAND_DEPTH`: Optimization stagnated at current depth; expand $p \to p+1$ if under depth ceiling.
+- `TERMINATE`: Multi-objective stopping condition satisfied:
+  - `CONVERGED`: Energy delta below convergence tolerance $\tau$.
+  - `STAGNATED`: Max stagnation patience exhausted at maximum depth ceiling.
+  - `MAX_EVALUATIONS_REACHED`: Evaluation budget consumed.
+  - `TIMEOUT`: Execution time exceeded.
+  - `CANCELLED`: Cooperative user cancellation requested.
+
+---
+
+## 19. Unified Adaptive QAOA Execution Pipeline
+
+The `AdaptiveQAOAExecutionPipeline` (`backend/app/solvers/quantum/adaptive/pipeline.py`) coordinates all components:
+- Thread-pooled asynchronous background worker pool (`qopt-aqaoa-`).
+- In-flight cooperative cancellation token passing.
+- Persistent state tracking across `PENDING`, `RUNNING`, `COMPLETED`, `CANCELLED`, `FAILED`.
+- MongoDB storage in `adaptive_executions` with memory fallback.
+- Little-endian measurement decoding with independent Phase 2 candidate solution verification.
+
+---
+
+## 20. Empirical Benchmarking & Ablation Study Engine
+
+The `AdaptiveBenchmarkEngine` (`backend/app/solvers/quantum/adaptive/benchmarking.py`) evaluates the scientific validity of each adaptive component:
+- **Baseline:** Standard fixed-depth QAOA.
+- **Full Adaptive:** Warm-start + dynamic depth + adaptive optimizer fallback.
+- **Ablation Studies:**
+  - `ablation_no_warm_start`: Dynamic depth with random initialization (isolates value of warm-starts).
+  - `ablation_no_dynamic_depth`: Adaptive optimizer on fixed depth (isolates value of depth growth).
+  - `ablation_no_optimizer_switching`: Dynamic depth with static optimizer (isolates value of optimizer switching).
+  - `ablation_fourier`: Direct comparison of discrete frequency parameterization vs angle optimization.
+- **Automated Insights Synthesis:** Produces empirical scientific findings on which components contribute most to solution quality, approximation ratio $r$, and evaluation efficiency.

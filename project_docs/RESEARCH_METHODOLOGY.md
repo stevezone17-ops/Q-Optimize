@@ -92,3 +92,31 @@ When comparing QAOA against classical heuristics (GA, SA) and exact methods:
    - Optimality Gap: $\text{gap} = \frac{|C_{\text{best}} - C_{\text{exact}}|}{|C_{\text{exact}}| + 10^{-9}} \times 100\%$.
 4. **Hardware Transparency:**
    All QAOA experiments are conducted via Qiskit Aer numerical simulation on host CPU. Wall-clock runtimes include simulation matrix multiplication overhead and are reported as classical simulation latencies, never as physical quantum coherence time.
+
+
+---
+
+## 10. Adaptive QAOA Research Methodology & Ablation Protocols (Phase 6)
+
+### 10.1 Core Research Questions & Hypotheses
+- **RQ6.1 (Dynamic Layer Growth):** Does progressive circuit depth expansion ($p \to p+1$) triggered by energy stagnation achieve higher approximation ratios ($r$) or lower evaluation counts than starting from a fixed high depth ($p=3$)?
+- **RQ6.2 (Warm-Start Parameter Transfer):** Does smooth angle interpolation across depths prevent barren plateau stagnation compared to cold/random re-initialization at higher depths?
+- **RQ6.3 (Adaptive Optimizer Scheduling):** Does dynamically switching from a derivative-free exploration optimizer (`COBYLA`) to a gradient or simplex local refinement optimizer (`Nelder-Mead`, `SLSQP`) on plateaus improve final objective accuracy?
+- **RQ6.4 (Fourier Parameterization):** Does parameterizing $2p$ angles through $q$ frequency components ($\vec{u}, \vec{v}$) accelerate convergence on structured graphs?
+
+### 10.2 Empirical Ablation Study Protocol
+To isolate the exact causal contribution of each architectural innovation, experiments execute systematic ablation variants on identical problem topologies:
+1. `standard_baseline`: Fixed depth $p$, static optimizer, linear ramp initialization.
+2. `full_adaptive`: Dynamic depth growth + warm-start angle transfer + adaptive optimizer fallback.
+3. `ablation_no_warm_start`: Dynamic depth growth with random layer initialization (isolates value of angle transfer).
+4. `ablation_no_dynamic_depth`: Adaptive optimizer schedule with fixed depth (isolates value of layer growth).
+5. `ablation_no_optimizer_switching`: Dynamic depth and warm-start with static optimizer (isolates value of optimizer switching).
+6. `ablation_fourier`: Direct evaluation of discrete cosine/sine parameterization against raw angle parameters.
+
+### 10.3 Statistical Significance & Evaluation Budgeting
+- Each variant is executed across multiple randomized trials ($k \ge 3$) with seed offsets ($seed_k = base\_seed + 7k$).
+- Metrics reported: Sample mean $\mu$, sample standard deviation $\sigma$, min, max, approximation ratio $r$, optimality gap $\%$, and evaluation efficiency ratio.
+- Evaluation budget is strictly held invariant across compared variants to ensure fair benchmarking.
+
+### 10.4 Scientific Hardware Transparency Notice
+All Adaptive QAOA algorithms are simulated using Qiskit Aer on classical CPU infrastructure. In accordance with platform integrity policies, no simulated experiment is ever reported as demonstrating quantum supremacy or physical quantum hardware advantage.

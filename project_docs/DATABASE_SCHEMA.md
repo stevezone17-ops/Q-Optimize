@@ -54,3 +54,16 @@ Use versioned, validated schemas. Every private resource must be queried using t
 
 ## Security and evolution
 Hash passwords using a modern password hashing algorithm. Never store raw passwords or API keys. Validate ownership and IDs. Version problem/formulation documents and provide migrations when schemas change.
+
+### adaptive_executions (Phase 6)
+`_id`, `execution_id` (unique), `problem_id`, `problem_type`, `status` (`PENDING`, `RUNNING`, `COMPLETED`, `CANCELLED`, `FAILED`), `strategy_type`, `submitted_at`, `started_at`, `completed_at`, `runtime_seconds`, `config` (`shots`, `simulation_mode`, `backend_name`, `strategy_config`), `result` (`strategy_type`, `initial_depth`, `final_depth`, `stopping_reason`, `best_gamma`, `best_beta`, `best_bitstring`, `best_solution`, `objective_value`, `expected_energy`, `is_feasible`, `approximation_ratio`, `optimality_gap_percent`, `total_evaluations`, `total_circuit_executions`, `execution_time_ms`, `iterations_log`, `decisions_log`, `circuit_metadata`, `hardware_transparency_note`), `error`.
+
+### adaptive_benchmarks (Phase 6)
+`_id`, `benchmark_id` (unique), `name`, `problem_type`, `problem_id`, `exact_optimum`, `summaries` (array of `AdaptiveVariantSummary`: `variant_id`, `variant_name`, `trials_count`, `initial_depth`, `mean_final_depth`, `best_objective`, `mean_objective`, `std_objective`, `feasibility_rate`, `approximation_ratio`, `optimality_gap_percent`, `mean_runtime_ms`, `mean_evaluations`, `mean_circuit_executions`, `depth_growth_trigger_rate`, `optimizer_switch_trigger_rate`, `eval_efficiency_ratio`, `quality_improvement_percent`), `ablation_insights` (array of strings), `total_runtime_seconds`, `hardware_transparency_note`, `created_at`.
+
+## Phase 6 Indexes
+- Unique index on `adaptive_executions.execution_id`.
+- `adaptive_executions.status, submitted_at`.
+- `adaptive_executions.strategy_type, problem_type`.
+- Unique index on `adaptive_benchmarks.benchmark_id`.
+- `adaptive_benchmarks.problem_type, created_at`.

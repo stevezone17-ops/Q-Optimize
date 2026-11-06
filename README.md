@@ -2,12 +2,12 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 5 Complete](https://img.shields.io/badge/Status-Phase%205%20QAOA%20Engine-10B981.svg)](#)
+[![Status: Phase 6 Complete](https://img.shields.io/badge/Status-Phase%206%20Adaptive%20QAOA-10B981.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
-[![Tests: 159 Pytest | 26 Vitest](https://img.shields.io/badge/Tests-185%20Passing-emerald.svg)](#)
+[![Tests: 201 Pytest | 33 Vitest](https://img.shields.io/badge/Tests-234%20Passing-emerald.svg)](#)
 
 ---
 
@@ -38,8 +38,10 @@ Q-Optimize/
 │   │   ├── services/         # Problem & formulation lifecycle services
 │   │   ├── evaluation/       # Independent objective evaluator & constraint validation engine
 │   │   ├── formulations/     # QUBO builders, penalty managers, Ising converters, verification engine
-│   │   ├── solvers/          # Classical (Exact, GA, SA, Pipeline, Benchmarking) & QAOA (Phase 5)
-│   │   │   └── classical/    # IClassicalSolver, ExactSolver, GA, SA, Pipeline, BenchmarkEngine
+│   │   ├── solvers/          # Classical, QAOA (Phase 5), & Adaptive QAOA (Phase 6)
+│   │   │   ├── classical/    # IClassicalSolver, ExactSolver, GA, SA, Pipeline, BenchmarkEngine
+│   │   │   └── quantum/      # QAOA Hamiltonians, CircuitBuilder, Optimizer, Sampling, Pipeline
+│   │   │       └── adaptive/ # Adaptive Strategies, Initializers, Transfer, Scheduling, Depth, Monitor, Pipeline, Benchmarking
 │   │   └── workers/          # Background task queue interfaces (Phase 8)
 │   └── tests/                # Pytest unit, constraint, formulation, and solver test suite (117 tests)
 ├── frontend/                 # React 18 + TypeScript + Vite frontend
@@ -61,7 +63,66 @@ Q-Optimize/
 
 ---
 
-## 3. Implemented Capabilities (Phases 1, 2, 3, 4 & 5)
+## 3. Implemented Capabilities (Phases 1, 2, 3, 4, 5 & 6)
+
+### Phase 6: Adaptive QAOA Research & Dynamic Parameter Strategies
+1. **Adaptive QAOA Architecture & Extensible Framework:**
+   - Standardized `IAdaptiveStrategy` interface with lifecycle methods (`initialize`, `execute_step`, `evaluate_depth_growth`, `on_convergence`, `get_state`).
+   - Strategy registry and factory (`AdaptiveStrategyRegistry`, `AdaptiveStrategyFactory`) supporting preset archetypes:
+     - `FullAdaptiveStrategy`: Simultaneous depth growth, Fourier/ramp initialization, multi-stage optimizer transitions, and warm starts.
+     - `DynamicDepthStrategy`: Layer progression from $p_{\text{init}}$ up to $p_{\text{max}} \le 10$ triggered by stagnation or fixed increments.
+     - `FourierStrategy`: Sine/cosine frequency parametrization $(u, v)$ for continuous parameter curves.
+     - `WarmStartStrategy`: Interpolates or extends optimal angles from previous runs or depths.
+     - `AdaptiveOptimizerStrategy`: Coarse-to-fine or fallback optimizer switching based on plateau detection.
+   - Pydantic v2 domain schemas (`AdaptiveQAOARequest`, `AdaptiveQAOAResult`, `AdaptiveStrategyConfiguration`, `AdaptiveIteration`).
+
+2. **Parameter Initialization Strategies:**
+   - `LinearRampInitializer`: Physics-grounded Trotterized adiabatic schedule ($\gamma_i = \frac{i}{p}\Delta t$, $\beta_i = (1 - \frac{i}{p})\Delta t$).
+   - `FourierInitializer`: Discrete cosine transform / frequency representation reducing $2p$ parameters to $2q$ coefficients ($q \ll p$).
+   - `WarmStartInitializer`: Layer-wise interpolation mapping optimal angles $(\vec{\gamma}^*, \vec{\beta}^*)_{p_{\text{old}}} \to (\vec{\gamma}, \vec{\beta})_{p_{\text{new}}}$.
+   - `RandomInitializer` with explicit seed reproducibility and `CustomInitializer` with validation.
+
+3. **Parameter Transfer & Warm-Start Engine:**
+   - `ParameterTransferService` performing mathematical interpolation and adiabatic extension between differing circuit depths.
+   - Compatibility validation (`check_transfer_compatibility`) verifying Hamiltonian overlap, qubit counts, and layer ratios.
+   - Extraction of historical parameter trajectories from completed executions.
+
+4. **Dynamic Classical Optimizer Scheduling:**
+   - `AdaptiveOptimizerController` supporting `STATIC`, `ADAPTIVE_FALLBACK`, and `MULTI_STAGE` scheduling modes.
+   - Automatic heuristic recommendation: COBYLA for small/noisy depths, Nelder-Mead for plateaus, L-BFGS-B / SLSQP for smooth fine-tuning.
+   - Comprehensive transition auditing logging optimizer switches, trigger causes, and iteration boundaries.
+
+5. **Dynamic Circuit Depth Management:**
+   - `AdaptiveDepthManager` implementing progressive depth growth protocols (`FIXED_INCREMENTAL`, `IMPROVEMENT_TRIGGERED`, `NONE`).
+   - Safety ceiling enforcement ($p_{\text{init}} \le p \le 10$) preventing exponential circuit explosion.
+   - Warm-start parameter interpolation automatically projecting optimized angles into expanded layer spaces.
+
+6. **Convergence Monitoring & Stopping Conditions:**
+   - `AdaptiveConvergenceMonitor` tracking rolling energy histories, moving average gradients, and parameter shift norms.
+   - Stagnation windowing evaluating plateau thresholds over configurable patience windows.
+   - Multi-objective stopping conditions: `CONVERGED`, `STAGNATED`, `MAX_EVALUATIONS_REACHED`, `TIMEOUT`, `TARGET_ENERGY_REACHED`, `CANCELLED`.
+   - Tactical action arbitration: `CONTINUE_OPTIMIZATION`, `SWITCH_OPTIMIZER`, `EXPAND_DEPTH`, `TERMINATE`.
+
+7. **Adaptive QAOA Execution Pipeline:**
+   - `AdaptiveQAOAExecutionPipeline` dispatching asynchronous tasks to thread pool (`qopt-aqaoa-`).
+   - Cooperative cancellation tokens and full execution persistence in MongoDB with memory fallback.
+   - Independent solution decoding: bitstrings decoded and re-evaluated by Phase 2 canonical evaluators (`MaxCutEvaluator`, `AssignmentEvaluator`, `TSPEvaluator`).
+
+8. **Adaptive QAOA Research Lab (Frontend UI):**
+   - Interactive Research Lab tab in `frontend/src/pages/QuantumLabPage.tsx`.
+   - Strategy architecture presets, dynamic depth controls, classical optimizer scheduling, and parameter transfer tools.
+   - Executive metrics grid, parameter trajectory graphs, decision audit logs, energy convergence traces, and domain visualizers.
+   - History audit toggle seamlessly switching between standard QAOA and Adaptive QAOA records.
+
+9. **Adaptive Benchmarking & Ablation Study Engine:**
+   - `AdaptiveBenchmarkEngine` comparing Standard QAOA baseline against Full Adaptive QAOA and 4 ablation variants (`ablation_no_warm_start`, `ablation_no_dynamic_depth`, `ablation_no_optimizer_switching`, `ablation_fourier`).
+   - Multi-trial stochastic repetition, computing statistical distributions (mean, std dev, min, max).
+   - Exact ground-truth comparison against `ExactSolver`, reporting Approximation Ratio ($r$), optimality gaps, and evaluation efficiency speedups.
+   - Automated synthesis of scientific ablation findings and insights.
+
+10. **Scientific Hardware Transparency Guarantee:**
+    - Zero simulated quantum advantage claims: all quantum state evolutions and sampling are explicitly executed on classical CPU emulation via Qiskit Aer.
+    - Verified against Phase 2 independent ground-truth evaluators.
 
 ### Phase 5: QAOA Quantum Optimization Engine & Hybrid Benchmarking
 1. **Quantum Infrastructure & Qiskit Integration:**
@@ -242,6 +303,28 @@ Q-Optimize/
 | `POST` | `/api/v1/solvers/classical/benchmark` | Run comparative multi-solver benchmark with stochastic trials |
 | `GET` | `/api/v1/solvers/classical/benchmarks` | List past benchmark comparison runs |
 | `GET` | `/api/v1/solvers/classical/benchmarks/{id}` | Retrieve detailed benchmark trial breakdown and statistics |
+| `GET` | `/api/v1/solvers/quantum/backends` | List available quantum backends and hardware transparency notice |
+| `POST` | `/api/v1/solvers/quantum/qaoa/execute` | Execute standard fixed-depth QAOA synchronously |
+| `POST` | `/api/v1/solvers/quantum/qaoa/execute/async` | Dispatch standard QAOA to background worker queue |
+| `GET` | `/api/v1/solvers/quantum/qaoa/executions` | List past standard QAOA executions |
+| `GET` | `/api/v1/solvers/quantum/qaoa/executions/{id}` | Retrieve execution details, circuit metadata, and decoded solution |
+| `GET` | `/api/v1/solvers/quantum/qaoa/executions/{id}/status` | Lightweight status polling for standard QAOA execution |
+| `POST` | `/api/v1/solvers/quantum/qaoa/executions/{id}/cancel` | Cooperatively cancel active standard QAOA execution |
+| `POST` | `/api/v1/solvers/quantum/hybrid/benchmark` | Run comparative hybrid quantum-classical benchmark |
+| `GET` | `/api/v1/solvers/quantum/adaptive/strategies` | List registered adaptive QAOA strategies and parameters |
+| `GET` | `/api/v1/solvers/quantum/adaptive/strategies/{strategy_id}` | Retrieve specific adaptive QAOA strategy metadata |
+| `POST` | `/api/v1/solvers/quantum/adaptive/validate` | Validate adaptive QAOA configuration parameters |
+| `POST` | `/api/v1/solvers/quantum/adaptive/transfer/check` | Check compatibility of parameter transfer between depths/problems |
+| `POST` | `/api/v1/solvers/quantum/adaptive/transfer/parameters` | Compute interpolated or padded parameter transfer vector |
+| `POST` | `/api/v1/solvers/quantum/adaptive/execute` | Execute adaptive QAOA synchronously |
+| `POST` | `/api/v1/solvers/quantum/adaptive/execute/async` | Dispatch adaptive QAOA to background worker queue |
+| `GET` | `/api/v1/solvers/quantum/adaptive/executions` | List past adaptive QAOA executions |
+| `GET` | `/api/v1/solvers/quantum/adaptive/executions/{id}` | Retrieve adaptive execution details, audit log, and trajectories |
+| `GET` | `/api/v1/solvers/quantum/adaptive/executions/{id}/status` | Lightweight status polling for adaptive execution |
+| `POST` | `/api/v1/solvers/quantum/adaptive/executions/{id}/cancel` | Cooperatively cancel active adaptive QAOA execution |
+| `POST` | `/api/v1/solvers/quantum/adaptive/benchmarks` | Run multi-trial adaptive ablation benchmark study |
+| `GET` | `/api/v1/solvers/quantum/adaptive/benchmarks` | List past adaptive benchmark runs |
+| `GET` | `/api/v1/solvers/quantum/adaptive/benchmarks/{id}` | Retrieve detailed adaptive benchmark trial results and ablation insights |
 
 ---
 
@@ -277,10 +360,10 @@ npm run dev
 ### Running Test Suites
 
 ```bash
-# Backend test suite (117 tests across schemas, evaluators, constraints, QUBO, Ising, solvers, pipeline, benchmarks, APIs)
+# Backend test suite (201 tests across schemas, evaluators, constraints, QUBO, Ising, classical solvers, QAOA, adaptive QAOA, benchmarks)
 python -m pytest backend/tests -v
 
-# Frontend test suite (19 tests across App shell, Problem Builder, Formulation Studio, and Classical Lab)
+# Frontend test suite (33 tests across App shell, Problem Builder, Formulation Studio, Classical Lab, and Adaptive QAOA Lab)
 npm test --prefix frontend
 
 # Production build check
@@ -289,9 +372,9 @@ npm run build --prefix frontend
 
 ---
 
-## 6. Known Limitations (Phase 4 Boundaries)
+## 6. Known Limitations & Research Boundaries
 - **Exact Solver Instance Limits:** `ExactSolver` enforces safety thresholds ($n \le 18$ for Max-Cut, $n \le 10$ for TSP) to prevent factorial/exponential computational explosions.
-- **Quantum Execution:** Phase 4 focuses strictly on classical exact and heuristic baselines. Quantum QAOA simulation circuits and Qiskit/Aer integration are scheduled for Phase 5.
+- **Classical Simulation Ceilings:** Quantum state evolutions and sampling are conducted classically via Qiskit Aer ($n \le 20$ qubits, $p \le 10$ layers, $\text{shots} \le 50,000$). No physical quantum hardware execution or physical quantum supremacy is claimed.
 - **Natural Language Parsing:** Remains strictly draft-only; human confirmation is mandatory before canonical creation.
 
 ---

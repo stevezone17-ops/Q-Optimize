@@ -413,3 +413,168 @@ Executes comparative evaluation across classical solvers and QAOA on a target pr
 }
 ```
 
+
+
+---
+
+## 6. Phase 6 Adaptive QAOA Endpoints Detail
+
+### 6.1 List Adaptive Strategies: `GET /api/v1/solvers/quantum/adaptive/strategies`
+Lists registered adaptive research strategies and their metadata.
+
+**Response Payload (200 OK):**
+```json
+[
+  {
+    "strategy_id": "full_adaptive",
+    "name": "Full Adaptive Hybrid QAOA Framework",
+    "description": "Comprehensive adaptive protocol combining Trotter/Fourier initialization, dynamic depth expansion, and optimizer switching.",
+    "supported_problem_types": ["max_cut", "assignment", "tsp"],
+    "requires_prior_parameters": false,
+    "supports_dynamic_depth": true,
+    "supports_fourier_parameterization": true
+  }
+]
+```
+
+### 6.2 Validate Configuration: `POST /api/v1/solvers/quantum/adaptive/validate`
+Validates an adaptive strategy configuration and depth bounds before launching simulations.
+
+**Request Payload:**
+```json
+{
+  "problem_id": "preset_0",
+  "config": {
+    "shots": 1024,
+    "strategy_config": {
+      "strategy_type": "full_adaptive",
+      "initial_depth": 1,
+      "max_depth": 3,
+      "depth_growth": "improvement_triggered"
+    }
+  }
+}
+```
+
+### 6.3 Parameter Transfer Check: `POST /api/v1/solvers/quantum/adaptive/transfer/check`
+Evaluates angle vector compatibility and suggests interpolation methods when mapping from depth $p_1$ to $p_2$.
+
+**Request Payload:**
+```json
+{
+  "source_depth": 2,
+  "target_depth": 3,
+  "source_gamma": [0.35, 0.72],
+  "source_beta": [0.65, 0.28],
+  "interpolation_method": "linear_interpolation"
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "is_compatible": true,
+  "source_depth": 2,
+  "target_depth": 3,
+  "compatibility_score": 1.0,
+  "recommended_method": "linear_interpolation",
+  "notes": ["Smooth linear angle mapping across depth expansion."]
+}
+```
+
+### 6.4 Transfer Parameters: `POST /api/v1/solvers/quantum/adaptive/transfer/parameters`
+Executes angle interpolation generating warm-start parameter vectors for target depth $p_2$.
+
+**Response Payload (200 OK):**
+```json
+{
+  "transferred_gamma": [0.35, 0.535, 0.72],
+  "transferred_beta": [0.65, 0.465, 0.28],
+  "target_depth": 3,
+  "method_used": "linear_interpolation",
+  "compatibility_report": {
+    "is_compatible": true,
+    "source_depth": 2,
+    "target_depth": 3,
+    "compatibility_score": 1.0,
+    "recommended_method": "linear_interpolation",
+    "notes": ["Transferred successfully."]
+  }
+}
+```
+
+### 6.5 Execute Adaptive QAOA: `POST /api/v1/solvers/quantum/adaptive/execute`
+Synchronously executes adaptive variational optimization with dynamic layer growth and optimizer arbitration.
+
+**Request Payload:**
+```json
+{
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["0", "1", "2"],
+    "edges": [["0", "1", 2.0], ["1", "2", 3.0], ["0", "2", 1.0]]
+  },
+  "config": {
+    "shots": 1024,
+    "strategy_config": {
+      "strategy_type": "full_adaptive",
+      "initial_depth": 1,
+      "max_depth": 3,
+      "depth_growth": "improvement_triggered",
+      "primary_optimizer": "COBYLA",
+      "fallback_optimizer": "Nelder-Mead",
+      "optimizer_schedule": "adaptive_fallback",
+      "max_evaluations_total": 60
+    }
+  }
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "execution_id": "aqexec-7b8c9d0e1f2a",
+  "problem_id": "ad-hoc-max_cut",
+  "problem_type": "max_cut",
+  "status": "COMPLETED",
+  "strategy_type": "full_adaptive",
+  "initial_depth": 1,
+  "final_depth": 2,
+  "stopping_reason": "converged",
+  "best_gamma": [0.421, 0.812],
+  "best_beta": [0.579, 0.188],
+  "best_bitstring": "101",
+  "best_solution": { "0": 1, "1": 0, "2": 1 },
+  "objective_value": 5.0,
+  "expected_energy": -5.0,
+  "is_feasible": true,
+  "approximation_ratio": 1.0,
+  "optimality_gap_percent": 0.0,
+  "total_evaluations": 28,
+  "total_circuit_executions": 1024,
+  "execution_time_ms": 194.2,
+  "decisions_log": [
+    {
+      "timestamp_offset": 0.08,
+      "from_depth": 1,
+      "to_depth": 2,
+      "trigger_reason": "stagnation_detected",
+      "action_summary": "Expanded QAOA circuit depth from p=1 to p=2 with warm-start interpolation",
+      "active_optimizer": "COBYLA"
+    }
+  ],
+  "hardware_transparency_note": "Execution performed using Qiskit Aer CPU simulation on classical hardware. No physical quantum processor was utilized."
+}
+```
+
+### 6.6 Asynchronous Execution & Lifecycle Endpoints
+- `POST /api/v1/solvers/quantum/adaptive/execute/async`: Dispatches optimization to thread-pool worker.
+- `GET /api/v1/solvers/quantum/adaptive/executions`: Lists recent execution records.
+- `GET /api/v1/solvers/quantum/adaptive/executions/{id}`: Retrieves complete execution record and result.
+- `GET /api/v1/solvers/quantum/adaptive/executions/{id}/status`: Polling endpoint returning active depth, optimizer, and status.
+- `POST /api/v1/solvers/quantum/adaptive/executions/{id}/cancel`: Triggers cooperative cancellation of in-flight task.
+
+### 6.7 Adaptive QAOA Ablation Benchmarks
+- `POST /api/v1/solvers/quantum/adaptive/benchmarks`: Executes multi-variant ablation study comparing Standard baseline against Full Adaptive and components.
+- `GET /api/v1/solvers/quantum/adaptive/benchmarks`: Lists past benchmark runs.
+- `GET /api/v1/solvers/quantum/adaptive/benchmarks/{benchmark_id}`: Retrieves comprehensive statistical report and automated ablation insights.
