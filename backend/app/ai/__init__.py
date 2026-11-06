@@ -38,6 +38,8 @@ from backend.app.ai.interfaces import (
 from backend.app.ai.registry import MLModelRegistry, AIServiceRegistry
 from backend.app.ai.data_access import ExperimentDataAccess
 from backend.app.ai.feature_extraction import OptimizationFeatureExtractor, default_feature_extractor
+from backend.app.ai.dataset_builder import SolverSelectionPolicy, ExperimentDatasetBuilder
+from backend.app.ai.training_pipeline import ModelTrainingPipeline
 
 __all__ = [
     "AIRequest",
@@ -49,6 +51,7 @@ __all__ = [
     "TrainingDatasetMetadata",
     "ModelEvaluationResult",
     "ExperimentRecord",
+    "TrainingSample",
     "RecommendationFeedback",
     "RecommendationSource",
     "SolverCandidate",
@@ -74,4 +77,7 @@ __all__ = [
     "ExperimentDataAccess",
     "OptimizationFeatureExtractor",
     "default_feature_extractor",
+    "SolverSelectionPolicy",
+    "ExperimentDatasetBuilder",
+    "ModelTrainingPipeline",
 ]

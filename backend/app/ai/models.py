@@ -225,6 +225,16 @@ class ExperimentRecord(BaseModel):
     exclusion_reason: Optional[str] = None
 
 
+class TrainingSample(BaseModel):
+    """A prepared training example for solver recommendation."""
+    instance_id: str = Field(..., description="Group ID representing unique problem instance")
+    problem_type: ProblemType
+    features: OptimizationFeatures
+    feature_vector: List[float] = Field(default_factory=list)
+    best_solver_label: str = Field(..., description="Ground-truth preferred solver according to selection policy")
+    solver_evaluations: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+
+
 class RecommendationFeedback(BaseModel):
     """User and runtime feedback on a solver recommendation."""
     feedback_id: str = Field(..., description="Unique feedback record ID")
