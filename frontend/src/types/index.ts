@@ -559,5 +559,205 @@ export interface HybridBenchmarkResult {
   created_at: string
 }
 
+// ---------------------------------------------------------------------------
+// Phase 6: Adaptive QAOA Research & Dynamic Strategies Types
+// ---------------------------------------------------------------------------
+
+export type AdaptiveStrategyType =
+  | 'standard'
+  | 'linear_ramp'
+  | 'fourier'
+  | 'warm_start'
+  | 'dynamic_depth'
+  | 'adaptive_optimizer'
+  | 'full_adaptive'
+
+export type InitializationStrategyType =
+  | 'random'
+  | 'linear_ramp'
+  | 'fourier'
+  | 'warm_start'
+  | 'custom'
+
+export type DepthGrowthStrategy = 'none' | 'fixed_incremental' | 'improvement_triggered'
+
+export type StoppingConditionType =
+  | 'converged'
+  | 'stagnated'
+  | 'max_iterations_reached'
+  | 'max_evaluations_reached'
+  | 'timeout'
+  | 'target_energy_reached'
+  | 'cancelled'
+  | 'failed'
+
+export type OptimizerScheduleType = 'static' | 'adaptive_fallback' | 'multi_stage'
+
+export interface StrategyMetadata {
+  strategy_id: string
+  name: string
+  description: string
+  supported_problem_types: string[]
+  default_parameters: Record<string, unknown>
+  requires_prior_parameters: boolean
+  supports_dynamic_depth: boolean
+  supports_fourier_parameterization: boolean
+}
+
+export interface AdaptiveStrategyConfiguration {
+  strategy_type: AdaptiveStrategyType
+  init_strategy: InitializationStrategyType
+  initial_depth: number
+  max_depth: number
+  depth_growth: DepthGrowthStrategy
+  stagnation_patience: number
+  improvement_threshold: number
+  fourier_q_order: number
+  primary_optimizer: ClassicalOptimizerType
+  fallback_optimizer?: ClassicalOptimizerType
+  optimizer_schedule: OptimizerScheduleType
+  max_evaluations_total: number
+  warm_start_execution_id?: string
+  warm_start_parameters?: {
+    gamma?: number[]
+    beta?: number[]
+  }
+}
+
+export interface AdaptiveQAOAConfiguration {
+  shots: number
+  simulation_mode?: SimulationMode
+  backend_name?: string
+  seed?: number
+  noise_model_enabled?: boolean
+  noise_error_rate?: number
+  time_limit_seconds?: number
+  strategy_config: AdaptiveStrategyConfiguration
+}
+
+export interface AdaptiveQAOARequest {
+  problem_id?: string
+  problem_type?: ProblemType
+  instance?: Record<string, unknown>
+  config: AdaptiveQAOAConfiguration
+}
+
+export interface AdaptiveIteration {
+  iteration_index: number
+  current_depth: number
+  active_optimizer: string
+  gamma: number[]
+  beta: number[]
+  expected_energy: number
+  best_energy: number
+  eval_count: number
+  gradient_norm?: number
+  action_taken: string
+  timestamp_offset: number
+}
+
+export interface AdaptiveDecisionLog {
+  timestamp_offset: number
+  from_depth: number
+  to_depth: number
+  trigger_reason: string
+  action_summary: string
+  active_optimizer: string
+}
+
+export interface AdaptiveQAOAResult {
+  execution_id: string
+  problem_id: string
+  problem_type: ProblemType
+  status: SolverStatus
+  strategy_type: AdaptiveStrategyType
+  initial_depth: number
+  final_depth: number
+  stopping_reason: StoppingConditionType
+  best_gamma: number[]
+  best_beta: number[]
+  best_bitstring: string
+  best_solution: Record<string, unknown>
+  objective_value: number
+  expected_energy: number
+  is_feasible: boolean
+  constraint_violations: string[]
+  approximation_ratio?: number
+  exact_optimal_value?: number
+  optimality_gap_percent?: number
+  total_evaluations: number
+  total_circuit_executions: number
+  execution_time_ms: number
+  iterations_log: AdaptiveIteration[]
+  decisions_log: AdaptiveDecisionLog[]
+  circuit_metadata?: CircuitMetadata
+  hardware_transparency_note: string
+  created_at: string
+}
+
+export interface AdaptiveExecutionRecord {
+  execution_id: string
+  problem_id: string
+  problem_type: ProblemType
+  status: SolverStatus
+  strategy_type: AdaptiveStrategyType
+  submitted_at: string
+  started_at?: string
+  completed_at?: string
+  runtime_seconds: number
+  error?: string
+  config: AdaptiveQAOAConfiguration
+  result?: AdaptiveQAOAResult
+}
+
+export interface AdaptiveStatusResponse {
+  execution_id: string
+  problem_id: string
+  problem_type: ProblemType
+  status: SolverStatus
+  current_depth: number
+  active_optimizer: string
+  runtime_seconds: number
+  evaluations_completed?: number
+  is_completed: boolean
+  has_failed: boolean
+  error?: string
+}
+
+export interface TransferCompatibilityReport {
+  is_compatible: boolean
+  source_depth: number
+  target_depth: number
+  compatibility_score: number
+  recommended_method: string
+  notes: string[]
+  confidence_score?: number
+  reason?: string
+}
+
+export interface TransferParametersRequest {
+  source_execution_id?: string
+  source_gamma?: number[]
+  source_beta?: number[]
+  source_depth?: number
+  target_depth: number
+  transfer_method?: string
+  interpolation_method?: string
+  source_problem_type?: string
+  target_problem_type?: string
+}
+
+export interface TransferParametersResponse {
+  transferred_gamma: number[]
+  transferred_beta: number[]
+  target_gamma?: number[]
+  target_beta?: number[]
+  target_depth: number
+  method_used: string
+  method?: string
+  compatibility_report: TransferCompatibilityReport
+}
+
+
 
 

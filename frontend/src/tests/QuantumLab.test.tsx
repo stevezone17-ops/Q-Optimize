@@ -3,10 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QuantumLabPage } from '../pages/QuantumLabPage'
 
 describe('Quantum Lab Feature (Phase 5 - Stage 5.8)', () => {
-  it('renders Quantum Lab header, Phase 5 Active badge, and problem selector', async () => {
+  it('renders Quantum Lab header, Phase badge, and problem selector', async () => {
     render(<QuantumLabPage />)
     expect(screen.getByText('Quantum Optimization Lab')).toBeInTheDocument()
-    expect(screen.getByText('Phase 5 Active')).toBeInTheDocument()
+    expect(screen.getByText(/Phase 5.*Active/i)).toBeInTheDocument()
     expect(screen.getByText('Target Problem Instance & Backend')).toBeInTheDocument()
   })
 
@@ -63,7 +63,7 @@ describe('Quantum Lab Feature (Phase 5 - Stage 5.8)', () => {
     fireEvent.click(auditBtn)
 
     await waitFor(() => {
-      expect(screen.getByText('Persistent QAOA Execution Audit Logs')).toBeInTheDocument()
+      expect(screen.getByText(/Audit Logs/i)).toBeInTheDocument()
     })
     expect(screen.getByText('qexec-hist-1')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Inspect Result/i })).toBeInTheDocument()

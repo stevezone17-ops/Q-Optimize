@@ -625,6 +625,270 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  // Adaptive QAOA (Phase 6) Mock Handlers
+  if (url.includes('/solvers/quantum/adaptive/strategies')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve([
+          {
+            strategy_id: 'full_adaptive',
+            name: 'Full Adaptive Hybrid QAOA Framework',
+            description: 'Comprehensive adaptive protocol combining Trotter/Fourier initialization, dynamic depth expansion, and optimizer switching.',
+            supported_problem_types: ['max_cut', 'assignment', 'tsp'],
+            default_parameters: {},
+            requires_prior_parameters: false,
+            supports_dynamic_depth: true,
+            supports_fourier_parameterization: true,
+          },
+          {
+            strategy_id: 'standard',
+            name: 'Standard Fixed-Depth QAOA',
+            description: 'Baseline QAOA execution with fixed depth p and static optimizer.',
+            supported_problem_types: ['max_cut', 'assignment', 'tsp'],
+            default_parameters: {},
+            requires_prior_parameters: false,
+            supports_dynamic_depth: false,
+            supports_fourier_parameterization: false,
+          },
+        ]),
+    })
+  }
+
+  if (url.includes('/solvers/quantum/adaptive/executions') && !url.includes('/status') && !url.includes('/cancel')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve([
+          {
+            execution_id: 'aqexec-hist-1',
+            problem_id: 'preset_0',
+            problem_type: 'max_cut',
+            status: 'COMPLETED',
+            strategy_type: 'full_adaptive',
+            submitted_at: new Date(Date.now() - 60000).toISOString(),
+            runtime_seconds: 0.24,
+            config: {
+              shots: 1024,
+              simulation_mode: 'ideal_shots',
+              backend_name: 'aer_simulator',
+              noise_model_enabled: false,
+              noise_error_rate: 0.001,
+              time_limit_seconds: 60,
+              strategy_config: {
+                strategy_type: 'full_adaptive',
+                init_strategy: 'linear_ramp',
+                initial_depth: 1,
+                max_depth: 2,
+                depth_growth: 'improvement_triggered',
+                stagnation_patience: 2,
+                improvement_threshold: 0.001,
+                fourier_q_order: 2,
+                primary_optimizer: 'COBYLA',
+                fallback_optimizer: 'Nelder-Mead',
+                optimizer_schedule: 'adaptive_fallback',
+                max_evaluations_total: 100,
+              },
+            },
+            result: {
+              execution_id: 'aqexec-hist-1',
+              problem_id: 'preset_0',
+              problem_type: 'max_cut',
+              status: 'COMPLETED',
+              strategy_type: 'full_adaptive',
+              initial_depth: 1,
+              final_depth: 2,
+              stopping_reason: 'converged',
+              best_gamma: [0.35, 0.72],
+              best_beta: [0.65, 0.28],
+              best_bitstring: '101',
+              best_solution: { '0': 1, '1': 0, '2': 1 },
+              objective_value: 4.0,
+              expected_energy: -4.0,
+              is_feasible: true,
+              constraint_violations: [],
+              approximation_ratio: 1.0,
+              exact_optimal_value: 4.0,
+              optimality_gap_percent: 0.0,
+              total_evaluations: 25,
+              total_circuit_executions: 1024,
+              execution_time_ms: 240,
+              iterations_log: [
+                {
+                  iteration_index: 1,
+                  current_depth: 1,
+                  active_optimizer: 'COBYLA',
+                  gamma: [0.35],
+                  beta: [0.65],
+                  expected_energy: -3.2,
+                  best_energy: -3.2,
+                  eval_count: 10,
+                  action_taken: 'continued_optimization',
+                  timestamp_offset: 0.05,
+                },
+                {
+                  iteration_index: 2,
+                  current_depth: 2,
+                  active_optimizer: 'COBYLA',
+                  gamma: [0.35, 0.72],
+                  beta: [0.65, 0.28],
+                  expected_energy: -4.0,
+                  best_energy: -4.0,
+                  eval_count: 15,
+                  action_taken: 'continued_optimization',
+                  timestamp_offset: 0.15,
+                },
+              ],
+              decisions_log: [
+                {
+                  timestamp_offset: 0.1,
+                  from_depth: 1,
+                  to_depth: 2,
+                  trigger_reason: 'stagnation_detected',
+                  action_summary: 'Expanded QAOA circuit depth from p=1 to p=2 with warm-start interpolation',
+                  active_optimizer: 'COBYLA',
+                },
+              ],
+              circuit_metadata: {
+                num_qubits: 3,
+                num_clbits: 3,
+                p_depth: 2,
+                total_gates: 14,
+                two_qubit_gates: 6,
+                circuit_depth: 8,
+                parameter_count: 4,
+                has_measurements: true,
+                qubit_variable_map: { 0: 'x_0', 1: 'x_1', 2: 'x_2' },
+              },
+              hardware_transparency_note: 'Execution ran on classical CPU simulation via Qiskit Aer. No physical quantum hardware speedup is claimed.',
+              created_at: new Date().toISOString(),
+            },
+          },
+        ]),
+    })
+  }
+
+  if (url.includes('/solvers/quantum/adaptive/execute')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          execution_id: 'aqexec-live-1',
+          problem_id: 'preset_0',
+          problem_type: 'max_cut',
+          status: 'COMPLETED',
+          strategy_type: 'full_adaptive',
+          initial_depth: 1,
+          final_depth: 2,
+          stopping_reason: 'converged',
+          best_gamma: [0.42, 0.81],
+          best_beta: [0.58, 0.19],
+          best_bitstring: '101',
+          best_solution: { '0': 1, '1': 0, '2': 1 },
+          objective_value: 4.0,
+          expected_energy: -4.0,
+          is_feasible: true,
+          constraint_violations: [],
+          approximation_ratio: 1.0,
+          exact_optimal_value: 4.0,
+          optimality_gap_percent: 0.0,
+          total_evaluations: 30,
+          total_circuit_executions: 1024,
+          execution_time_ms: 185,
+          iterations_log: [
+            {
+              iteration_index: 1,
+              current_depth: 1,
+              active_optimizer: 'COBYLA',
+              gamma: [0.42],
+              beta: [0.58],
+              expected_energy: -3.5,
+              best_energy: -3.5,
+              eval_count: 12,
+              action_taken: 'continued_optimization',
+              timestamp_offset: 0.05,
+            },
+            {
+              iteration_index: 2,
+              current_depth: 2,
+              active_optimizer: 'COBYLA',
+              gamma: [0.42, 0.81],
+              beta: [0.58, 0.19],
+              expected_energy: -4.0,
+              best_energy: -4.0,
+              eval_count: 18,
+              action_taken: 'continued_optimization',
+              timestamp_offset: 0.15,
+            },
+          ],
+          decisions_log: [
+            {
+              timestamp_offset: 0.08,
+              from_depth: 1,
+              to_depth: 2,
+              trigger_reason: 'stagnation_detected',
+              action_summary: 'Expanded QAOA circuit depth from p=1 to p=2 with warm-start interpolation',
+              active_optimizer: 'COBYLA',
+            },
+          ],
+          circuit_metadata: {
+            num_qubits: 3,
+            num_clbits: 3,
+            p_depth: 2,
+            total_gates: 14,
+            two_qubit_gates: 6,
+            circuit_depth: 8,
+            parameter_count: 4,
+            has_measurements: true,
+            qubit_variable_map: { 0: 'x_0', 1: 'x_1', 2: 'x_2' },
+          },
+          hardware_transparency_note: 'Execution ran on classical CPU simulation via Qiskit Aer. No physical quantum hardware speedup is claimed.',
+          created_at: new Date().toISOString(),
+        }),
+    })
+  }
+
+  if (url.includes('/solvers/quantum/adaptive/transfer/check')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          is_compatible: true,
+          source_depth: 2,
+          target_depth: 3,
+          compatibility_score: 1.0,
+          recommended_method: 'linear_interpolation',
+          notes: ['Smooth linear angle mapping across depth expansion.'],
+        }),
+    })
+  }
+
+  if (url.includes('/solvers/quantum/adaptive/transfer/parameters')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          transferred_gamma: [0.35, 0.535, 0.72],
+          transferred_beta: [0.65, 0.465, 0.28],
+          target_depth: 3,
+          method_used: 'linear_interpolation',
+          compatibility_report: {
+            is_compatible: true,
+            source_depth: 2,
+            target_depth: 3,
+            compatibility_score: 1.0,
+            recommended_method: 'linear_interpolation',
+            notes: ['Transferred successfully.'],
+          },
+        }),
+    })
+  }
+
   if (url.includes('/solvers/quantum')) {
     return Promise.resolve({
       ok: true,
