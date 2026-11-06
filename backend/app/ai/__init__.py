@@ -40,6 +40,12 @@ from backend.app.ai.data_access import ExperimentDataAccess
 from backend.app.ai.feature_extraction import OptimizationFeatureExtractor, default_feature_extractor
 from backend.app.ai.dataset_builder import SolverSelectionPolicy, ExperimentDatasetBuilder
 from backend.app.ai.training_pipeline import ModelTrainingPipeline
+from backend.app.ai.recommender import (
+    MLSolverRecommenderModel,
+    RuleBasedSolverRecommender,
+    IntelligentSolverRecommender,
+    default_solver_recommender,
+)
 
 __all__ = [
     "AIRequest",
@@ -80,4 +86,8 @@ __all__ = [
     "SolverSelectionPolicy",
     "ExperimentDatasetBuilder",
     "ModelTrainingPipeline",
+    "MLSolverRecommenderModel",
+    "RuleBasedSolverRecommender",
+    "IntelligentSolverRecommender",
+    "default_solver_recommender",
 ]

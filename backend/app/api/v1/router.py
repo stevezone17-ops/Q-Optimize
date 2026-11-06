@@ -9,6 +9,7 @@ from backend.app.api.v1.endpoints import (
     classical_solvers,
     quantum_solvers,
     adaptive_solvers,
+    ai,
 )
 
 api_v1_router = APIRouter()
@@ -20,3 +21,4 @@ api_v1_router.include_router(experiments.router)
 api_v1_router.include_router(classical_solvers.router, prefix="/solvers/classical", tags=["Classical Solvers"])
 api_v1_router.include_router(quantum_solvers.router, prefix="/solvers/quantum", tags=["Quantum Solvers"])
 api_v1_router.include_router(adaptive_solvers.router, prefix="/solvers/quantum/adaptive", tags=["Adaptive Quantum Solvers"])
+api_v1_router.include_router(ai.router)
