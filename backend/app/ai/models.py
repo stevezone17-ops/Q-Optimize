@@ -235,6 +235,30 @@ class TrainingSample(BaseModel):
     solver_evaluations: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
 
 
+class ProblemDraftProposal(BaseModel):
+    """Structured AI-generated problem draft proposal requiring explicit human confirmation."""
+    problem_type: Optional[ProblemType] = None
+    is_supported: bool = True
+    name: str = Field(default="Proposed Optimization Problem")
+    description: str = Field(default="")
+    entities: Dict[str, Any] = Field(default_factory=dict)
+    objective: Dict[str, Any] = Field(default_factory=dict)
+    constraints: List[str] = Field(default_factory=list)
+    suggested_instance: Dict[str, Any] = Field(default_factory=dict)
+    missing_information: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+    confidence_score: float = Field(default=0.85, ge=0.0, le=1.0)
+    is_mathematically_valid: bool = Field(default=False)
+    validation_status: str = Field(default="PENDING")
+    validation_issues: List[str] = Field(default_factory=list)
+    requires_user_confirmation: bool = Field(default=True)
+    provider_used: str = Field(default="deterministic_fallback")
+    disclaimer: str = Field(
+        default="AI-generated problem draft. Review all entities, numerical values, and constraints. "
+        "Draft output must be mathematically validated and human-confirmed before canonical submission."
+    )
+
+
 class RecommendationFeedback(BaseModel):
     """User and runtime feedback on a solver recommendation."""
     feedback_id: str = Field(..., description="Unique feedback record ID")

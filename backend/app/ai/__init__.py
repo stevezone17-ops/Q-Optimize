@@ -60,6 +60,7 @@ __all__ = [
     "ModelEvaluationResult",
     "ExperimentRecord",
     "TrainingSample",
+    "ProblemDraftProposal",
     "RecommendationFeedback",
     "RecommendationSource",
     "SolverCandidate",

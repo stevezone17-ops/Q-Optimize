@@ -10,7 +10,9 @@ from backend.app.ai.models import (
     SolverRecommendation,
     ModelMetadata,
     OptimizationFeatures,
+    ProblemDraftProposal,
 )
+from backend.app.ai.natural_language.assistant import default_nl_assistant
 from backend.app.ai.recommender import default_solver_recommender
 from backend.app.ai.registry import MLModelRegistry
 from backend.app.ai.data_access import ExperimentDataAccess
@@ -155,4 +157,61 @@ async def train_recommendation_model(req: ModelTrainRequest) -> ModelTrainRespon
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Model training failed: {str(e)}",
+        )
+
+
+class NLParseRequest(BaseModel):
+    """Request payload to parse natural language description into problem draft."""
+    text: str = Field(..., min_length=5, max_length=4000, description="Natural language problem description")
+    problem_type_hint: Optional[ProblemType] = Field(default=None, description="Optional problem type hint")
+    provider_name: Optional[str] = Field(default=None, description="Optional provider override (gemini, deterministic_fallback, mock_llm)")
+
+
+class NLValidateDraftRequest(BaseModel):
+    """Request payload to re-validate an edited problem draft instance."""
+    problem_type: ProblemType
+    instance: Dict[str, Any]
+
+
+@router.post("/assistant/parse", response_model=ProblemDraftProposal)
+async def parse_natural_language_draft(req: NLParseRequest) -> ProblemDraftProposal:
+    """
+    Parse natural language description into an editable, reviewable problem proposal draft.
+    Does NOT bypass Phase 2 mathematical validation.
+    """
+    try:
+        draft = await default_nl_assistant.parse_problem_description(
+            text=req.text,
+            problem_type_hint=req.problem_type_hint,
+            provider_name=req.provider_name,
+        )
+        return draft
+    except Exception as e:
+        logger.error(f"Natural language parsing error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not parse problem description: {str(e)}",
+        )
+
+
+@router.post("/assistant/validate-draft")
+async def validate_draft_instance(req: NLValidateDraftRequest) -> Dict[str, Any]:
+    """
+    Re-validate an edited problem instance draft against canonical Phase 2 domain validators.
+    """
+    try:
+        res = ProblemService.validate_problem_definition(req.problem_type, req.instance)
+        return {
+            "is_valid": res.is_valid,
+            "status": res.status.value,
+            "issues": res.issues,
+            "num_variables": len(res.variables),
+            "num_constraints": len(res.constraints),
+            "metadata": res.metadata,
+        }
+    except Exception as e:
+        logger.error(f"Draft validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Draft validation failed: {str(e)}",
         )
