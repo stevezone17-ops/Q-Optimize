@@ -37,6 +37,7 @@ from backend.app.ai.interfaces import (
 )
 from backend.app.ai.registry import MLModelRegistry, AIServiceRegistry
 from backend.app.ai.data_access import ExperimentDataAccess
+from backend.app.ai.feature_extraction import OptimizationFeatureExtractor, default_feature_extractor
 
 __all__ = [
     "AIRequest",
@@ -71,4 +72,6 @@ __all__ = [
     "MLModelRegistry",
     "AIServiceRegistry",
     "ExperimentDataAccess",
+    "OptimizationFeatureExtractor",
+    "default_feature_extractor",
 ]
