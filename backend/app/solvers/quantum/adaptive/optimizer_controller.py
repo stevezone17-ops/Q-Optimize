@@ -1,5 +1,6 @@
 """Adaptive classical optimizer selection, switching, and scheduling controller."""
 
+import math
 from typing import Dict, Any, List, Optional, Tuple, Union
 from pydantic import BaseModel, Field
 
@@ -156,7 +157,7 @@ class AdaptiveOptimizerController:
                 reason=reason,
                 from_stage=1,
                 to_stage=2,
-                energy_at_transition=self.best_energy,
+                energy_at_transition=self.best_energy if not math.isinf(self.best_energy) else 0.0,
                 total_evals_at_transition=sum(self.evaluations_by_optimizer.values()),
             )
             self.transitions.append(record)
@@ -175,7 +176,7 @@ class AdaptiveOptimizerController:
                 reason=reason,
                 from_stage=self.active_stage - 1,
                 to_stage=self.active_stage,
-                energy_at_transition=self.best_energy,
+                energy_at_transition=self.best_energy if not math.isinf(self.best_energy) else 0.0,
                 total_evals_at_transition=sum(self.evaluations_by_optimizer.values()),
             )
             self.transitions.append(record)

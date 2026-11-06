@@ -29,7 +29,10 @@ from backend.app.solvers.quantum.adaptive.adaptive_models import (
     AdaptiveDecisionLog,
     AdaptiveQAOAResult,
     AdaptiveExperimentMetadata,
+    AdaptiveExecutionRecord,
+    AdaptiveStatusResponse,
 )
+from backend.app.solvers.quantum.adaptive.pipeline import AdaptiveQAOAExecutionPipeline
 from backend.app.solvers.quantum.adaptive.strategy_registry import (
     AdaptiveStrategyRegistry,
     StandardQAOAStrategy,
@@ -92,6 +95,9 @@ __all__ = [
     "AdaptiveDecisionLog",
     "AdaptiveQAOAResult",
     "AdaptiveExperimentMetadata",
+    "AdaptiveExecutionRecord",
+    "AdaptiveStatusResponse",
+    "AdaptiveQAOAExecutionPipeline",
     "AdaptiveStrategyRegistry",
     "StandardQAOAStrategy",
     "LinearRampQAOAStrategy",

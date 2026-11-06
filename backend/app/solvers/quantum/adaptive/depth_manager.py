@@ -1,6 +1,7 @@
 """Adaptive QAOA circuit depth and dynamic layer growth manager."""
 
 import time
+import math
 from typing import Dict, Any, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
@@ -117,7 +118,7 @@ class AdaptiveDepthManager:
             from_depth=self.current_depth,
             to_depth=target_depth,
             trigger_reason=reason,
-            energy_before_growth=best_energy,
+            energy_before_growth=best_energy if not math.isinf(best_energy) else 0.0,
             parameters_before={"gamma": list(current_gamma), "beta": list(current_beta)},
             parameters_after={"gamma": list(new_gamma), "beta": list(new_beta)},
             timestamp_offset=round(time.perf_counter() - self._start_time, 4),

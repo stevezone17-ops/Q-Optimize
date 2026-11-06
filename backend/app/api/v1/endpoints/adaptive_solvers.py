@@ -8,7 +8,11 @@ from backend.app.solvers.quantum.adaptive.base_strategy import StrategyMetadata
 from backend.app.solvers.quantum.adaptive.adaptive_models import (
     AdaptiveQAOARequest,
     AdaptiveStrategyConfiguration,
+    AdaptiveQAOAResult,
+    AdaptiveExecutionRecord,
+    AdaptiveStatusResponse,
 )
+from backend.app.solvers.quantum.adaptive.pipeline import AdaptiveQAOAExecutionPipeline
 from backend.app.solvers.quantum.adaptive.adaptive_exceptions import (
     AdaptiveStrategyNotFoundError,
     AdaptiveQAOAError,
@@ -140,4 +144,88 @@ async def transfer_parameters(req: TransferParametersRequest):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc)
         )
+
+
+# ---------------------------------------------------------------------------
+# Adaptive QAOA Execution Pipeline Endpoints (Stage 6.7)
+# ---------------------------------------------------------------------------
+
+@router.post("/execute", response_model=AdaptiveQAOAResult)
+async def execute_adaptive_qaoa(req: AdaptiveQAOARequest):
+    """
+    Execute an Adaptive QAOA optimization process synchronously,
+    returning full iteration convergence history, decisions, and decoded solution.
+    """
+    try:
+        # Pre-validate strategy configuration
+        AdaptiveStrategyFactory.validate_configuration(req.config.strategy_config)
+        return AdaptiveQAOAExecutionPipeline.execute_sync(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Adaptive QAOA execution failed: {str(exc)}",
+        )
+
+
+@router.post("/execute/async", response_model=AdaptiveExecutionRecord)
+async def submit_adaptive_qaoa_async(req: AdaptiveQAOARequest):
+    """
+    Asynchronously dispatch an Adaptive QAOA optimization process to background worker threads.
+    Returns immediately with an execution_id for polling.
+    """
+    try:
+        AdaptiveStrategyFactory.validate_configuration(req.config.strategy_config)
+        return await AdaptiveQAOAExecutionPipeline.submit_async(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Adaptive QAOA dispatch failed: {str(exc)}",
+        )
+
+
+@router.get("/executions", response_model=List[AdaptiveExecutionRecord])
+async def list_adaptive_executions(limit: int = 25):
+    """List recent Adaptive QAOA execution records."""
+    return await AdaptiveQAOAExecutionPipeline.list_executions(limit=limit)
+
+
+@router.get("/executions/{execution_id}", response_model=AdaptiveExecutionRecord)
+async def get_adaptive_execution(execution_id: str):
+    """Retrieve full execution record and results for an Adaptive QAOA task."""
+    record = await AdaptiveQAOAExecutionPipeline.get_execution(execution_id)
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Adaptive execution '{execution_id}' not found.",
+        )
+    return record
+
+
+@router.get("/executions/{execution_id}/status", response_model=AdaptiveStatusResponse)
+async def get_adaptive_status(execution_id: str):
+    """Lightweight polling endpoint returning active depth, optimizer, and lifecycle status."""
+    status_resp = await AdaptiveQAOAExecutionPipeline.get_status(execution_id)
+    if not status_resp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Adaptive execution '{execution_id}' not found.",
+        )
+    return status_resp
+
+
+@router.post("/executions/{execution_id}/cancel", response_model=AdaptiveStatusResponse)
+async def cancel_adaptive_execution(execution_id: str):
+    """Trigger cooperative cancellation of an in-flight Adaptive QAOA task."""
+    status_resp = await AdaptiveQAOAExecutionPipeline.cancel_execution(execution_id)
+    if not status_resp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Adaptive execution '{execution_id}' not found.",
+        )
+    return status_resp
+
 

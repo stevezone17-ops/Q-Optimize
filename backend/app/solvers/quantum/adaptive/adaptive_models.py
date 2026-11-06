@@ -183,3 +183,34 @@ class AdaptiveExperimentMetadata(BaseModel):
     total_evaluations: int
     execution_time_ms: float
     created_at: datetime
+
+
+class AdaptiveExecutionRecord(BaseModel):
+    """Lifecycle tracking record for an adaptive QAOA execution persisted in MongoDB/memory."""
+    execution_id: str = Field(default_factory=lambda: f"aqexec-{uuid.uuid4().hex[:12]}")
+    problem_id: str
+    problem_type: ProblemType
+    status: QuantumExecutionStatus = QuantumExecutionStatus.PENDING
+    strategy_type: AdaptiveStrategyType
+    submitted_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    runtime_seconds: float = 0.0
+    error: Optional[str] = None
+    config: AdaptiveQAOAConfiguration
+    result: Optional[AdaptiveQAOAResult] = None
+
+
+class AdaptiveStatusResponse(BaseModel):
+    """Lightweight polling status response for background adaptive QAOA tasks."""
+    execution_id: str
+    problem_id: str
+    problem_type: ProblemType
+    status: QuantumExecutionStatus
+    current_depth: int = 1
+    active_optimizer: str = "COBYLA"
+    runtime_seconds: float = 0.0
+    is_completed: bool = False
+    has_failed: bool = False
+    error: Optional[str] = None
+
