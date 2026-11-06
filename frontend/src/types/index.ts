@@ -758,6 +758,73 @@ export interface TransferParametersResponse {
   compatibility_report: TransferCompatibilityReport
 }
 
+// ---------------------------------------------------------------------------
+// Stage 6.9: Adaptive QAOA Research Benchmarking & Ablation Types
+// ---------------------------------------------------------------------------
+
+export type AdaptiveAblationVariant =
+  | 'standard_baseline'
+  | 'full_adaptive'
+  | 'ablation_no_warm_start'
+  | 'ablation_no_dynamic_depth'
+  | 'ablation_no_optimizer_switching'
+  | 'ablation_fourier'
+
+export interface AdaptiveBenchmarkRequest {
+  name?: string
+  problem_id?: string
+  problem_type?: ProblemType
+  instance?: Record<string, unknown>
+  include_variants?: AdaptiveAblationVariant[]
+  initial_depth?: number
+  max_depth?: number
+  shots?: number
+  primary_optimizer?: ClassicalOptimizerType
+  fallback_optimizer?: ClassicalOptimizerType
+  max_evaluations_total?: number
+  trials?: number
+  base_seed?: number
+}
+
+export interface AdaptiveVariantSummary {
+  variant_id: string
+  variant_name: string
+  description: string
+  trials_count: number
+  initial_depth: number
+  mean_final_depth: number
+  best_objective: number
+  mean_objective: number
+  worst_objective: number
+  std_objective: number
+  feasibility_rate: number
+  approximation_ratio?: number | null
+  optimality_gap_percent?: number | null
+  mean_runtime_ms: number
+  min_runtime_ms: number
+  max_runtime_ms: number
+  mean_evaluations: number
+  mean_circuit_executions: number
+  depth_growth_trigger_rate: number
+  optimizer_switch_trigger_rate: number
+  eval_efficiency_ratio?: number | null
+  quality_improvement_percent?: number | null
+  best_solution?: unknown
+}
+
+export interface AdaptiveBenchmarkResult {
+  benchmark_id: string
+  name: string
+  problem_type: ProblemType
+  problem_id?: string
+  exact_optimum?: number | null
+  summaries: AdaptiveVariantSummary[]
+  ablation_insights: string[]
+  total_runtime_seconds: number
+  hardware_transparency_note: string
+  created_at: string
+}
+
 
 
 

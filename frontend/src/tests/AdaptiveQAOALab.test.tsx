@@ -107,4 +107,17 @@ describe('Adaptive QAOA Research Lab (Phase 6 - Stage 6.8)', () => {
     })
     expect(screen.getAllByText('full_adaptive').length).toBeGreaterThanOrEqual(1)
   })
+
+  it('executes Adaptive QAOA ablation benchmark study through service', async () => {
+    const { adaptiveSolverService } = await import('../services/adaptiveSolverService')
+    const benchRes = await adaptiveSolverService.runBenchmark({
+      problem_id: 'preset_0',
+      include_variants: ['standard_baseline', 'full_adaptive'],
+    })
+
+    expect(benchRes.benchmark_id).toBe('aqbench-mock-1')
+    expect(benchRes.summaries.length).toBe(2)
+    expect(benchRes.ablation_insights.length).toBeGreaterThan(0)
+    expect(benchRes.exact_optimum).toBe(5.0)
+  })
 })

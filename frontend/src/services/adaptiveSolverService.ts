@@ -8,6 +8,8 @@ import {
   TransferParametersRequest,
   TransferParametersResponse,
   TransferCompatibilityReport,
+  AdaptiveBenchmarkRequest,
+  AdaptiveBenchmarkResult,
 } from '../types'
 
 export const adaptiveSolverService = {
@@ -103,5 +105,31 @@ export const adaptiveSolverService = {
     return request<AdaptiveStatusResponse>(`/solvers/quantum/adaptive/executions/${executionId}/cancel`, {
       method: 'POST',
     })
+  },
+
+  /**
+   * Run an Adaptive QAOA comparative ablation study benchmark.
+   */
+  async runBenchmark(req: AdaptiveBenchmarkRequest): Promise<AdaptiveBenchmarkResult> {
+    return request<AdaptiveBenchmarkResult>('/solvers/quantum/adaptive/benchmarks', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    })
+  },
+
+  /**
+   * List recent Adaptive QAOA ablation benchmarks.
+   */
+  async listBenchmarks(limit: number = 25): Promise<Array<{ benchmark_id: string; name: string; problem_type: string; created_at: string; total_runtime_seconds: number }>> {
+    return request<Array<{ benchmark_id: string; name: string; problem_type: string; created_at: string; total_runtime_seconds: number }>>(
+      `/solvers/quantum/adaptive/benchmarks?limit=${limit}`
+    )
+  },
+
+  /**
+   * Retrieve detailed results and ablation insights for a benchmark study.
+   */
+  async getBenchmark(benchmarkId: string): Promise<AdaptiveBenchmarkResult> {
+    return request<AdaptiveBenchmarkResult>(`/solvers/quantum/adaptive/benchmarks/${benchmarkId}`)
   },
 }

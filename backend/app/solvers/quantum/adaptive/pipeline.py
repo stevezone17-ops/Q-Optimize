@@ -131,18 +131,24 @@ class AdaptiveQAOAExecutionPipeline:
         q_cfg = req.config
 
         # 1. Resolve problem synchronously from memory or service
-        stored = db_manager.memory_get("problems", req.problem_id)
-        if not stored:
-            all_probs = db_manager.memory_list("problems")
-            for p in all_probs:
-                if p.get("id") == req.problem_id or p.get("problem_id") == req.problem_id:
-                    stored = p
-                    break
-        if not stored:
-            raise ValueError(f"Problem instance '{req.problem_id}' not found in storage.")
-        
-        prob_type = ProblemType(stored["problem_type"])
-        instance = stored["instance"]
+        if req.problem_type and req.instance:
+            prob_type = req.problem_type if isinstance(req.problem_type, ProblemType) else ProblemType(req.problem_type)
+            instance = req.instance
+        else:
+            if not req.problem_id:
+                raise ValueError("Either problem_id or both problem_type and instance must be provided.")
+            stored = db_manager.memory_get("problems", req.problem_id)
+            if not stored:
+                all_probs = db_manager.memory_list("problems")
+                for p in all_probs:
+                    if p.get("id") == req.problem_id or p.get("problem_id") == req.problem_id:
+                        stored = p
+                        break
+            if not stored:
+                raise ValueError(f"Problem instance '{req.problem_id}' not found in storage.")
+            
+            prob_type = ProblemType(stored["problem_type"])
+            instance = stored["instance"]
 
         # 2. Generate QUBO and analytical Cost Hamiltonian
         qubo = cls._generate_qubo(prob_type, instance)
@@ -429,7 +435,7 @@ class AdaptiveQAOAExecutionPipeline:
         # 9. Result Compilation
         result = AdaptiveQAOAResult(
             execution_id=exec_id,
-            problem_id=req.problem_id,
+            problem_id=req.problem_id or f"ad-hoc-{prob_type.value}",
             problem_type=prob_type,
             status=(
                 QuantumExecutionStatus.COMPLETED

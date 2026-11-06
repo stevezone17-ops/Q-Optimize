@@ -25,6 +25,11 @@ from backend.app.solvers.quantum.adaptive.transfer import (
     TransferParametersRequest,
     TransferParametersResponse,
 )
+from backend.app.solvers.quantum.adaptive.benchmarking import (
+    AdaptiveBenchmarkEngine,
+    AdaptiveBenchmarkRequest,
+    AdaptiveBenchmarkResult,
+)
 
 router = APIRouter()
 
@@ -227,5 +232,42 @@ async def cancel_adaptive_execution(execution_id: str):
             detail=f"Adaptive execution '{execution_id}' not found.",
         )
     return status_resp
+
+
+# ---------------------------------------------------------------------------
+# Stage 6.9: Adaptive QAOA Research Benchmarking & Ablation Endpoints
+# ---------------------------------------------------------------------------
+
+@router.post("/benchmarks", response_model=AdaptiveBenchmarkResult)
+async def run_adaptive_benchmark(req: AdaptiveBenchmarkRequest):
+    """
+    Execute a multi-variant Adaptive QAOA ablation benchmark comparing
+    Standard fixed-depth baseline against Dynamic Depth, Warm-Start, and Fourier variants.
+    """
+    try:
+        return await AdaptiveBenchmarkEngine.run_benchmark(req)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+
+
+@router.get("/benchmarks", response_model=List[Dict[str, Any]])
+async def list_adaptive_benchmarks(limit: int = 25):
+    """List recent Adaptive QAOA ablation benchmark studies."""
+    return await AdaptiveBenchmarkEngine.list_benchmarks(limit=limit)
+
+
+@router.get("/benchmarks/{benchmark_id}", response_model=AdaptiveBenchmarkResult)
+async def get_adaptive_benchmark(benchmark_id: str):
+    """Retrieve full statistical report and ablation insights for an adaptive benchmark."""
+    res = await AdaptiveBenchmarkEngine.get_benchmark(benchmark_id)
+    if not res:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Adaptive benchmark '{benchmark_id}' not found.",
+        )
+    return res
+
 
 

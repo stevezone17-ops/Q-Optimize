@@ -889,6 +889,79 @@ global.fetch = vi.fn().mockImplementation((url: string) => {
     })
   }
 
+  if (url.includes('/solvers/quantum/adaptive/benchmarks')) {
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          benchmark_id: 'aqbench-mock-1',
+          name: 'Adaptive QAOA Ablation & Performance Benchmark',
+          problem_type: 'max_cut',
+          exact_optimum: 5.0,
+          summaries: [
+            {
+              variant_id: 'standard_baseline',
+              variant_name: 'Standard QAOA Baseline',
+              description: 'Fixed depth p, static optimizer.',
+              trials_count: 1,
+              initial_depth: 1,
+              mean_final_depth: 1.0,
+              best_objective: 4.0,
+              mean_objective: 4.0,
+              worst_objective: 4.0,
+              std_objective: 0.0,
+              feasibility_rate: 1.0,
+              approximation_ratio: 0.8,
+              optimality_gap_percent: 20.0,
+              mean_runtime_ms: 120.0,
+              min_runtime_ms: 120.0,
+              max_runtime_ms: 120.0,
+              mean_evaluations: 20.0,
+              mean_circuit_executions: 1024.0,
+              depth_growth_trigger_rate: 0.0,
+              optimizer_switch_trigger_rate: 0.0,
+              eval_efficiency_ratio: 1.0,
+              quality_improvement_percent: 0.0,
+              best_solution: { '0': 1, '1': 0, '2': 1 },
+            },
+            {
+              variant_id: 'full_adaptive',
+              variant_name: 'Full Adaptive QAOA',
+              description: 'Dynamic depth growth + warm-start + fallback optimizer.',
+              trials_count: 1,
+              initial_depth: 1,
+              mean_final_depth: 2.0,
+              best_objective: 5.0,
+              mean_objective: 5.0,
+              worst_objective: 5.0,
+              std_objective: 0.0,
+              feasibility_rate: 1.0,
+              approximation_ratio: 1.0,
+              optimality_gap_percent: 0.0,
+              mean_runtime_ms: 220.0,
+              min_runtime_ms: 220.0,
+              max_runtime_ms: 220.0,
+              mean_evaluations: 30.0,
+              mean_circuit_executions: 2048.0,
+              depth_growth_trigger_rate: 1.0,
+              optimizer_switch_trigger_rate: 1.0,
+              eval_efficiency_ratio: 0.67,
+              quality_improvement_percent: 25.0,
+              best_solution: { '0': 1, '1': 0, '2': 1 },
+            },
+          ],
+          ablation_insights: [
+            'Full Adaptive QAOA achieved higher mean objective (5.00 vs 4.00 baseline), yielding a 25.0% improvement.',
+            'Dynamic Layer Growth Benefit: Layer expansion increased expressibility, yielding a +1.00 objective improvement.',
+          ],
+          total_runtime_seconds: 0.34,
+          hardware_transparency_note: 'All quantum simulations run on classical CPU emulation via Qiskit Aer.',
+          created_at: new Date().toISOString(),
+        }),
+    })
+  }
+
   if (url.includes('/solvers/quantum')) {
     return Promise.resolve({
       ok: true,

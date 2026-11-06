@@ -101,7 +101,9 @@ class AdaptiveQAOAConfiguration(BaseModel):
 
 class AdaptiveQAOARequest(BaseModel):
     """Request payload to execute an Adaptive QAOA optimization process."""
-    problem_id: str = Field(..., description="Target problem instance ID")
+    problem_id: Optional[str] = Field(None, description="Target problem instance ID")
+    problem_type: Optional[ProblemType] = Field(None, description="Problem family for ad-hoc problems")
+    instance: Optional[Dict[str, Any]] = Field(None, description="Ad-hoc problem instance definition")
     config: AdaptiveQAOAConfiguration = Field(
         default_factory=AdaptiveQAOAConfiguration,
         description="Adaptive QAOA execution parameters"
