@@ -46,6 +46,8 @@ from backend.app.ai.recommender import (
     IntelligentSolverRecommender,
     default_solver_recommender,
 )
+from backend.app.ai.evaluation import SolverRecommendationEvaluator
+from backend.app.ai.explainability import ExplainabilityEngine
 
 __all__ = [
     "AIRequest",
@@ -90,4 +92,6 @@ __all__ = [
     "RuleBasedSolverRecommender",
     "IntelligentSolverRecommender",
     "default_solver_recommender",
+    "SolverRecommendationEvaluator",
+    "ExplainabilityEngine",
 ]

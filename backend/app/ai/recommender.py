@@ -21,6 +21,7 @@ from backend.app.ai.interfaces import IMLRecommenderModel, ISolverRecommender
 from backend.app.ai.exceptions import ModelNotTrainedError, InferenceError
 from backend.app.ai.registry import MLModelRegistry, AIServiceRegistry
 from backend.app.ai.feature_extraction import default_feature_extractor
+from backend.app.ai.explainability import ExplainabilityEngine
 from backend.app.ai.config import ai_settings
 from backend.app.core.logging import logger
 
@@ -421,17 +422,29 @@ class IntelligentSolverRecommender(ISolverRecommender):
             resource_budget=user_constraints,
         )
 
-        # 2. Check if active ML model is trained and available
+        # 2. Out-of-distribution safeguard check
+        is_ood, max_z, divergent_feats = ExplainabilityEngine.detect_out_of_distribution(features)
+
+        # 3. Check if active ML model is trained and available
         active_model = MLModelRegistry.get_model()
         is_trained = MLModelRegistry.is_active_model_trained()
 
-        if not active_model or not is_trained:
-            logger.info("Active ML model is not trained. Delegating to expert rule-based recommender.")
+        # If OOD or ML model is untrained, use expert rule-based recommender
+        if is_ood or not active_model or not is_trained:
+            reason_str = "Instance is Out-of-Distribution" if is_ood else "Active ML model is untrained"
+            logger.info(f"{reason_str}. Delegating to expert rule-based recommender.")
             rec = RuleBasedSolverRecommender.recommend(problem_type, features, user_constraints)
             rec.problem_id = problem_id
+            rec.is_out_of_distribution = is_ood
+            if is_ood:
+                rec.recommendation_source = RecommendationSource.FALLBACK
+                rec.known_limitations.append(
+                    f"Out-of-distribution instance detected (max z-score: {max_z:.1f} on {', '.join(divergent_feats[:2])}). "
+                    f"Prediction reliability is reduced; rule-based safety fallback applied."
+                )
             return self._apply_safety_filters(rec, features, user_constraints)
 
-        # 3. Predict via ML model
+        # 4. Predict via ML model
         try:
             vec = features.to_feature_vector()
             pred_solver = active_model.predict(vec)
@@ -454,6 +467,14 @@ class IntelligentSolverRecommender(ISolverRecommender):
                 )
 
             model_meta = active_model.metadata
+            importances = active_model.get_feature_importances()
+            explanation = ExplainabilityEngine.generate_recommendation_explanation(
+                features=features,
+                recommended_solver=pred_solver,
+                ranked_alternatives=ranked_alts,
+                feature_importances=importances,
+            )
+
             rec = SolverRecommendation(
                 problem_id=problem_id,
                 problem_type=problem_type,
@@ -462,11 +483,7 @@ class IntelligentSolverRecommender(ISolverRecommender):
                 is_confidence_calibrated=False,
                 recommendation_source=RecommendationSource.ML_MODEL,
                 ranked_alternatives=ranked_alts,
-                explanation=(
-                    f"ML model '{model_meta.model_id}' ({model_meta.algorithm_name}) selected '{pred_solver}' "
-                    f"with {top_prob * 100:.1f}% score based on problem characteristics (variables: {features.num_variables}, "
-                    f"search space log2: {features.estimated_search_space_log2:.1f})."
-                ),
+                explanation=explanation,
                 key_features_summary={
                     "num_variables": features.num_variables,
                     "graph_density": features.graph_density,
@@ -476,6 +493,7 @@ class IntelligentSolverRecommender(ISolverRecommender):
                     "required_qubits": features.required_qubits,
                     "circuit_depth_estimate": features.estimated_circuit_depth_p1,
                 },
+                is_out_of_distribution=False,
                 model_version=model_meta.model_version,
                 known_limitations=[
                     "ML predictions reflect learned empirical performance and do not guarantee optimal execution outcomes.",
