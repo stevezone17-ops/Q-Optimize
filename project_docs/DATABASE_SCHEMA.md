@@ -67,3 +67,29 @@ Hash passwords using a modern password hashing algorithm. Never store raw passwo
 - `adaptive_executions.strategy_type, problem_type`.
 - Unique index on `adaptive_benchmarks.benchmark_id`.
 - `adaptive_benchmarks.problem_type, created_at`.
+
+---
+
+## Phase 7: AI and Machine Learning Collections
+
+### ai_models
+`_id`, `model_id` (unique), `model_version`, `algorithm_name`, `hyperparameters`, `metrics` (`accuracy`, `f1_weighted`, `brier_score`, `train_samples`, `test_samples`), `feature_names`, `target_classes`, `is_active`, `artifact_path`, `trained_at`.
+
+### ai_recommendation_audits
+`_id`, `audit_id` (unique), `problem_id`, `problem_type`, `features_snapshot` (18-dim numeric dictionary), `recommended_solver`, `confidence_score`, `ranked_alternatives` (array of `RankedSolverAlternative`), `explanation`, `top_features`, `is_out_of_distribution`, `max_z_score`, `active_model_version`, `timestamp`.
+
+### ai_recommendation_feedback
+`_id`, `feedback_id` (unique), `problem_id`, `problem_type`, `recommended_solver`, `user_selected_solver`, `was_accepted`, `recommendation_source`, `realized_objective_value`, `realized_runtime_seconds`, `realized_is_feasible`, `timestamp`.
+
+### ai_training_datasets
+`_id`, `dataset_id` (unique), `dataset_version`, `num_samples`, `num_features`, `class_distribution`, `source_experiments_count`, `created_at`.
+
+## Phase 7 Indexes
+- Unique index on `ai_models.model_id`.
+- `ai_models.is_active, trained_at`.
+- Unique index on `ai_recommendation_audits.audit_id`.
+- `ai_recommendation_audits.problem_id, timestamp`.
+- Unique index on `ai_recommendation_feedback.feedback_id`.
+- `ai_recommendation_feedback.problem_id, timestamp`.
+- `ai_recommendation_feedback.was_accepted`.
+- Unique index on `ai_training_datasets.dataset_id`.

@@ -120,3 +120,45 @@ To isolate the exact causal contribution of each architectural innovation, exper
 
 ### 10.4 Scientific Hardware Transparency Notice
 All Adaptive QAOA algorithms are simulated using Qiskit Aer on classical CPU infrastructure. In accordance with platform integrity policies, no simulated experiment is ever reported as demonstrating quantum supremacy or physical quantum hardware advantage.
+
+---
+
+## 11. Machine Learning Methodology & Algorithm Selection (Phase 7)
+
+### 11.1 Problem Formulation as Algorithm Selection
+The algorithm selection problem is formalized as finding a mapping $\mathcal{F}: \mathcal{X} \to \mathcal{S}$ where $\mathcal{X} \subset \mathbb{R}^{18}$ represents the continuous-discrete optimization feature space and $\mathcal{S} = \{s_1, \dots, s_K\}$ denotes the catalog of supported classical and quantum solvers:
+$$\mathcal{S} = \{\text{exact}, \text{genetic\_algorithm}, \text{simulated\_annealing}, \text{standard\_qaoa}, \text{adaptive\_qaoa}\}$$
+
+### 11.2 Supervised Label Assignment via Pareto Optimality
+Ground-truth solver labels $y^* \in \mathcal{S}$ are derived from empirical experiment records using a multi-criteria Pareto dominance policy:
+1. **Feasibility Gate:** Infeasible executions are strictly penalized ($f(s) = \infty$).
+2. **Objective Quality:** For instance $i$, the primary criterion is achieving the best verified objective value $f^*(i) = \min_{s} f(s, i)$ (or $\max$ for Max-Cut).
+3. **Runtime Efficiency Tie-Breaker:** For solvers achieving identical objective values within numerical tolerance $|f(s_1) - f(s_2)| \le 10^{-4}$, the solver with lower execution latency is selected:
+   $$y^*(i) = \arg\min_{s \in \mathcal{S}_{\text{opt}}(i)} t_{\text{exec}}(s, i)$$
+
+### 11.3 Group-Aware Leakage-Free Validation Protocol
+Random k-fold partitioning across execution logs causes severe data leakage when multiple runs of the same problem instance appear in both training and test splits. Q-Optimize strictly enforces **Group-Aware Splitting**:
+- Group identifier: Problem instance ID or graph generation seed.
+- Invariant: $\text{Groups}(\mathcal{D}_{\text{train}}) \cap \text{Groups}(\mathcal{D}_{\text{test}}) = \emptyset$.
+- This ensures models generalize to novel unseen problem topologies rather than memorizing graph instances.
+
+### 11.4 Recommendation Performance Metrics
+Beyond traditional classification accuracy and macro F1, recommender evaluation incorporates domain-specific regret metrics:
+- **Decision Regret:**
+  $$\text{Regret}(i) = \frac{|f(s_{\text{rec}}, i) - f(s^*, i)|}{|f(s^*, i)| + 10^{-9}}$$
+- **Brier Probability Calibration Score:**
+  $$\text{Brier} = \frac{1}{N} \sum_{i=1}^N \sum_{k=1}^K (p_{ik} - y_{ik})^2$$
+  where $p_{ik}$ is the model's predicted probability for solver $k$ and $y_{ik} \in \{0, 1\}$ is the one-hot ground-truth label.
+- **Feasibility Assurance Rate:** Percentage of recommended solvers that yield 100% constraint-satisfying feasible solutions.
+
+### 11.5 Out-of-Distribution (OOD) Detection & Continuous Monitoring
+- **Z-Score Distance Metric:** For feature vector $\vec{x}$, distance from training distribution mean $\vec{\mu}$ and variance $\vec{\sigma}$ is evaluated:
+  $$z_{\text{max}}(\vec{x}) = \max_{j \in [1, 18]} \frac{|x_j - \mu_j|}{\sigma_j}$$
+  Instances with $z_{\text{max}} > 3.5$ trigger automated fallback to deterministic rule-based algorithms.
+- **Two-Sample Kolmogorov-Smirnov (KS) Drift Test:**
+  The continuous learning monitor tests null hypothesis $H_0: F_{\text{recent}}(x_j) = F_{\text{reference}}(x_j)$. Features exhibiting $p < 0.05$ trigger drift alerts and retrain recommendations.
+
+### 11.6 Scientific Transparency & Model Integrity
+1. **Zero Hallucination Tolerance:** Natural language extraction never fabricates costs or constraints. Incomplete inputs produce explicit `missing_information` warnings.
+2. **Deterministic Mathematical Verification:** All AI-proposed models undergo canonical Phase 2 validation before entering the problem registry.
+3. **Hardware Transparency:** Recommender explanations explicitly differentiate between CPU-simulated quantum algorithms and classical heuristics, never implying physical quantum superiority.

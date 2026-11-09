@@ -223,3 +223,55 @@ Every phase release must satisfy:
 5. Tests the Parameter Transfer Laboratory: executes compatibility checks and parameter transfers.
 6. Switches to Execution Audit tab, toggling between standard QAOA and adaptive QAOA execution logs.
 7. Executes Adaptive QAOA comparative ablation benchmark through the typed service client.
+
+---
+
+## 7. Phase 7 AI & Machine Learning Intelligence Layer Test Suite (58 Tests Across Backend & Frontend)
+
+### 7.1 Backend AI/ML Test Modules (45 Tests, Total 246 Backend Tests Passing)
+1. **AI Architecture & Service Registries (`test_ai_architecture.py` - 5 tests):**
+   - Tests `MLModelRegistry` and `AIServiceRegistry` registration, retrieval, and active model toggling.
+   - Tests `ExperimentDataAccess` layer querying and schema adaptation.
+2. **Feature Engineering Engine (`test_ai_feature_extraction.py` - 6 tests):**
+   - Tests 18-dimensional feature vector extraction across Max-Cut, Assignment, and TSP problem instances.
+   - Tests QUBO and Ising Hamiltonian feature extraction and array serializability.
+3. **Dataset Builder & Leakage-Free Training Pipeline (`test_ai_dataset_and_training.py` - 8 tests):**
+   - Tests `SolverSelectionPolicy` Pareto efficiency and feasibility penalty enforcement.
+   - Tests `ExperimentDatasetBuilder` aggregation and balance.
+   - Tests `ModelTrainingPipeline` group-aware splitting (no instance seed overlap between train/test).
+   - Tests classifier training (`RandomForestClassifier`, `GradientBoostingClassifier`).
+4. **Intelligent Solver Recommendation (`test_ai_solver_recommendation.py` - 5 tests):**
+   - Tests `RuleBasedSolverRecommender` deterministic algorithm bounds.
+   - Tests `IntelligentSolverRecommender` ML probability inference and alternative rankings.
+   - Tests hard safety filters (qubit limit $N \le 20$, exact solver size ceilings).
+   - Tests REST endpoints (`/recommend`, `/models`, `/train`).
+5. **Evaluation, Calibration & Explainability (`test_ai_evaluation_and_explainability.py` - 4 tests):**
+   - Tests `SolverRecommendationEvaluator` multi-class metrics, Brier score calculation, and selection regret.
+   - Tests `ExplainabilityEngine` feature contribution attribution and z-score OOD statistical detection.
+6. **Natural Language Optimization Assistant (`test_ai_natural_language_assistant.py` - 7 tests):**
+   - Tests intent classification and entity extraction across all three problem families.
+   - Tests ambiguous text handling and missing information reporting.
+   - Tests unsupported problem description rejection.
+   - Tests canonical Phase 2 validation integration on draft proposals.
+7. **Model Monitoring & Continuous Learning (`test_ai_monitoring_and_learning.py` - 6 tests):**
+   - Tests `ModelMonitor` audit logging and user feedback recording.
+   - Tests Kolmogorov-Smirnov (KS) two-sample feature drift detection.
+   - Tests `ContinuousLearningPipeline` holdout candidate gating ($\Delta \ge 0.02$) and safe rollback.
+8. **End-to-End AI System Integration (`test_ai_end_to_end_integration.py` - 4 tests):**
+   - Full lifecycle Max-Cut workflow: NL description $\to$ draft $\to$ canonical Phase 2 validation $\to$ problem registration $\to$ recommendation $\to$ solver execution $\to$ independent evaluator verification $\to$ feedback logging.
+   - Full lifecycle Assignment workflow: Hungarian polynomial-time guarantee validation.
+   - Full lifecycle TSP workflow: Route distance verification and simulator limits.
+   - Cross-capability safety consistency verification.
+
+### 7.2 Frontend AI Interface Test Suite (13 Tests, Total 46 Frontend Tests Passing)
+1. **AI-Assisted Problem Builder (`AIAssistedProblemBuilder.test.tsx` - 5 tests):**
+   - Renders natural language input textarea, example prompt chips, and target family selector buttons.
+   - Dispatches parsing and displays structured draft proposal cards (entities, objective, constraints, assumptions, missing information).
+   - Validates draft proposals via Phase 2 validator and renders validation badge.
+   - Tests inline JSON editor and requires explicit human confirmation before creating problem.
+2. **Intelligent Solver Recommendation Panel (`AISolverRecommendation.test.tsx` - 8 tests):**
+   - Renders recommendation spotlight with confidence percentage and driving features.
+   - Displays ranked alternatives list with compatibility badges and resource notes.
+   - Interacts with the "Apply Recommended Solver & Settings" action.
+   - Opens the Recommendation Audit Modal to inspect feature vectors and safety filters.
+   - Tests error and OOD warning states.

@@ -475,3 +475,21 @@ The `AdaptiveBenchmarkEngine` (`backend/app/solvers/quantum/adaptive/benchmarkin
   - `ablation_no_optimizer_switching`: Dynamic depth with static optimizer (isolates value of optimizer switching).
   - `ablation_fourier`: Direct comparison of discrete frequency parameterization vs angle optimization.
 - **Automated Insights Synthesis:** Produces empirical scientific findings on which components contribute most to solution quality, approximation ratio $r$, and evaluation efficiency.
+
+---
+
+## 21. AI-Guided Quantum Solver Selection (Phase 7 Integration)
+
+The Phase 7 AI and Machine Learning Intelligence Layer (`backend/app/ai/`) directly interfaces with the Quantum Optimization Engine to guide users on when quantum approaches are appropriate:
+
+### 21.1 Resource & Simulation Safety Gating
+- **Qubit Register Ceiling:** Qiskit Aer statevector simulation on host CPU scales with Hilbert space dimension $2^N$. For $N > 20$ qubits, memory consumption exceeds gigabyte thresholds and runtime explodes exponentially. The AI recommendation engine enforces a strict safety filter: if `required_qubits > 20`, standard QAOA and adaptive QAOA are flagged as incompatible with explicit explanations.
+- **Circuit Depth Estimation:** Feature extraction computes `estimated_circuit_depth_p1` based on problem graph topology and coupling density. For high-density instances, the AI engine evaluates whether deep variational circuits will suffer from barren plateaus or excessive classical optimization latency.
+
+### 21.2 Comparative Recommendation Rationale
+- For small-to-moderate graph partitioning problems ($4 \le N \le 16$) where classical solvers like Simulated Annealing are fast but may get trapped in local minima, the AI recommender ranks `adaptive_qaoa` favorably, citing quantum tunneling capabilities and dynamic depth expansion.
+- When `problem_type` is Assignment or small TSP where exact polynomial or branch-and-bound classical methods are available, the AI engine transparently explains why classical exact or heuristic methods dominate NISQ simulation.
+
+### 21.3 Quantum Execution Feedback Loop
+- Every executed QAOA and Adaptive QAOA benchmark run logs its realized objective value, feasibility, and runtime into `ai_recommendation_feedback` and the experiment store.
+- The `ContinuousLearningPipeline` utilizes these empirical quantum simulation records to calibrate its solver selection policy and refine its classification boundaries without human bias.

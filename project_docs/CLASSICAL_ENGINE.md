@@ -140,3 +140,25 @@ The Classical Optimization Engine directly powers the baseline comparison suite 
 - `ExactSolver` establishes the verified global optimum $f^*$ to compute the quantum **Approximation Ratio** ($r = C_{\text{QAOA}} / C^*$ for Max-Cut, $r = C^* / C_{\text{QAOA}}$ for Assignment/TSP).
 - `GeneticAlgorithmSolver` and `SimulatedAnnealingSolver` provide realistic classical heuristic competitors with equivalent function evaluation budgets and runtime baselines.
 - The hybrid benchmark suite persists in `hybrid_benchmarks` and is accessible in both the Classical Lab and Quantum Lab.
+
+---
+
+## 8. ML-Recommended Solver Selection (Phase 7 Integration)
+
+The Phase 7 AI and Machine Learning Intelligence Layer (`backend/app/ai/`) integrates directly with the Classical Optimization Engine to provide automated, data-driven algorithm selection:
+
+### 8.1 Complexity-Aware Recommendations
+- **Assignment Problems:** For all valid linear sum assignment instances, the recommendation engine recommends `exact` (Hungarian algorithm) with $\ge 90\%$ confidence, recognizing its polynomial runtime complexity $O(n^3)$ that guarantees global optimality without heuristic approximations.
+- **Max-Cut Problems:**
+  - $n \le 18$: Recommends `exact` solver (exhaustive enumeration with bitwise symmetry reduction to $2^{n-1}$).
+  - $n > 20$: Exact solver is automatically disabled by safety filters. For dense graphs with high variance, `genetic_algorithm` or `simulated_annealing` is recommended depending on graph density and degree variance.
+- **TSP Problems:**
+  - $n \le 10$: `exact` (lexicographic permutation search $O(n!)$).
+  - $n > 10$: Exact solver disabled. `simulated_annealing` with 2-opt neighborhood operator is recommended for rapid convergence.
+
+### 8.2 Frontend Lab Integration
+- Both `ClassicalLabPage.tsx` and `ProblemBuilderPage.tsx` include the unified `SolverRecommendationPanel`:
+  - Instant recommendation badge with confidence percentage and top 3 influential features.
+  - One-click "Apply Recommended Solver & Settings" button that pre-configures the lab controls.
+  - Detailed audit modal disclosing feature values, safety filter determinations, and full alternative rankings.
+- User feedback and solver selections are recorded via `POST /api/v1/ai/feedback` to train future recommender iterations.

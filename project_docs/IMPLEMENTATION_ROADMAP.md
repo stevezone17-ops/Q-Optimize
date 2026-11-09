@@ -78,12 +78,17 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 **Exit:** dynamic strategies benchmarked against fixed-depth QAOA baseline; statistical distributions and ablation insights rigorously verified; 100% test pass rate across 201 backend and 33 frontend tests. (Achieved & Verified)
 
 ## Phase 7 — AI and ML
-- [ ] Structured natural-language draft parser.
-- [ ] Clarification and confirmation workflow.
-- [ ] Deterministic validation.
-- [ ] Benchmark feature extraction.
-- [ ] Rule-based recommender baseline.
-- [ ] ML recommendation evaluation on held-out instances.
+- [x] AI and machine learning architecture, interfaces, and registries (Stage 7.1).
+- [x] 18-dimensional optimization feature extraction engine across all problem types (Stage 7.2).
+- [x] Experiment dataset builder and leakage-free group-aware training pipeline (Stage 7.3).
+- [x] Intelligent solver recommender with ML inference, rule-based baseline, and safety ceilings (Stage 7.4).
+- [x] Solver recommendation evaluation, Brier calibration, explainability, and OOD detection (Stage 7.5).
+- [x] Natural language optimization assistant with Gemini and deterministic fallback (Stage 7.6).
+- [x] AI-assisted problem formulation in Problem Builder with human confirmation gate (Stage 7.7).
+- [x] Intelligent solver recommendation dashboard and audit modals across labs (Stage 7.8).
+- [x] ML model monitoring, feedback loop, KS feature drift detection, and continuous learning (Stage 7.9).
+- [x] Complete AI and machine learning integration, validation, and documentation (Stage 7.10).
+**Exit:** natural language assistant parses, extracts, and validates problem drafts with mandatory human confirmation; intelligent recommender predicts Pareto-optimal solvers with explainability, safety bounds, and OOD safeguards; 100% test pass rate across 246 backend and 46 frontend tests. (Achieved & Verified)
 
 ## Phase 8 — Experiments and visualizations
 - [ ] Background jobs and experiment history.

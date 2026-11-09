@@ -578,3 +578,208 @@ Synchronously executes adaptive variational optimization with dynamic layer grow
 - `POST /api/v1/solvers/quantum/adaptive/benchmarks`: Executes multi-variant ablation study comparing Standard baseline against Full Adaptive and components.
 - `GET /api/v1/solvers/quantum/adaptive/benchmarks`: Lists past benchmark runs.
 - `GET /api/v1/solvers/quantum/adaptive/benchmarks/{benchmark_id}`: Retrieves comprehensive statistical report and automated ablation insights.
+
+---
+
+## 7. AI and Machine Learning Intelligence Layer Endpoints (Phase 7)
+
+### 7.1 Natural Language Assistant: Parse Description
+`POST /api/v1/ai/assistant/parse`
+
+Parses unstructured natural language text into a structured, validated problem draft proposal. Never bypasses Phase 2 canonical validation.
+
+**Request Payload:**
+```json
+{
+  "text": "Partition a graph of 4 servers Alpha, Beta, Gamma, Delta to maximize disconnected latency.",
+  "problem_type_hint": "max_cut",
+  "provider_name": "gemini"
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "problem_type": "max_cut",
+  "is_supported": true,
+  "name": "Server Partitioning",
+  "description": "Partition 4 compute nodes to maximize crossing latency",
+  "entities": { "nodes": ["ALPHA", "BETA", "GAMMA", "DELTA"] },
+  "objective": { "direction": "maximize", "description": "Maximize total cut weight" },
+  "constraints": ["Binary partition assignment"],
+  "suggested_instance": {
+    "nodes": ["ALPHA", "BETA", "GAMMA", "DELTA"],
+    "edges": [
+      ["ALPHA", "BETA", 1.0],
+      ["BETA", "GAMMA", 1.0],
+      ["GAMMA", "DELTA", 1.0],
+      ["DELTA", "ALPHA", 1.0]
+    ]
+  },
+  "missing_information": ["Explicit latency weights were not detailed; unit weights proposed."],
+  "assumptions": ["Assumed simple cycle graph topology."],
+  "confidence_score": 0.85,
+  "requires_user_confirmation": true,
+  "validation_status": "VALID",
+  "is_mathematically_valid": true,
+  "validation_issues": []
+}
+```
+
+### 7.2 Natural Language Assistant: Validate Draft
+`POST /api/v1/ai/assistant/validate-draft`
+
+Performs independent Phase 2 mathematical validation on a proposed or user-edited draft.
+
+**Request Payload:**
+```json
+{
+  "problem_type": "max_cut",
+  "instance": {
+    "nodes": ["A", "B", "C"],
+    "edges": [["A", "B", 2.0], ["B", "C", 3.0]]
+  }
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "is_valid": true,
+  "status": "VALID",
+  "issues": [],
+  "problem_type": "max_cut"
+}
+```
+
+### 7.3 Intelligent Solver Recommendation
+`POST /api/v1/ai/recommend`
+
+Generates ranked solver recommendations with probability confidence, feature importance attribution, safety filters, and OOD checks.
+
+**Request Payload:**
+```json
+{
+  "problem_type": "max_cut",
+  "instance_data": {
+    "nodes": ["A", "B", "C", "D"],
+    "edges": [["A", "B", 1.0], ["B", "C", 2.0], ["C", "D", 1.5], ["D", "A", 2.5]]
+  },
+  "problem_id": "prob_mc_01",
+  "time_budget_seconds": 10.0,
+  "user_constraints": {}
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "problem_id": "prob_mc_01",
+  "problem_type": "max_cut",
+  "recommended_solver": "exact",
+  "confidence_score": 0.95,
+  "recommendation_source": "RULE_BASED",
+  "ranked_alternatives": [
+    {
+      "solver_name": "exact",
+      "score": 0.95,
+      "rank": 1,
+      "is_compatible": true,
+      "reason": "Instance size (n=4) is within exact global verification limits."
+    },
+    {
+      "solver_name": "adaptive_qaoa",
+      "score": 0.82,
+      "rank": 2,
+      "is_compatible": true,
+      "reason": "Qubit register (4 qubits) fits within CPU simulation limits."
+    },
+    {
+      "solver_name": "simulated_annealing",
+      "score": 0.75,
+      "rank": 3,
+      "is_compatible": true,
+      "reason": "Fast stochastic approximation available."
+    }
+  ],
+  "explanation": "Recommended 'exact' for MAX_CUT (n=4). Instance permits guaranteed global optimality in 8 evaluations.",
+  "top_features": [
+    { "feature_name": "num_variables", "feature_value": 4.0, "importance": 0.45 },
+    { "feature_name": "graph_density", "feature_value": 0.67, "importance": 0.30 }
+  ],
+  "out_of_distribution_alert": null,
+  "resource_considerations": {
+    "required_qubits": 4,
+    "quantum_simulator_compatible": true,
+    "exact_solver_feasible": true
+  },
+  "active_model_version": "v1.0.0",
+  "timestamp": "2026-11-09T15:30:00Z"
+}
+```
+
+### 7.4 Models Registry & Activation
+- `GET /api/v1/ai/models`: Lists all registered ML recommender models with metrics (accuracy, F1, Brier score, trained timestamp, active flag).
+- `POST /api/v1/ai/models/{model_id}/activate`: Sets specified model as active production recommender.
+
+### 7.5 Dataset Training
+`POST /api/v1/ai/train`
+
+Triggers offline or on-demand model training over historical benchmark experiment runs with group-aware leakage-free cross-validation.
+
+**Request Payload:**
+```json
+{
+  "algorithm": "random_forest",
+  "hyperparameters": { "n_estimators": 100, "max_depth": 6 },
+  "min_samples": 10,
+  "set_active": true
+}
+```
+
+**Response Payload (200 OK):**
+```json
+{
+  "model_id": "rf_recommender_20261109",
+  "model_version": "v1.0.1",
+  "status": "TRAINED",
+  "metrics": {
+    "accuracy": 0.92,
+    "f1_weighted": 0.91,
+    "brier_score": 0.08,
+    "train_samples": 48,
+    "test_samples": 16
+  },
+  "is_active": true
+}
+```
+
+### 7.6 User Feedback & Audit Logging
+`POST /api/v1/ai/feedback`
+
+Records user solver acceptance, selection overrides, and realized post-solve execution metrics.
+
+**Request Payload:**
+```json
+{
+  "feedback_id": "fb_101",
+  "problem_id": "prob_mc_01",
+  "problem_type": "max_cut",
+  "recommended_solver": "exact",
+  "user_selected_solver": "exact",
+  "was_accepted": true,
+  "recommendation_source": "RULE_BASED",
+  "realized_objective_value": 5.0,
+  "realized_runtime_seconds": 0.002,
+  "realized_is_feasible": true
+}
+```
+
+### 7.7 Monitoring & Drift Diagnostics
+`GET /api/v1/ai/monitoring`
+
+Returns aggregate system telemetry: total recommendations served, feedback acceptance rate, feature drift KS statistics, and OOD event frequency.
+
+### 7.8 Continuous Learning Pipeline & Safe Rollback
+- `POST /api/v1/ai/retrain`: Evaluates new empirical records, trains candidate model, gates promotion on holdout validation ($\Delta \ge 0.02$).
+- `POST /api/v1/ai/rollback`: Safely rolls back production recommender to previous stable checkpoint.

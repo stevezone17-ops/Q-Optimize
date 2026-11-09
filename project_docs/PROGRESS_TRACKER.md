@@ -11,24 +11,25 @@ Allowed statuses: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `COMPLETED`, `NEEDS R
 | 4 | Classical solvers | COMPLETED | Phase 2 | PASSED | Complete Phase 4 Classical Engine: Architecture, Exact, GA, SA solvers, background pipeline, benchmarking engine, Classical Lab UI, 117 Pytest + 19 Vitest passing |
 | 5 | QAOA engine | COMPLETED | Phase 3, Phase 4 | PASSED | Complete Phase 5 QAOA Quantum Optimization Engine across all 10 stages (5.1–5.10): Infrastructure, Hamiltonians, CircuitBuilder, Optimizer, Sampling Engine, Decoder, Pipeline, Quantum Lab UI, Hybrid Benchmarking, and Scientific Verification; 159 Pytest + 26 Vitest tests passing |
 | 6 | Adaptive QAOA research | COMPLETED | Phase 5 | PASSED | Complete Phase 6 Adaptive QAOA Research Engine across all 10 stages (6.1–6.10): Architecture, initializers, parameter transfer, optimizer scheduling, dynamic depth manager, convergence monitor, execution pipeline, Research Lab UI, ablation benchmarking, and scientific validation; 201 Pytest + 33 Vitest tests passing |
-| 7 | AI and ML modules | IN PROGRESS | Phases 2, 4, 5, 6 | PASSED | Stage 7.1 complete: Modular backend architecture, domain models, configuration, exceptions, interfaces, MLModelRegistry, AIServiceRegistry, unified ExperimentDataAccess layer; 206 Pytest + 33 Vitest tests passing |
+| 7 | AI and ML modules | COMPLETED | Phases 2, 4, 5, 6 | PASSED | Complete Phase 7 AI and Machine Learning Intelligence Layer across all 10 stages (7.1–7.10): Natural Language Assistant, Gemini & deterministic fallback, Phase 2 mathematical validation gate, 18-dim feature extraction, group-aware training pipeline, scikit-learn models, expert rule-based recommender, safety ceilings, explainability & Brier calibration, OOD detection, UI integration across Problem Builder / Classical Lab / Quantum Lab, continuous learning & rollback; 246 Pytest + 46 Vitest tests passing |
 | 8 | Experiments and visualizations | NOT STARTED | Phases 4–7 | Not run | Empty states prepared |
 | 9 | Hardening and delivery | NOT STARTED | Prior phases | Not run | |
 
 ## Current milestone
-Phase 6 (Adaptive QAOA Research & Dynamic Parameter Strategies) fully implemented, benchmarked, and scientifically verified across all ten stages (6.1–6.10). The platform now features:
-- Extensible `IAdaptiveStrategy` architecture, registry, factory, and REST discovery endpoints.
-- Physics-grounded parameter initializers: Trotterized linear ramp, Fourier frequency parametrization $(u, v)$, warm-start interpolation, uniform random, and custom angle vectors.
-- `ParameterTransferService` with cross-depth linear interpolation, adiabatic extension, layer padding, and historical parameter extraction.
-- `AdaptiveOptimizerController` with static, adaptive-fallback (e.g. COBYLA -> Nelder-Mead on stagnation), and multi-stage coarse-to-fine schedules.
-- `AdaptiveDepthManager` featuring layer progression protocols (Fixed-Incremental, Improvement-Triggered, None) with $p \le 10$ safety ceiling.
-- `AdaptiveConvergenceMonitor` tracking rolling energy trajectories, stagnation windowing, parameter shift norms, and multi-objective stopping conditions.
-- `AdaptiveQAOAExecutionPipeline` with thread-pooled background workers (`qopt-aqaoa-`), cooperative cancellation, and independent Phase 2 solution decoding.
-- Comprehensive React/TypeScript Adaptive QAOA Research Lab frontend with strategy presets, parameter trajectories, decision audit logs, and parameter transfer tools.
-- `AdaptiveBenchmarkEngine` executing multi-trial ablation studies (Full Adaptive vs No Warm-Start vs No Dynamic Depth vs No Optimizer Switching vs Fourier), computing statistical distributions, exact ground-truth optimum comparisons, speedup ratios, and automated scientific insights.
-- 100% test pass rate (201 backend Pytest tests, 33 frontend Vitest tests, clean production build).
+Phase 7 (AI and Machine Learning Intelligence Layer) fully implemented, integrated, and empirically validated across all ten stages (7.1–7.10). The platform now features:
+- Dual-capability AI intelligence layer: Natural Language Optimization Assistant (Capability A) and ML-Based Intelligent Solver Recommender (Capability B).
+- Robust LLM integration with Google Gemini (`GeminiLLMProvider`) and graceful fallback to regex/heuristic extraction (`DeterministicFallbackParser`).
+- Mandatory canonical Phase 2 mathematical validation gate and user confirmation requirement before any draft enters the problem registry.
+- 18-dimensional optimization feature extraction pipeline covering graph density, degree distributions, coefficient statistics, QUBO/Ising interactions, and resource limits.
+- Group-aware leakage-free cross-validation training pipeline preventing instance memorization.
+- Scikit-learn multi-class classifiers (`RandomForestClassifier`, `GradientBoostingClassifier`) coupled with transparent expert rule-based recommender.
+- Strict physical and computational safety ceilings (exactness thresholds and CPU qubit simulation bounds $N \le 20$).
+- Explainability engine with decision rationales, feature attribution importances, Brier score probability calibration, and statistical z-score OOD detection.
+- Unified frontend components: `NaturalLanguageDraft.tsx`, `SolverRecommendationPanel.tsx`, `RecommendationAuditModal.tsx` integrated across Problem Builder, Classical Lab, and Quantum Lab.
+- Continuous learning pipeline with audit logging, human feedback tracking, Kolmogorov-Smirnov feature drift detection, holdout candidate gating ($\Delta \ge 0.02$), and safe version rollback.
+- 100% test pass rate (246 backend Pytest tests, 46 frontend Vitest tests, clean production build).
 
-Next milestone: Phase 7 (AI and ML modules).
+Next milestone: Phase 8 (Experiments and visualizations).
 
 ## Change log
 | Date | Change | Evidence/commit |
@@ -74,6 +75,7 @@ Next milestone: Phase 7 (AI and ML modules).
 | 2026-11-06 | Stage 7.7 AI-Assisted Problem Formulation in Problem Builder: Integrated NaturalLanguageDraft component with interactive draft generation, prompt suggestions, detected entity highlights, explicit assumption disclosures, inline JSON instance editor, Phase 2 mathematical validation check, and user confirmation gate; 236 Pytest + 38 Vitest tests passing | Git commit `feat: integrate AI-assisted problem formulation into Problem Builder` |
 | 2026-11-06 | Stage 7.8 Intelligent Solver Recommendation Dashboard: Implemented SolverRecommendationPanel with spotlight cards, ranked alternatives, feature breakdowns, OOD alerts, RecommendationAuditModal, and integrated AI advisor actions across Problem Builder, Classical Lab, and Quantum Lab; 236 Pytest + 46 Vitest tests passing | Git commit `feat: implement intelligent solver recommendation dashboard` |
 | 2026-11-06 | Stage 7.9 Model Monitoring, Feedback, and Continuous Learning Pipeline: Implemented ModelMonitor (audit logging, human acceptance/feasibility feedback, KS-statistic feature drift detection), ContinuousLearningPipeline (holdout gating, candidate evaluation, safe model promotion, version rollback), REST endpoints (/ai/feedback, /ai/monitoring, /ai/retrain, /ai/rollback); 242 Pytest + 46 Vitest tests passing | Git commit `feat: implement ML model monitoring and continuous learning pipeline` |
+| 2026-11-09 | Stage 7.10 AI and ML Integration, Scientific Validation & Delivery: Full end-to-end integration and verification of Phase 7 AI and Machine Learning Intelligence Layer; documentation updates across all project docs; Phase 7 Completion Report; and 246 Pytest + 46 Vitest tests passing | Git commit `test: complete AI and machine learning integration and validation` |
 
 ## Blockers and decisions
 - **Decided:** Upper-triangular matrix convention ($i < j$) is strictly enforced across all internal representations and export routines, preventing double-counting of quadratic terms in symmetric formulations.

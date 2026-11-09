@@ -2,12 +2,12 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 6 Complete](https://img.shields.io/badge/Status-Phase%206%20Adaptive%20QAOA-10B981.svg)](#)
+[![Status: Phase 7 Complete](https://img.shields.io/badge/Status-Phase%207%20AI%20%26%20ML-10B981.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
-[![Tests: 201 Pytest | 33 Vitest](https://img.shields.io/badge/Tests-234%20Passing-emerald.svg)](#)
+[![Tests: 246 Pytest | 46 Vitest](https://img.shields.io/badge/Tests-292%20Passing-emerald.svg)](#)
 
 ---
 
@@ -42,8 +42,15 @@ Q-Optimize/
 │   │   │   ├── classical/    # IClassicalSolver, ExactSolver, GA, SA, Pipeline, BenchmarkEngine
 │   │   │   └── quantum/      # QAOA Hamiltonians, CircuitBuilder, Optimizer, Sampling, Pipeline
 │   │   │       └── adaptive/ # Adaptive Strategies, Initializers, Transfer, Scheduling, Depth, Monitor, Pipeline, Benchmarking
+│   │   ├── ai/               # AI & ML Intelligence Layer (Phase 7)
+│   │   │   ├── natural_language/ # Gemini & Deterministic NL Assistant
+│   │   │   ├── feature_extraction.py # 18-dim optimization feature engineering
+│   │   │   ├── recommender.py    # MLSolverRecommenderModel & RuleBasedSolverRecommender
+│   │   │   ├── explainability.py # Feature attribution, calibration & OOD checks
+│   │   │   ├── monitoring.py     # Feedback logging & KS-test feature drift detection
+│   │   │   └── continuous_learning.py # Retraining pipeline & safe model rollback
 │   │   └── workers/          # Background task queue interfaces (Phase 8)
-│   └── tests/                # Pytest unit, constraint, formulation, and solver test suite (117 tests)
+│   └── tests/                # Pytest unit, constraint, formulation, solver, & AI test suite (246 tests)
 ├── frontend/                 # React 18 + TypeScript + Vite frontend
 │   └── src/
 │       ├── app/              # App root and view management
@@ -55,7 +62,7 @@ Q-Optimize/
 │       ├── pages/            # Overview, ProblemBuilder, FormulationStudio, ClassicalLabPage, Learn, Settings
 │       ├── services/         # Centralized API service (problemService, formulationService, classicalService)
 │       ├── hooks/            # useBackendHealth polling and diagnostic hook
-│       └── tests/            # Vitest and Testing Library test suite (19 tests)
+│       └── tests/            # Vitest and Testing Library test suite (46 tests)
 ├── research/                 # Reproducible research datasets, configs, and notebooks
 ├── docs/                     # Supplemental documentation
 └── project_docs/             # Canonical project requirements and specifications
@@ -63,7 +70,38 @@ Q-Optimize/
 
 ---
 
-## 3. Implemented Capabilities (Phases 1, 2, 3, 4, 5 & 6)
+## 3. Implemented Capabilities (Phases 1, 2, 3, 4, 5, 6 & 7)
+
+### Phase 7: AI and Machine Learning Intelligence Layer
+1. **Natural Language Optimization Assistant (Capability A):**
+   - Natural language parsing engine translating human descriptions into formal optimization problems.
+   - Dual-provider architecture: Google Gemini API integration (`GeminiLLMProvider`) and robust regex/heuristic parser (`DeterministicFallbackParser`).
+   - Domain-specific entity extraction, objective direction determination, and constraint formulation for Max-Cut, Assignment, and TSP.
+   - Ambiguity and omission detection returning explicit `missing_information` warnings without hallucinating missing data.
+   - Mandatory Phase 2 canonical mathematical validation gate rejecting invalid instances.
+   - Human confirmation gate requiring explicit review before problem creation.
+
+2. **Intelligent Solver Recommendation Engine (Capability B):**
+   - Supervised ML recommender (`RandomForestClassifier`, `GradientBoostingClassifier`) trained on empirical execution data.
+   - Expert `RuleBasedSolverRecommender` enforcing theoretical complexity limits and algorithm suitability.
+   - 18-dimensional optimization feature extraction pipeline covering graph structure, degree statistics, constraint densities, QUBO/Ising properties, and resource limits.
+   - Strict physical and simulation safety filters (disabling exact solvers for $N > 20$ Max-Cut and $N > 10$ TSP; gating quantum simulators at $N \le 20$ CPU qubits).
+   - Group-aware cross-validation splitting by instance ID to eliminate test leakage.
+   - Pareto-optimal solver selection policy trading off solution quality and execution latency.
+
+3. **Explainability, Calibration & Out-of-Distribution Safeguards:**
+   - Decision rationale synthesis with top-3 feature contribution importance values.
+   - Brier score probability calibration evaluation.
+   - Out-of-Distribution (OOD) detection via feature z-score divergence ($z_{\text{max}} > 3.5$) with automated fallback to rule-based recommendations.
+
+4. **Continuous Learning & Model Lifecycle Monitoring:**
+   - Continuous audit logging of recommendations and user acceptance feedback.
+   - Two-sample Kolmogorov-Smirnov (KS) test for feature distribution drift detection.
+   - Retraining pipeline with holdout candidate evaluation and safe version rollback.
+
+5. **Integrated Frontend UI & AI Advisor:**
+   - Problem Builder: Interactive natural language drafting with suggestion chips and validation badge.
+   - Classical & Quantum Labs: Embedded `SolverRecommendationPanel` with one-click preset configuration and full `RecommendationAuditModal`.
 
 ### Phase 6: Adaptive QAOA Research & Dynamic Parameter Strategies
 1. **Adaptive QAOA Architecture & Extensible Framework:**
