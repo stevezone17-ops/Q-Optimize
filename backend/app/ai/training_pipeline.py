@@ -147,3 +147,4 @@ class ModelTrainingPipeline:
             "macro_f1": f1,
             "confusion_matrix": cm_dict,
         }
+

@@ -825,6 +825,83 @@ export interface AdaptiveBenchmarkResult {
   created_at: string
 }
 
+// ==========================================
+// Phase 7: AI and Machine Learning Intelligence
+// ==========================================
+
+export interface ProblemDraftProposal {
+  problem_type?: ProblemType | null
+  is_supported: boolean
+  name: string
+  description: string
+  entities: Record<string, any>
+  objective: Record<string, any>
+  constraints: string[]
+  suggested_instance: Record<string, any>
+  missing_information: string[]
+  assumptions: string[]
+  confidence_score: number
+  is_mathematically_valid: boolean
+  validation_status: string
+  validation_issues: string[]
+  requires_user_confirmation: boolean
+  provider_used: string
+  disclaimer: string
+}
+
+export interface RankedSolverAlternative {
+  solver_name: string
+  score: number
+  rank: number
+  is_compatible: boolean
+  reason: string
+  estimated_runtime_class?: string
+}
+
+export interface SolverRecommendation {
+  problem_id?: string | null
+  problem_type: ProblemType
+  recommended_solver: string
+  confidence_score: number
+  is_confidence_calibrated: boolean
+  recommendation_source: 'ml_model' | 'rule_based' | 'fallback'
+  ranked_alternatives: RankedSolverAlternative[]
+  explanation: string
+  key_features_summary: Record<string, any>
+  resource_considerations: Record<string, any>
+  is_out_of_distribution: boolean
+  known_limitations: string[]
+  model_version?: string | null
+  dataset_version?: string | null
+  timestamp: string
+}
+
+export interface ModelMetadata {
+  model_id: string
+  model_version: string
+  algorithm_name: string
+  hyperparameters: Record<string, any>
+  feature_schema_version: string
+  features_list: string[]
+  target_classes: string[]
+  trained_at?: string | null
+  training_sample_count: number
+  is_trained: boolean
+  is_active: boolean
+  accuracy?: number | null
+  macro_f1?: number | null
+  notes?: string | null
+}
+
+export interface ModelTrainResponse {
+  success: boolean
+  model_metadata: ModelMetadata
+  evaluation_metrics: Record<string, any>
+  training_sample_count: number
+  notes: string
+}
+
+
 
 
 

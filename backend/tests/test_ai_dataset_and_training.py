@@ -191,3 +191,4 @@ def test_compute_evaluation_metrics():
     assert "confusion_matrix" in metrics
     assert metrics["confusion_matrix"]["exact"]["exact"] == 1
     assert metrics["confusion_matrix"]["exact"]["simulated_annealing"] == 1
+

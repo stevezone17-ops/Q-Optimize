@@ -466,6 +466,15 @@ class IntelligentSolverRecommender(ISolverRecommender):
                     )
                 )
 
+            # Augment with any remaining solver alternatives from rule-based recommender
+            existing_solvers = {a.solver_name for a in ranked_alts}
+            rule_rec = RuleBasedSolverRecommender.recommend(problem_type, features, user_constraints)
+            for rule_alt in rule_rec.ranked_alternatives:
+                if rule_alt.solver_name not in existing_solvers:
+                    rule_alt.rank = len(ranked_alts) + 1
+                    ranked_alts.append(rule_alt)
+                    existing_solvers.add(rule_alt.solver_name)
+
             model_meta = active_model.metadata
             importances = active_model.get_feature_importances()
             explanation = ExplainabilityEngine.generate_recommendation_explanation(
@@ -558,9 +567,16 @@ class IntelligentSolverRecommender(ISolverRecommender):
             if compat_alts:
                 compat_alts.sort(key=lambda x: x.score, reverse=True)
                 new_rec = compat_alts[0]
-                rec.explanation += f" (Note: Original recommendation overridden by safety filter to '{new_rec.solver_name}')."
+                rec.explanation += f" (Note: Original recommendation '{rec.recommended_solver}' overridden by safety filter to '{new_rec.solver_name}')."
                 rec.recommended_solver = new_rec.solver_name
                 rec.confidence_score = new_rec.score
+            else:
+                rule_rec = RuleBasedSolverRecommender.recommend(rec.problem_type, features, user_constraints)
+                rec.recommended_solver = rule_rec.recommended_solver
+                rec.confidence_score = rule_rec.confidence_score
+                rec.explanation += f" (Note: Overridden by rule-based safety fallback to '{rule_rec.recommended_solver}')."
+                rec.ranked_alternatives = rule_rec.ranked_alternatives
+                rec.recommendation_source = RecommendationSource.FALLBACK
 
         return rec
 

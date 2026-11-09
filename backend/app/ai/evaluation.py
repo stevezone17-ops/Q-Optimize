@@ -167,3 +167,4 @@ class SolverRecommendationEvaluator(IModelEvaluator):
         from backend.app.ai.dataset_builder import ExperimentDatasetBuilder
         samples, _ = ExperimentDatasetBuilder.build_dataset(records)
         return samples
+

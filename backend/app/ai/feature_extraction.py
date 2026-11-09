@@ -335,3 +335,4 @@ class OptimizationFeatureExtractor(IFeatureExtractor):
 default_feature_extractor = OptimizationFeatureExtractor()
 from backend.app.ai.registry import AIServiceRegistry
 AIServiceRegistry.register_feature_extractor(default_feature_extractor)
+

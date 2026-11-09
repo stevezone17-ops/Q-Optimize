@@ -127,3 +127,4 @@ def test_out_of_distribution_detection():
     assert is_ood_ext is True
     assert max_z_ext > 3.5
     assert len(divergent) >= 1
+

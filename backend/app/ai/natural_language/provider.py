@@ -332,3 +332,4 @@ class GeminiLLMProvider(ILLMProvider):
         except Exception as e:
             logger.warning(f"Gemini LLM call failed ({e}). Falling back to deterministic parser.")
             return await self._fallback.generate_draft(prompt, problem_type_hint)
+

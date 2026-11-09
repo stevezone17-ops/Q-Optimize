@@ -55,3 +55,4 @@ class LLMProviderError(AIError):
 class NaturalLanguageParsingError(AIError):
     """Raised when natural language text cannot be interpreted into a valid problem draft."""
     pass
+

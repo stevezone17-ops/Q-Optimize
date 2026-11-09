@@ -118,3 +118,4 @@ class AIServiceRegistry:
             logger.warning(f"LLM provider '{name}' not found; keeping current provider")
             return
         cls._active_provider_name = name
+

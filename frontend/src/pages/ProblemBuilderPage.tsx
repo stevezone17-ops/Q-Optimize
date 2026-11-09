@@ -5,6 +5,7 @@ import {
   MaxCutInstance,
   AssignmentInstance,
   TSPInstance,
+  ProblemDraftProposal,
   ProblemDraftResponse,
   ProblemResponse,
 } from '../types'
@@ -150,8 +151,10 @@ export const ProblemBuilderPage: React.FC = () => {
   }
 
   // Draft callback from Natural Language parser
-  const handleApplyDraft = (draft: ProblemDraftResponse) => {
-    setProblemType(draft.problem_type)
+  const handleApplyDraft = (draft: ProblemDraftProposal | ProblemDraftResponse) => {
+    if (draft.problem_type) {
+      setProblemType(draft.problem_type)
+    }
     setProblemName(draft.name)
     setProblemDescription(draft.description)
 

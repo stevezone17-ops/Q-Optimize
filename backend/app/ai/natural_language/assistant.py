@@ -121,3 +121,4 @@ class NaturalLanguageAssistant:
 default_nl_assistant = NaturalLanguageAssistant()
 AIServiceRegistry.register_llm_provider("gemini", GeminiLLMProvider())
 AIServiceRegistry.register_llm_provider("deterministic_fallback", DeterministicFallbackParser())
+

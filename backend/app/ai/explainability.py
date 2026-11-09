@@ -129,3 +129,4 @@ class ExplainabilityEngine:
             logger.warning(f"OOD problem instance detected: max_z={max_z:.2f} > {threshold}. Features: {divergent_features}")
 
         return is_ood, max_z, divergent_features
+

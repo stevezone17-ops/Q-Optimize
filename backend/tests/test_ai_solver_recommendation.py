@@ -188,3 +188,4 @@ def test_api_train_and_list_models_endpoints(client: TestClient):
     assert list_resp.status_code == 200
     models = list_resp.json()
     assert any(m["model_version"] == "v1.0.0-test" for m in models)
+
