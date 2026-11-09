@@ -1,4 +1,4 @@
-import { apiClient } from './api'
+import { request } from './api'
 import {
   ProblemType,
   ProblemDraftProposal,
@@ -45,40 +45,46 @@ export const aiService = {
    * Parse natural language description into structured draft proposal.
    */
   async parseDescription(req: NLParseRequest): Promise<ProblemDraftProposal> {
-    const res = await apiClient.post<ProblemDraftProposal>('/ai/assistant/parse', req)
-    return res.data
+    return request<ProblemDraftProposal>('/ai/assistant/parse', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    })
   },
 
   /**
    * Re-validate an edited problem instance draft against canonical Phase 2 validators.
    */
   async validateDraftInstance(req: NLValidateDraftRequest): Promise<DraftValidationResult> {
-    const res = await apiClient.post<DraftValidationResult>('/ai/assistant/validate-draft', req)
-    return res.data
+    return request<DraftValidationResult>('/ai/assistant/validate-draft', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    })
   },
 
   /**
    * Request intelligent solver recommendation for a stored or ad-hoc problem instance.
    */
   async recommendSolver(req: SolverRecommendationRequest): Promise<SolverRecommendation> {
-    const res = await apiClient.post<SolverRecommendation>('/ai/recommend', req)
-    return res.data
+    return request<SolverRecommendation>('/ai/recommend', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    })
   },
 
   /**
    * List all registered recommendation models.
    */
   async listModels(): Promise<ModelMetadata[]> {
-    const res = await apiClient.get<ModelMetadata[]>('/ai/models')
-    return res.data
+    return request<ModelMetadata[]>('/ai/models')
   },
 
   /**
    * Trigger candidate model training.
    */
   async trainModel(req: ModelTrainRequest = {}): Promise<ModelTrainResponse> {
-    const res = await apiClient.post<ModelTrainResponse>('/ai/train', req)
-    return res.data
+    return request<ModelTrainResponse>('/ai/train', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    })
   },
 }
-

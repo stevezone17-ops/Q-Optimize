@@ -11,9 +11,11 @@ import {
   SolverResult,
   BenchmarkResult,
   ExecutionRecord,
+  SolverRecommendation,
 } from '../types'
 import { classicalSolverService } from '../services/classicalSolverService'
 import { problemService } from '../services/problemService'
+import { aiService } from '../services/aiService'
 import {
   Cpu,
   Play,
@@ -28,6 +30,7 @@ import {
   Award,
   ArrowRight,
   ShieldCheck,
+  Sparkles,
 } from 'lucide-react'
 
 // Built-in small benchmark presets
@@ -123,6 +126,29 @@ export const ClassicalLabPage: React.FC = () => {
   // History state
   const [recentExecutions, setRecentExecutions] = useState<ExecutionRecord[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+
+  // AI Recommendation State
+  const [aiRecommendation, setAiRecommendation] = useState<SolverRecommendation | null>(null)
+  const [isLoadingAiRec, setIsLoadingAiRec] = useState(false)
+
+  const fetchAiRecommendation = async () => {
+    setIsLoadingAiRec(true)
+    try {
+      const rec = await aiService.recommendSolver({
+        problem_id: activeProblem.isPreset ? undefined : selectedProblemId,
+        problem_type: activeProblem.problemType,
+        instance: activeProblem.instance,
+      })
+      setAiRecommendation(rec)
+      if (rec.recommended_solver && ['exact', 'genetic_algorithm', 'simulated_annealing'].includes(rec.recommended_solver)) {
+        setSelectedSolverId(rec.recommended_solver)
+      }
+    } catch {
+      // Non-blocking
+    } finally {
+      setIsLoadingAiRec(false)
+    }
+  }
 
   // Fetch solvers and problems
   useEffect(() => {
@@ -515,35 +541,65 @@ export const ClassicalLabPage: React.FC = () => {
       {activeMode === 'single' && (
         <>
           {/* Solver Selection Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {solvers.map((s) => {
-              const isSelected = s.solver_id === selectedSolverId
-              return (
-                <div
-                  key={s.solver_id}
-                  onClick={() => setSelectedSolverId(s.solver_id)}
-                  className={`cursor-pointer p-4 rounded-xl border transition-all ${
-                    isSelected
-                      ? 'bg-midnight-900 border-emerald-500/80 shadow-lg ring-1 ring-emerald-500/50'
-                      : 'bg-midnight-900/40 border-scientific-border hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold font-mono text-slate-200">{s.name}</span>
-                    <Badge variant={s.is_implemented ? 'accent' : 'outline'}>
-                      {s.is_implemented ? `Ready (${s.stage_introduced})` : s.stage_introduced}
-                    </Badge>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-300 font-semibold">
+                Available Classical Solvers
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={fetchAiRecommendation}
+                isLoading={isLoadingAiRec}
+                leftIcon={<Sparkles className="h-3.5 w-3.5 text-indigo-400" />}
+                className="text-xs font-mono text-indigo-300 hover:text-indigo-200"
+              >
+                {aiRecommendation ? 'Re-evaluate AI Pick' : 'Get AI Recommendation'}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {solvers.map((s) => {
+                const isSelected = s.solver_id === selectedSolverId
+                const isRecommended = aiRecommendation?.recommended_solver === s.solver_id
+                return (
+                  <div
+                    key={s.solver_id}
+                    onClick={() => setSelectedSolverId(s.solver_id)}
+                    className={`cursor-pointer p-4 rounded-xl border transition-all ${
+                      isSelected
+                        ? 'bg-midnight-900 border-emerald-500/80 shadow-lg ring-1 ring-emerald-500/50'
+                        : isRecommended
+                        ? 'bg-midnight-900/60 border-indigo-500/60 shadow'
+                        : 'bg-midnight-900/40 border-scientific-border hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold font-mono text-slate-200">{s.name}</span>
+                        {isRecommended && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            AI Recommended
+                          </span>
+                        )}
+                      </div>
+                      <Badge variant={s.is_implemented ? 'accent' : 'outline'}>
+                        {s.is_implemented ? `Ready (${s.stage_introduced})` : s.stage_introduced}
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-scientific-muted line-clamp-2 leading-relaxed mb-3">
+                      {s.description}
+                    </p>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                      <span>Types: {s.supported_problem_types.join(', ')}</span>
+                      <span className="text-emerald-400 font-semibold">{isSelected ? 'Active' : 'Select'}</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-scientific-muted line-clamp-2 leading-relaxed mb-3">
-                    {s.description}
-                  </p>
-                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                    <span>Types: {s.supported_problem_types.join(', ')}</span>
-                    <span className="text-emerald-400 font-semibold">{isSelected ? 'Active' : 'Select'}</span>
-                  </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
 
           {/* Configuration and Execution Split Grid */}

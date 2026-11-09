@@ -24,10 +24,12 @@ import {
   AdaptiveExecutionRecord,
   TransferCompatibilityReport,
   TransferParametersResponse,
+  SolverRecommendation,
 } from '../types'
 import { quantumSolverService, QAOAExecutionPayload } from '../services/quantumSolverService'
 import { adaptiveSolverService } from '../services/adaptiveSolverService'
 import { problemService } from '../services/problemService'
+import { aiService } from '../services/aiService'
 import {
   Play,
   Settings,
@@ -152,6 +154,26 @@ export const QuantumLabPage: React.FC = () => {
   const [adaptiveExecutionResult, setAdaptiveExecutionResult] = useState<AdaptiveQAOAResult | null>(null)
   const [adaptiveHistory, setAdaptiveHistory] = useState<AdaptiveExecutionRecord[]>([])
   const [adaptiveError, setAdaptiveError] = useState<string | null>(null)
+
+  // AI Recommendation State (Stage 7.8)
+  const [aiRecommendation, setAiRecommendation] = useState<SolverRecommendation | null>(null)
+  const [isLoadingAiRec, setIsLoadingAiRec] = useState<boolean>(false)
+
+  const fetchAiRecommendation = async () => {
+    setIsLoadingAiRec(true)
+    try {
+      const rec = await aiService.recommendSolver({
+        problem_id: activeProblem.isPreset ? undefined : selectedProblemId,
+        problem_type: activeProblem.problemType,
+        instance: activeProblem.instance,
+      })
+      setAiRecommendation(rec)
+    } catch {
+      // Non-blocking
+    } finally {
+      setIsLoadingAiRec(false)
+    }
+  }
 
   // Parameter Transfer Lab State (Stage 6.3)
   const [transferSourceGamma, setTransferSourceGamma] = useState<string>('0.35, 0.72')
@@ -847,6 +869,42 @@ export const QuantumLabPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Recommendation Advisor Banner (Stage 7.8) */}
+          <div className="p-3.5 rounded-xl border border-indigo-500/30 bg-indigo-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs" data-testid="qaoa-ai-advisor-banner">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+              <div>
+                <span className="font-semibold text-slate-200">AI Architecture Advisor: </span>
+                {aiRecommendation ? (
+                  <span className="text-slate-300">
+                    Recommended solver is <strong className="text-indigo-300">{aiRecommendation.recommended_solver}</strong> (
+                    {(aiRecommendation.confidence_score * 100).toFixed(0)}% match).{' '}
+                    {aiRecommendation.resource_considerations?.quantum_simulator_compatible === false ||
+                    (aiRecommendation.resource_considerations?.required_qubits &&
+                      aiRecommendation.resource_considerations.required_qubits > 20)
+                      ? '⚠️ Warning: Instance exceeds classical 20-qubit Aer simulation limit; classical solvers recommended.'
+                      : 'Instance is well within the 20-qubit classical simulation envelope.'}
+                  </span>
+                ) : (
+                  <span className="text-slate-400">
+                    Click to evaluate instance complexity, estimated required qubits, and whether QAOA or classical methods are best suited.
+                  </span>
+                )}
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={fetchAiRecommendation}
+              isLoading={isLoadingAiRec}
+              className="text-xs font-mono text-indigo-300 shrink-0"
+              data-testid="qaoa-ai-advisor-btn"
+            >
+              {aiRecommendation ? 'Refresh Advisor' : 'Check AI Suitability'}
+            </Button>
+          </div>
 
           {/* Hyperparameters & Circuit Preview Split Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

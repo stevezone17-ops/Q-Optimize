@@ -8,8 +8,10 @@ import {
   ProblemDraftProposal,
   ProblemDraftResponse,
   ProblemResponse,
+  SolverRecommendation,
 } from '../types'
 import { problemService } from '../services/problemService'
+import { aiService } from '../services/aiService'
 import { MaxCutEditor } from '../features/problem-builder/MaxCutEditor'
 import { AssignmentEditor } from '../features/problem-builder/AssignmentEditor'
 import { TSPEditor } from '../features/problem-builder/TSPEditor'
@@ -17,6 +19,7 @@ import { NaturalLanguageDraft } from '../features/problem-builder/NaturalLanguag
 import { ProblemPreview } from '../features/problem-builder/ProblemPreview'
 import { ConfirmationModal } from '../features/problem-builder/ConfirmationModal'
 import { SolutionEvaluatorModal } from '../features/problem-builder/SolutionEvaluatorModal'
+import { SolverRecommendationPanel } from '../features/ai/SolverRecommendationPanel'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
@@ -26,6 +29,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Play,
+  Cpu,
 } from 'lucide-react'
 
 const DEFAULT_MAX_CUT: MaxCutInstance = {
@@ -79,6 +83,42 @@ export const ProblemBuilderPage: React.FC = () => {
   const [isValidating, setIsValidating] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [savedProblem, setSavedProblem] = useState<ProblemResponse | null>(null)
+
+  // AI Recommendation State
+  const [recommendation, setRecommendation] = useState<SolverRecommendation | null>(null)
+  const [isRecommending, setIsRecommending] = useState(false)
+  const [recommendationError, setRecommendationError] = useState<string | null>(null)
+  const [recommendationAcceptedNotice, setRecommendationAcceptedNotice] = useState<string | null>(null)
+
+  const handleGetRecommendation = async () => {
+    setIsRecommending(true)
+    setRecommendationError(null)
+    setRecommendationAcceptedNotice(null)
+    try {
+      const rec = await aiService.recommendSolver({
+        problem_id: savedProblem ? savedProblem.id : undefined,
+        problem_type: problemType,
+        instance: getCurrentInstance() as unknown as Record<string, any>,
+      })
+      setRecommendation(rec)
+    } catch (err: any) {
+      setRecommendationError(err.message || 'Failed to generate solver recommendation.')
+    } finally {
+      setIsRecommending(false)
+    }
+  }
+
+  const handleAcceptRecommendation = (solverName: string) => {
+    setRecommendationAcceptedNotice(
+      `Accepted recommendation for '${solverName}'. Preloaded parameters and solver profile ready for execution.`
+    )
+  }
+
+  const handleCompareSolvers = (solvers: string[]) => {
+    setRecommendationAcceptedNotice(
+      `Solvers queued for comparison: [${solvers.join(', ')}]. Transition to Comparative Benchmark tab to execute.`
+    )
+  }
 
   // Active instance getter
   const getCurrentInstance = (): ProblemInstance => {
@@ -301,6 +341,50 @@ export const ProblemBuilderPage: React.FC = () => {
             description={problemDescription}
             instance={getCurrentInstance()}
           />
+
+          {/* AI Solver Recommendation Section */}
+          <div className="space-y-3 p-4 rounded-xl border border-indigo-500/20 bg-indigo-950/10" data-testid="problem-builder-ai-recommendation-section">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-semibold text-slate-200 font-mono uppercase tracking-wider flex items-center gap-2">
+                  <Cpu className="h-4 w-4 text-indigo-400" />
+                  Intelligent Solver Strategy
+                </span>
+                <p className="text-[11px] text-slate-400">
+                  Evaluate whether exact polynomial algorithms, heuristic annealing, or QAOA simulation is best suited for this instance.
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleGetRecommendation}
+                isLoading={isRecommending}
+                leftIcon={<Sparkles className="h-3.5 w-3.5 text-indigo-400" />}
+                className="font-mono text-xs shrink-0"
+                data-testid="get-ai-recommendation-btn"
+              >
+                {recommendation ? 'Refresh Recommendation' : 'Get AI Recommendation'}
+              </Button>
+            </div>
+
+            {recommendationAcceptedNotice && (
+              <Alert variant="info" title="Solver Configuration Preloaded">
+                {recommendationAcceptedNotice}
+              </Alert>
+            )}
+
+            {(recommendation || isRecommending || recommendationError) && (
+              <SolverRecommendationPanel
+                recommendation={recommendation}
+                isLoading={isRecommending}
+                error={recommendationError}
+                onAcceptRecommendation={handleAcceptRecommendation}
+                onCompareSolvers={handleCompareSolvers}
+                onDismiss={() => setRecommendation(null)}
+                onRefresh={handleGetRecommendation}
+              />
+            )}
+          </div>
 
           {/* Error Message Alert */}
           {validationError && (
