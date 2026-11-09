@@ -11,6 +11,11 @@ from backend.app.ai.models import (
     ModelMetadata,
     OptimizationFeatures,
     ProblemDraftProposal,
+    RecommendationFeedback,
+    MonitoringMetrics,
+    RetrainResponse,
+    RollbackRequest,
+    RollbackResponse,
 )
 from backend.app.ai.natural_language.assistant import default_nl_assistant
 from backend.app.ai.recommender import default_solver_recommender
@@ -19,6 +24,8 @@ from backend.app.ai.data_access import ExperimentDataAccess
 from backend.app.ai.dataset_builder import ExperimentDatasetBuilder
 from backend.app.ai.training_pipeline import ModelTrainingPipeline
 from backend.app.ai.feature_extraction import default_feature_extractor
+from backend.app.ai.monitoring import ModelMonitor
+from backend.app.ai.continuous_learning import ContinuousLearningPipeline
 from backend.app.services.problem_service import ProblemService
 from backend.app.core.logging import logger
 
@@ -82,6 +89,11 @@ async def recommend_solver(req: SolverRecommendationRequest) -> SolverRecommenda
             problem_id=req.problem_id,
             user_constraints=req.user_constraints,
         )
+        try:
+            await ModelMonitor.log_recommendation(recommendation)
+        except Exception as log_err:
+            logger.warning(f"Failed to audit log recommendation: {log_err}")
+
         return recommendation
     except Exception as e:
         logger.error(f"Error generating solver recommendation: {e}")
@@ -215,3 +227,43 @@ async def validate_draft_instance(req: NLValidateDraftRequest) -> Dict[str, Any]
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Draft validation failed: {str(e)}",
         )
+
+
+class ContinuousRetrainRequest(BaseModel):
+    algorithm_name: str = Field(default="random_forest")
+    candidate_version: Optional[str] = Field(default=None)
+    use_sample_test_data: bool = Field(default=False)
+    force_promote: bool = Field(default=False)
+
+
+@router.post("/feedback")
+async def record_feedback(feedback: RecommendationFeedback) -> Dict[str, Any]:
+    """Submit human acceptance and execution performance feedback on a solver recommendation."""
+    feedback_id = await ModelMonitor.record_feedback(feedback)
+    return {"success": True, "feedback_id": feedback_id}
+
+
+@router.get("/monitoring", response_model=MonitoringMetrics)
+async def get_monitoring_metrics() -> MonitoringMetrics:
+    """Retrieve recommendation performance metrics, acceptance rates, and feature drift indicators."""
+    return await ModelMonitor.compute_monitoring_metrics()
+
+
+@router.post("/retrain", response_model=RetrainResponse)
+async def retrain_model(req: ContinuousRetrainRequest) -> RetrainResponse:
+    """
+    Trigger automated retraining evaluation with holdout gating and performance promotion checks.
+    """
+    return await ContinuousLearningPipeline.evaluate_and_retrain(
+        algorithm_name=req.algorithm_name,
+        candidate_version=req.candidate_version,
+        use_sample_test_data=req.use_sample_test_data,
+        force_promote=req.force_promote,
+    )
+
+
+@router.post("/rollback", response_model=RollbackResponse)
+async def rollback_model(req: RollbackRequest) -> RollbackResponse:
+    """Revert active recommendation model to an existing registered historical version."""
+    return ContinuousLearningPipeline.rollback(req.target_model_version)
+

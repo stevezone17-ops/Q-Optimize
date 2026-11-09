@@ -274,3 +274,40 @@ class RecommendationFeedback(BaseModel):
     realized_is_feasible: Optional[bool] = None
     user_comments: Optional[str] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class MonitoringMetrics(BaseModel):
+    """Aggregate tracking metrics and drift indicators for recommendation models."""
+    total_recommendations: int = Field(default=0)
+    total_feedback_count: int = Field(default=0)
+    acceptance_rate: float = Field(default=0.0, description="Percentage of recommendations accepted by user")
+    realized_feasibility_rate: float = Field(default=0.0, description="Percentage of executions that produced feasible solutions")
+    prediction_distribution: Dict[str, int] = Field(default_factory=dict, description="Count of recommendations per solver")
+    average_confidence: float = Field(default=0.0)
+    feature_drift_detected: bool = Field(default=False)
+    drift_summary: Dict[str, Any] = Field(default_factory=dict)
+    active_model_version: str = Field(default="v1.0.0")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class RetrainResponse(BaseModel):
+    """Result of continuous retraining evaluation and model promotion check."""
+    promoted: bool = Field(..., description="Whether candidate model met promotion criteria")
+    previous_model_version: str
+    candidate_model_version: str
+    candidate_metrics: Dict[str, Any] = Field(default_factory=dict)
+    promotion_reason: str
+    training_sample_count: int
+
+
+class RollbackRequest(BaseModel):
+    """Request payload to revert to a previous model version."""
+    target_model_version: str = Field(..., description="Semantic version string of target model")
+
+
+class RollbackResponse(BaseModel):
+    """Response returned upon model rollback."""
+    success: bool
+    active_model_version: str
+    message: str
+

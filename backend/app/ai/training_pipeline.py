@@ -118,6 +118,27 @@ class ModelTrainingPipeline:
         return X[train_idx], X[test_idx], y[train_idx], y[test_idx]
 
     @classmethod
+    def train_test_split(
+        cls,
+        samples: List[TrainingSample],
+        test_ratio: float = 0.25,
+        random_state: int = 42,
+    ) -> Tuple[List[TrainingSample], List[TrainingSample]]:
+        """Split TrainingSample list into train and test sets using group-aware split."""
+        if len(samples) < 2:
+            return samples, []
+
+        groups = np.array([s.instance_id for s in samples], dtype=object)
+        unique_groups = np.unique(groups)
+        if len(unique_groups) < 2:
+            split_idx = max(1, int(len(samples) * (1.0 - test_ratio)))
+            return samples[:split_idx], samples[split_idx:]
+
+        gss = GroupShuffleSplit(n_splits=1, test_size=test_ratio, random_state=random_state)
+        train_idx, test_idx = next(gss.split(samples, groups=groups))
+        return [samples[i] for i in train_idx], [samples[i] for i in test_idx]
+
+    @classmethod
     def compute_evaluation_metrics(
         cls,
         y_true: np.ndarray,
