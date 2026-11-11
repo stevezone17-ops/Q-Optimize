@@ -61,6 +61,12 @@ Hash passwords using a modern password hashing algorithm. Never store raw passwo
 ### adaptive_benchmarks (Phase 6)
 `_id`, `benchmark_id` (unique), `name`, `problem_type`, `problem_id`, `exact_optimum`, `summaries` (array of `AdaptiveVariantSummary`: `variant_id`, `variant_name`, `trials_count`, `initial_depth`, `mean_final_depth`, `best_objective`, `mean_objective`, `std_objective`, `feasibility_rate`, `approximation_ratio`, `optimality_gap_percent`, `mean_runtime_ms`, `mean_evaluations`, `mean_circuit_executions`, `depth_growth_trigger_rate`, `optimizer_switch_trigger_rate`, `eval_efficiency_ratio`, `quality_improvement_percent`), `ablation_insights` (array of strings), `total_runtime_seconds`, `hardware_transparency_note`, `created_at`.
 
+### benchmark_datasets (Phase 8)
+`_id`, `dataset_id` (unique), `metadata` (`dataset_id`, `name`, `problem_type`, `generator_type`, `generator_params`, `fingerprint` SHA-256, `created_at`, `num_instances`, `tags`, `description`), `instances` (array of `ProblemInstance`: `instance_id`, `dataset_id`, `problem_type`, `instance_data`, `fingerprint`, `seed`).
+
+### experiment_benchmarks (Phase 8)
+`_id`, `benchmark_id` (unique), `name`, `problem_type`, `algorithms`, `num_trials`, `mode` (`sequential`, `parallel`, `repeated_trials`, `multi_instance`), `status`, `trials` (array of `TrialRecord`), `created_at`, `completed_at`, `total_runtime_seconds`, `error_message`.
+
 ## Phase 6 Indexes
 - Unique index on `adaptive_executions.execution_id`.
 - `adaptive_executions.status, submitted_at`.

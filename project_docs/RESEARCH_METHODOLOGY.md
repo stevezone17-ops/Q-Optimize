@@ -162,3 +162,28 @@ Beyond traditional classification accuracy and macro F1, recommender evaluation 
 1. **Zero Hallucination Tolerance:** Natural language extraction never fabricates costs or constraints. Incomplete inputs produce explicit `missing_information` warnings.
 2. **Deterministic Mathematical Verification:** All AI-proposed models undergo canonical Phase 2 validation before entering the problem registry.
 3. **Hardware Transparency:** Recommender explanations explicitly differentiate between CPU-simulated quantum algorithms and classical heuristics, never implying physical quantum superiority.
+
+---
+
+## 12. Empirical Benchmarking, Statistical Analysis & Reproducibility Methodology (Phase 8)
+
+### 12.1 Experimental Protocol & Independent Verification
+Empirical performance evaluation across classical solvers (Exact, Genetic Algorithm, Simulated Annealing) and quantum variational solvers (Standard QAOA, Adaptive QAOA) adheres to strict scientific standards:
+- **Separation of Concerns:** Problem generation, formulation compilation, solver execution, and candidate evaluation are strictly separated in timing metrics.
+- **Independent Evaluation:** Solution feasibility and objective values are verified by Phase 2 domain evaluators, independent of internal solver objective telemetry.
+- **Hardware Transparency:** All quantum circuit executions are benchmarked on local Qiskit Aer statevector simulators (CPU), noting that simulation overhead scales exponentially with qubit count ($2^N$).
+
+### 12.2 Non-Parametric Statistical Testing & Effect Sizes
+Due to non-normal, skewed objective distributions inherent in stochastic heuristic optimization, non-parametric statistical metrics are prioritized:
+- **Mann-Whitney U Test (Wilcoxon Rank-Sum):** Compares unpaired trial samples between two algorithms under $H_0: P(X > Y) = P(Y > X)$.
+- **Wilcoxon Signed-Rank Test:** Evaluates paired differences across matched problem instances.
+- **Cohen's $d$ & Rank-Biserial Correlation $r$:** Quantifies magnitude of empirical separation beyond asymptotic $p$-values:
+  $$r = 1 - \frac{2U}{n_1 n_2}$$
+- **Optimality Gap & Approximation Ratio:**
+  $$\text{Gap}(\%) = \frac{|C_{\text{candidate}} - C_{\text{optimal}}|}{|C_{\text{optimal}}|} \times 100\%$$
+  $$\alpha_{\text{max}} = \frac{C_{\text{candidate}}}{C_{\text{optimal}}}, \quad \alpha_{\text{min}} = \frac{C_{\text{optimal}}}{C_{\text{candidate}}}$$
+
+### 12.3 Data Integrity & Outlier Handling
+- **Tukey's Fences ($1.5 \times \text{IQR}$):** Flags extreme trial discrepancies for researcher review ($Q_1 - 1.5\text{IQR}$ or $Q_3 + 1.5\text{IQR}$).
+- **Preservation Principle:** Outliers are never silently discarded or dropped from benchmark exports; all outliers remain recorded with explicit integrity flags.
+- **Deterministic Replay:** Every experiment records an immutable SHA-256 configuration hash and trial seeds, enabling exact deterministic verification of results.

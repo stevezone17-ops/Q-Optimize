@@ -57,10 +57,30 @@ Base path: `/api/v1`. All endpoints use standard JSON, strict Pydantic model val
 | `GET` | `/solvers/quantum/benchmarks/{id}` | Phase 5 | Retrieve comparative hybrid benchmark details by ID |
 | `POST` | `/experiments` | Phase 6 | Create and enqueue optimization experiment |
 | `GET` | `/experiments` | Phase 6 | List own experiments |
-| `GET` | `/experiments/{id}` | Phase 6 | Status, configuration, and summary |
-| `GET` | `/experiments/{id}/result` | Phase 6 | Completed raw result bitstrings and independently evaluated metrics |
-| `POST` | `/experiments/compare` | Phase 7 | Side-by-side solver comparison |
-| `POST` | `/reports` | Phase 7 | Request PDF/LaTeX benchmark report |
+| `POST` | `/experiments` | Phase 8 | Create a new optimization benchmark experiment (DRAFT) |
+| `GET` | `/experiments` | Phase 8 | List experiments with pagination and status/problem filters |
+| `GET` | `/experiments/{id}` | Phase 8 | Retrieve full experiment details, runs, and results |
+| `PUT` | `/experiments/{id}` | Phase 8 | Update experiment name, description, or tags |
+| `DELETE` | `/experiments/{id}` | Phase 8 | Delete an experiment |
+| `POST` | `/experiments/{id}/submit` | Phase 8 | Submit experiment for asynchronous execution |
+| `POST` | `/experiments/{id}/cancel` | Phase 8 | Request cancellation of running or queued experiment |
+| `GET` | `/experiments/{id}/status` | Phase 8 | Lightweight execution progress and status polling |
+| `POST` | `/experiments/{id}/replay` | Phase 8 | Re-execute experiment using identical configuration and stored seeds |
+| `GET` | `/experiments/{id}/validate` | Phase 8 | Validate integrity, detect missing trials, flag statistical outliers |
+| `POST` | `/benchmarks` | Phase 8 | Execute multi-algorithm benchmark run synchronously |
+| `GET` | `/benchmarks` | Phase 8 | List all multi-algorithm benchmark records |
+| `GET` | `/benchmarks/{id}` | Phase 8 | Retrieve a specific multi-algorithm benchmark record |
+| `GET` | `/analytics/experiments/{id}/compare` | Phase 8 | Multi-algorithm comparative analytics, convergence, runtime breakdown |
+| `GET` | `/analytics/scalability` | Phase 8 | Empirical scalability series across problem sizes |
+| `GET` | `/datasets` | Phase 8 | List all stored reproducible benchmark datasets |
+| `GET` | `/datasets/{id}` | Phase 8 | Retrieve benchmark dataset details and problem instances |
+| `POST` | `/datasets/generate` | Phase 8 | Generate synthetic reproducible dataset (Erdős–Rényi, Regular, Matching, TSP) |
+| `DELETE` | `/datasets/{id}` | Phase 8 | Delete a benchmark dataset |
+| `GET` | `/exports/experiments/{id}/csv` | Phase 8 | Export trial results as CSV |
+| `GET` | `/exports/experiments/{id}/json` | Phase 8 | Export complete experiment record as JSON |
+| `GET` | `/exports/experiments/{id}/xlsx` | Phase 8 | Export multi-sheet styled Excel workbook |
+| `GET` | `/exports/experiments/{id}/pdf` | Phase 8 | Generate and download publication-grade PDF research report |
+| `GET` | `/exports/experiments/{id}/report` | Phase 8 | Retrieve structured scientific research report as JSON |
 
 ---
 

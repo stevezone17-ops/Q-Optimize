@@ -2,12 +2,12 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 7 Complete](https://img.shields.io/badge/Status-Phase%207%20AI%20%26%20ML-10B981.svg)](#)
+[![Status: Phase 8 Complete](https://img.shields.io/badge/Status-Phase%208%20Experiments%20%26%20Benchmarking-10B981.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
-[![Tests: 246 Pytest | 46 Vitest](https://img.shields.io/badge/Tests-292%20Passing-emerald.svg)](#)
+[![Tests: 337 Pytest | 60 Vitest](https://img.shields.io/badge/Tests-397%20Passing-emerald.svg)](#)
 
 ---
 
@@ -70,7 +70,33 @@ Q-Optimize/
 
 ---
 
-## 3. Implemented Capabilities (Phases 1, 2, 3, 4, 5, 6 & 7)
+## 3. Implemented Capabilities (Phases 1–8)
+
+### Phase 8: Experiments, Benchmarking & Advanced Visualizations
+1. **Unified Experiment Management Architecture:**
+   - Formal lifecycle tracking (`DRAFT` $\to$ `VALIDATING` $\to$ `QUEUED` $\to$ `RUNNING` $\to$ `COMPLETED` / `PARTIALLY_COMPLETED` / `FAILED` / `CANCELLED`).
+   - Deterministic SHA-256 configuration hashing capturing problem instance parameters, solver configurations, and random seeds.
+   - Decoupled asynchronous background execution via Python `ThreadPoolExecutor` and status polling.
+2. **Multi-Algorithm Benchmark Orchestration:**
+   - Synchronous and asynchronous benchmarking across classical heuristics (Exact, GA, SA) and quantum algorithms (QAOA, Adaptive QAOA).
+   - Multi-trial stochastic variance collection with guaranteed independent solution evaluation.
+3. **Reproducible Synthetic Benchmark Datasets:**
+   - Dedicated synthetic generators: Erdős–Rényi $G(n, p)$ and Random Regular graphs for Max-Cut, Uniform/Normal/Integer cost matrices for Assignment, and 2D Euclidean / Random distance matrices for TSP.
+   - Dataset-level and instance-level SHA-256 fingerprinting for experimental reproducibility.
+4. **Statistical Analysis & Non-Parametric Metrics:**
+   - Non-parametric hypothesis testing: Mann-Whitney U test and Wilcoxon signed-rank test.
+   - Effect size quantification: Cohen's $d$ and rank-biserial correlation $r$.
+   - Objective metrics: exact optimality gap percentage, approximation ratios, and Student's $t$ confidence intervals.
+5. **Advanced Experimental Visualizations:**
+   - Custom high-performance SVG visualizers in React: `ObjectiveComparisonChart`, `RuntimeComparisonChart`, `ConvergenceChart`, `ScalabilityChart`, `QAOACircuitAnalyticsCard`, `AdaptiveQAOAAnalyticsChart`, `StatisticalBoxPlot`.
+   - Domain-specific problem visualizers: `MaxCutGraphVisualizer`, `AssignmentMatrixViz`, `TSPRouteViz`.
+6. **Unified Experiments & Benchmarking Dashboard:**
+   - Modern research dashboard (`ExperimentsDashboardPage.tsx`) featuring Overview metrics, Experiment Wizard, Execution Monitor, Experiment History, and Benchmark Dataset Studio.
+7. **Multi-Format Export & Research Reports:**
+   - Trial and summary exports in CSV, structured JSON, styled multi-sheet Excel workbooks (`.xlsx` via `openpyxl`), and publication-grade PDF research reports (via `reportlab`).
+8. **Reproducibility Replay & Data Integrity Verification:**
+   - Deterministic experiment replay verifying exact result parity with stored seeds.
+   - Tukey IQR outlier detection flagging extreme anomalies for scientific audit without silent data deletion.
 
 ### Phase 7: AI and Machine Learning Intelligence Layer
 1. **Natural Language Optimization Assistant (Capability A):**

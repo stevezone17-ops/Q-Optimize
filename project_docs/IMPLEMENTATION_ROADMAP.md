@@ -91,9 +91,17 @@ Build incrementally. Each phase ends with tests, documentation updates, and a fo
 **Exit:** natural language assistant parses, extracts, and validates problem drafts with mandatory human confirmation; intelligent recommender predicts Pareto-optimal solvers with explainability, safety bounds, and OOD safeguards; 100% test pass rate across 246 backend and 46 frontend tests. (Achieved & Verified)
 
 ## Phase 8 — Experiments and visualizations
-- [ ] Background jobs and experiment history.
-- [ ] Comparison charts and noise experiments.
-- [ ] Report export and reproducibility metadata.
+- [x] Unified experiment management architecture, lifecycle states, and thread-pooled execution (Stage 8.1).
+- [x] Multi-algorithm benchmark orchestrator supporting parallel/sequential modes across classical & quantum (Stage 8.2).
+- [x] Reproducible synthetic benchmark dataset generators (Erdős–Rényi, Regular graphs, Cost matrices, TSP tours) with SHA-256 fingerprinting (Stage 8.3).
+- [x] Statistical analysis and performance metrics engine (Mann-Whitney U, Wilcoxon, Cohen's d, exact optimality gaps, approximation ratios) (Stage 8.4).
+- [x] Advanced algorithm comparison analytics, runtime decomposition, and empirical scalability series (Stage 8.5).
+- [x] Advanced experimental visualization suite (Objective, Runtime, Convergence, Scalability, Circuit Analytics, Box Plots, and domain visualizers) (Stage 8.6).
+- [x] Unified Experiments and Benchmarking Dashboard with creation wizard, live monitor, history, and dataset studio (Stage 8.7).
+- [x] Experiment exports and scientific research report generation (CSV, JSON, XLSX via openpyxl, publication PDF reports via reportlab) (Stage 8.8).
+- [x] Experiment reproducibility and research reliability with exact-seed replay, result parity verification, and Tukey IQR outlier flagging (Stage 8.9).
+- [x] Full experimental benchmarking, visualization integration, and verification (Stage 8.10).
+**Exit:** multi-algorithm empirical benchmarks orchestrate seamlessly across classical and quantum solvers; non-parametric statistical metrics rigorously computed; publication-grade exports generated; 100% test pass rate across 337 backend Pytest and 60 frontend Vitest tests. (Achieved & Verified)
 
 ## Phase 9 — Final hardening
 - [ ] Security, resource limits, accessibility, regression tests.

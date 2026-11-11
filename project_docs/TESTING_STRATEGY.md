@@ -5,12 +5,12 @@ Mathematical correctness is an absolute release blocker. A beautiful, dark-first
 
 ---
 
-## 2. Test Suites Overview (Phases 1, 2, 3, & 4 Active)
+## 2. Test Suites Overview (Phases 1–8 Active)
 
 | Suite | Runner | Test Files | Total Tests | Status |
 |---|---|---|---|---|
-| Backend Domain, Formulas & Classical Solvers | Pytest (Python 3.12) | 22 test modules | 117 tests | **100% Passing** |
-| Frontend Component & UI Suite | Vitest + RTL | 4 test suites | 19 tests | **100% Passing** |
+| Backend Domain, Formulas, Solvers & Experiments | Pytest (Python 3.12) | 30 test modules | 337 tests | **100% Passing** |
+| Frontend Component, Lab & Visualization Suite | Vitest + RTL | 10 test suites | 60 tests | **100% Passing** |
 | Production Build Check | Vite + TypeScript | `tsc && vite build` | 0 errors | **Clean Build** |
 
 ---
