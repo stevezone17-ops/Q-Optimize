@@ -13,6 +13,7 @@ from backend.app.api.v1.endpoints import (
     benchmarks,
     analytics,
     datasets,
+    exports,
 )
 
 api_v1_router = APIRouter()
@@ -28,3 +29,4 @@ api_v1_router.include_router(ai.router)
 api_v1_router.include_router(benchmarks.router)
 api_v1_router.include_router(analytics.router)
 api_v1_router.include_router(datasets.router)
+api_v1_router.include_router(exports.router)
