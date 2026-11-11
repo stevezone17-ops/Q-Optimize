@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { key: 'quantum-lab', label: 'Quantum Lab', icon: <Atom className="h-4 w-4" />, phaseBadge: 'Phase 5' },
     { key: 'classical-lab', label: 'Classical Lab', icon: <Cpu className="h-4 w-4" />, phaseBadge: 'Phase 4' },
     { key: 'comparison-lab', label: 'Comparison Lab', icon: <Scale className="h-4 w-4" />, phaseBadge: 'Phase 6' },
-    { key: 'my-experiments', label: 'My Experiments', icon: <FolderKanban className="h-4 w-4" />, phaseBadge: 'Phase 8' },
+    { key: 'my-experiments', label: 'Experiments & Benchmarks', icon: <FolderKanban className="h-4 w-4" />, phaseBadge: 'Phase 8' },
     { key: 'learn', label: 'Learn', icon: <BookOpen className="h-4 w-4" /> },
     { key: 'settings', label: 'Settings', icon: <Settings className="h-4 w-4" /> },
   ]

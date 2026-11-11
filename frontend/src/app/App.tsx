@@ -9,7 +9,7 @@ import { FormulationStudioPage } from '../pages/FormulationStudioPage'
 import { QuantumLabPage } from '../pages/QuantumLabPage'
 import { ClassicalLabPage } from '../pages/ClassicalLabPage'
 import { ComparisonLabPage } from '../pages/ComparisonLabPage'
-import { MyExperimentsPage } from '../pages/MyExperimentsPage'
+import { ExperimentsDashboardPage } from '../pages/ExperimentsDashboardPage'
 import { LearnPage } from '../pages/LearnPage'
 import { SettingsPage } from '../pages/SettingsPage'
 
@@ -56,7 +56,7 @@ export const App: React.FC = () => {
 
       {activeTab === 'comparison-lab' && <ComparisonLabPage />}
 
-      {activeTab === 'my-experiments' && <MyExperimentsPage />}
+      {activeTab === 'my-experiments' && <ExperimentsDashboardPage />}
 
       {activeTab === 'learn' && <LearnPage />}
 
