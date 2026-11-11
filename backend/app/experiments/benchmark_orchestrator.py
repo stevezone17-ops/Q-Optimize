@@ -94,22 +94,42 @@ def _dispatch_trial(
             result = pipeline.execute(problem_type, problem_instance, config=algo_config)
         else:
             from backend.app.solvers.classical.factory import ClassicalSolverFactory
+            from backend.app.domain.problems.models import ProblemType
             algo_map = {
                 ExperimentAlgorithm.EXACT: "exact",
                 ExperimentAlgorithm.GENETIC_ALGORITHM: "genetic_algorithm",
                 ExperimentAlgorithm.SIMULATED_ANNEALING: "simulated_annealing",
             }
             solver = ClassicalSolverFactory.get_solver(algo_map[algo])
-            result = solver.solve(problem_type, problem_instance, config=algo_config)
+            cfg = dict(algo_config) if algo_config else {}
+            if seed is not None:
+                cfg["seed"] = seed
+            parsed_config = solver.validate_config(cfg)
+            result = solver.solve(
+                ProblemType(problem_type),
+                problem_instance,
+                config=parsed_config,
+                seed=seed,
+            )
 
         elapsed = time.perf_counter() - start
+        raw_conv = getattr(result, "convergence_history", []) or []
+        conv_history = []
+        for pt in raw_conv:
+            if isinstance(pt, (int, float)):
+                conv_history.append(float(pt))
+            elif hasattr(pt, "objective_value"):
+                conv_history.append(float(pt.objective_value))
+            elif hasattr(pt, "best_objective"):
+                conv_history.append(float(pt.best_objective))
+
         return {
             "objective_value": getattr(result, "objective_value", None),
             "best_solution": getattr(result, "best_solution", None),
             "runtime_seconds": elapsed,
             "is_feasible": getattr(result, "is_feasible", False),
             "num_evaluations": getattr(result, "num_evaluations", 0),
-            "convergence_history": getattr(result, "convergence_history", []),
+            "convergence_history": conv_history,
             "algorithm_metrics": getattr(result, "metadata", {}),
             "status": "completed",
         }

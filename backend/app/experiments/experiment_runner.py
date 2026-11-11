@@ -30,23 +30,41 @@ def _run_classical_solver(
 ) -> Dict[str, Any]:
     """Execute a classical solver and return a result dict."""
     from backend.app.solvers.classical.factory import ClassicalSolverFactory
+    from backend.app.domain.problems.models import ProblemType
 
     solver = ClassicalSolverFactory.get_solver(solver_id)
+    cfg = dict(algorithm_config) if algorithm_config else {}
     if seed is not None:
-        algorithm_config = dict(algorithm_config)
-        algorithm_config["seed"] = seed
+        cfg["seed"] = seed
+    parsed_config = solver.validate_config(cfg)
+    target_problem_type = ProblemType(problem_type)
 
     start = time.perf_counter()
     try:
-        result = solver.solve(problem_type, problem_instance, config=algorithm_config)
+        result = solver.solve(
+            target_problem_type,
+            problem_instance,
+            config=parsed_config,
+            seed=seed,
+        )
         elapsed = time.perf_counter() - start
+        raw_conv = getattr(result, "convergence_history", []) or []
+        conv_history = []
+        for pt in raw_conv:
+            if isinstance(pt, (int, float)):
+                conv_history.append(float(pt))
+            elif hasattr(pt, "objective_value"):
+                conv_history.append(float(pt.objective_value))
+            elif hasattr(pt, "best_objective"):
+                conv_history.append(float(pt.best_objective))
+
         return {
             "objective_value": getattr(result, "objective_value", None),
             "best_solution": getattr(result, "best_solution", None),
             "runtime_seconds": elapsed,
             "is_feasible": getattr(result, "is_feasible", False),
             "num_evaluations": getattr(result, "num_evaluations", 0),
-            "convergence_history": getattr(result, "convergence_history", []),
+            "convergence_history": conv_history,
             "algorithm_metrics": getattr(result, "metadata", {}),
             "status": "completed",
         }
@@ -78,13 +96,23 @@ def _run_qaoa_solver(
         pipeline = QAOAExecutionPipeline()
         result = pipeline.execute(problem_type, problem_instance, config=algorithm_config)
         elapsed = time.perf_counter() - start
+        raw_conv = getattr(result, "convergence_history", []) or []
+        conv_history = []
+        for pt in raw_conv:
+            if isinstance(pt, (int, float)):
+                conv_history.append(float(pt))
+            elif hasattr(pt, "objective_value"):
+                conv_history.append(float(pt.objective_value))
+            elif hasattr(pt, "best_objective"):
+                conv_history.append(float(pt.best_objective))
+
         return {
             "objective_value": getattr(result, "objective_value", None),
             "best_solution": getattr(result, "best_solution", None),
             "runtime_seconds": elapsed,
             "is_feasible": getattr(result, "is_feasible", False),
             "num_evaluations": getattr(result, "num_evaluations", 0),
-            "convergence_history": getattr(result, "convergence_history", []),
+            "convergence_history": conv_history,
             "algorithm_metrics": getattr(result, "metadata", {}),
             "status": "completed",
         }
@@ -116,13 +144,23 @@ def _run_adaptive_qaoa_solver(
         pipeline = AdaptiveQAOAExecutionPipeline()
         result = pipeline.execute(problem_type, problem_instance, config=algorithm_config)
         elapsed = time.perf_counter() - start
+        raw_conv = getattr(result, "convergence_history", []) or []
+        conv_history = []
+        for pt in raw_conv:
+            if isinstance(pt, (int, float)):
+                conv_history.append(float(pt))
+            elif hasattr(pt, "objective_value"):
+                conv_history.append(float(pt.objective_value))
+            elif hasattr(pt, "best_objective"):
+                conv_history.append(float(pt.best_objective))
+
         return {
             "objective_value": getattr(result, "objective_value", None),
             "best_solution": getattr(result, "best_solution", None),
             "runtime_seconds": elapsed,
             "is_feasible": getattr(result, "is_feasible", False),
             "num_evaluations": getattr(result, "num_evaluations", 0),
-            "convergence_history": getattr(result, "convergence_history", []),
+            "convergence_history": conv_history,
             "algorithm_metrics": getattr(result, "metadata", {}),
             "status": "completed",
         }
@@ -281,3 +319,4 @@ class ExperimentRunner:
 
 
 experiment_runner = ExperimentRunner()
+

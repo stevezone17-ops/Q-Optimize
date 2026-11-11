@@ -115,6 +115,10 @@ async def cancel_experiment(experiment_id: str) -> ExperimentStatusResponse:
         raise HTTPException(status_code=404, detail=str(exc))
 
 
+from backend.app.experiments.validators import benchmark_validator, ValidationReport
+from backend.app.experiments.reproducibility import reproducibility_manager, ReplayResult
+
+
 @router.get("/{experiment_id}/status", response_model=ExperimentStatusResponse)
 async def get_experiment_status(experiment_id: str) -> ExperimentStatusResponse:
     """Get the current status and progress of an experiment."""
@@ -125,5 +129,31 @@ async def get_experiment_status(experiment_id: str) -> ExperimentStatusResponse:
             status=experiment.status,
             progress=experiment.progress,
         )
+    except ExperimentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+@router.post("/{experiment_id}/replay", response_model=ExperimentDetailResponse)
+async def replay_experiment(
+    experiment_id: str, preserve_seeds: bool = True
+) -> ExperimentDetailResponse:
+    """Re-execute an experiment with exact configuration and random seeds."""
+    try:
+        replayed = reproducibility_manager.replay_experiment(
+            experiment_id=experiment_id, preserve_seeds=preserve_seeds
+        )
+        return experiment_manager.to_detail_response(replayed)
+    except ExperimentNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@router.get("/{experiment_id}/validate", response_model=ValidationReport)
+async def validate_experiment_integrity(experiment_id: str) -> ValidationReport:
+    """Validate experiment integrity, check for missing trials, and flag statistical outliers."""
+    try:
+        exp = experiment_manager.get_experiment(experiment_id)
+        return benchmark_validator.validate_experiment(exp)
     except ExperimentNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
