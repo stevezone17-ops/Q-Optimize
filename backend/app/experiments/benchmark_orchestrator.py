@@ -15,7 +15,7 @@ from backend.app.core.logging import logger
 from backend.app.db.mongodb import db_manager
 from backend.app.experiments.models import ExperimentAlgorithm, ExperimentResult
 
-BENCHMARK_COLLECTION = "benchmarks"
+BENCHMARK_COLLECTION = "experiment_benchmarks"
 
 
 class BenchmarkMode(str, Enum):
@@ -238,3 +238,4 @@ class BenchmarkOrchestrator:
 
 
 benchmark_orchestrator = BenchmarkOrchestrator()
+
