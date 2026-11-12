@@ -544,6 +544,10 @@ class ProblemResponse(BaseModel):
     constraints: List[ConstraintSpec] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     instance: Dict[str, Any]
+    is_deleted: bool = False
+    deleted_at: Optional[datetime] = None
+    deleted_by: Optional[str] = None
+    version: int = 1
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

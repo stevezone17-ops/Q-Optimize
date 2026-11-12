@@ -56,6 +56,10 @@ class ProblemService:
             "constraints": [c.model_dump() for c in constraints],
             "metadata": metadata,
             "instance": instance_dump,
+            "is_deleted": False,
+            "deleted_at": None,
+            "deleted_by": None,
+            "version": 1,
             "created_at": now,
             "updated_at": now,
         }
@@ -72,11 +76,18 @@ class ProblemService:
         return ProblemResponse(**doc)
 
     @staticmethod
-    async def get_problem(problem_id: str, owner_id: str = "default_user") -> Optional[ProblemResponse]:
-        """Fetch problem by ID."""
+    async def get_problem(
+        problem_id: str,
+        owner_id: str = "default_user",
+        include_deleted: bool = False,
+    ) -> Optional[ProblemResponse]:
+        """Fetch problem by ID, excluding soft-deleted entities by default."""
         if db_manager.is_connected and db_manager.db is not None:
             try:
-                res = await db_manager.db["problems"].find_one({"id": problem_id})
+                query: Dict[str, Any] = {"id": problem_id}
+                if not include_deleted:
+                    query["is_deleted"] = {"$ne": True}
+                res = await db_manager.db["problems"].find_one(query)
                 if res:
                     res.pop("_id", None)
                     return ProblemResponse(**res)
@@ -86,16 +97,23 @@ class ProblemService:
         # Check memory store
         mem_doc = db_manager.memory_get("problems", problem_id)
         if mem_doc:
-            return ProblemResponse(**mem_doc)
+            if include_deleted or not mem_doc.get("is_deleted", False):
+                return ProblemResponse(**mem_doc)
         return None
 
     @staticmethod
-    async def list_problems(owner_id: str = "default_user") -> List[ProblemResponse]:
-        """List all problems for owner."""
+    async def list_problems(
+        owner_id: str = "default_user",
+        include_deleted: bool = False,
+    ) -> List[ProblemResponse]:
+        """List problems for owner, excluding soft-deleted items by default."""
         items: List[ProblemResponse] = []
         if db_manager.is_connected and db_manager.db is not None:
             try:
-                cursor = db_manager.db["problems"].find({"owner_id": owner_id}).sort("created_at", -1)
+                query: Dict[str, Any] = {"owner_id": owner_id}
+                if not include_deleted:
+                    query["is_deleted"] = {"$ne": True}
+                cursor = db_manager.db["problems"].find(query).sort("created_at", -1)
                 async for doc in cursor:
                     doc.pop("_id", None)
                     items.append(ProblemResponse(**doc))
@@ -104,25 +122,16 @@ class ProblemService:
                 logger.error(f"MongoDB list query failed: {e}")
 
         # Fallback to memory store
-        for doc in db_manager.memory_list("problems"):
+        for doc in db_manager.memory_list("problems", include_deleted=include_deleted):
             if doc.get("owner_id") == owner_id:
                 items.append(ProblemResponse(**doc))
         items.sort(key=lambda x: x.created_at, reverse=True)
         return items
 
     @staticmethod
-    async def delete_problem(problem_id: str) -> bool:
-        """Delete problem from persistent storage or memory."""
-        deleted = False
-        if db_manager.is_connected and db_manager.db is not None:
-            try:
-                res = await db_manager.db["problems"].delete_one({"id": problem_id})
-                deleted = res.deleted_count > 0
-            except Exception as e:
-                logger.error(f"MongoDB delete failed: {e}")
-        if not deleted:
-            deleted = db_manager.memory_delete("problems", problem_id)
-        return deleted
+    async def delete_problem(problem_id: str, deleted_by: Optional[str] = None) -> bool:
+        """Soft delete problem, maintaining data recovery and audit trace."""
+        return await db_manager.soft_delete("problems", problem_id, deleted_by=deleted_by)
 
     @staticmethod
     def get_supported_problem_types() -> List[ProblemTypeInfo]:

@@ -134,7 +134,7 @@ async def delete_problem(
             detail=f"Problem with ID '{problem_id}' was not found.",
         )
     verify_resource_ownership(problem.owner_id, current_user, "problem")
-    deleted = await ProblemService.delete_problem(problem_id)
+    deleted = await ProblemService.delete_problem(problem_id, deleted_by=current_user.id)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
