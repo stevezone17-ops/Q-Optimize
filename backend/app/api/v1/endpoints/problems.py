@@ -1,8 +1,14 @@
 """Problem definition, types, validation, and evaluation endpoints."""
 
-from typing import List, Dict, Any
-from fastapi import APIRouter, HTTPException, status
+from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, Field
+from backend.app.api.deps import (
+    get_current_user,
+    get_current_user_optional,
+    verify_resource_ownership,
+)
+from backend.app.domain.auth.models import User, UserRole
 from backend.app.domain.problems.models import (
     ProblemType,
     ProblemCreate,
@@ -83,13 +89,17 @@ async def parse_draft(draft_req: ProblemDraftRequest) -> ProblemDraftResponse:
 
 
 @router.post("", response_model=ProblemResponse, status_code=status.HTTP_201_CREATED)
-async def create_problem(problem_in: ProblemCreate) -> ProblemResponse:
+async def create_problem(
+    problem_in: ProblemCreate,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+) -> ProblemResponse:
     """
     Create and validate a new canonical optimization problem (Max-Cut, Assignment, or TSP).
     Independent Pydantic schema validation runs before persistence.
     """
     try:
-        return await ProblemService.create_problem(problem_in)
+        owner_id = current_user.id if current_user else "default_user"
+        return await ProblemService.create_problem(problem_in, owner_id=owner_id)
     except ValueError as val_err:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -103,9 +113,34 @@ async def create_problem(problem_in: ProblemCreate) -> ProblemResponse:
 
 
 @router.get("", response_model=List[ProblemResponse])
-async def list_problems() -> List[ProblemResponse]:
+async def list_problems(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+) -> List[ProblemResponse]:
     """List registered canonical problems."""
-    return await ProblemService.list_problems()
+    owner_id = current_user.id if current_user else "default_user"
+    return await ProblemService.list_problems(owner_id=owner_id)
+
+
+@router.delete("/{problem_id}", status_code=status.HTTP_200_OK)
+async def delete_problem(
+    problem_id: str,
+    current_user: User = Depends(get_current_user),
+) -> Dict[str, str]:
+    """Delete a problem with ownership verification (owner or admin)."""
+    problem = await ProblemService.get_problem(problem_id)
+    if not problem:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Problem with ID '{problem_id}' was not found.",
+        )
+    verify_resource_ownership(problem.owner_id, current_user, "problem")
+    deleted = await ProblemService.delete_problem(problem_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete problem.",
+        )
+    return {"detail": f"Problem '{problem_id}' successfully deleted."}
 
 
 @router.get("/{problem_id}", response_model=ProblemResponse)

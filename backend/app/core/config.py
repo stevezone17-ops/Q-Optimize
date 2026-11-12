@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = "insecure_dev_secret_replace_in_production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 15
+
+    # Default Admin Seed
+    DEFAULT_ADMIN_EMAIL: str = "admin@q-optimize.io"
+    DEFAULT_ADMIN_USERNAME: str = "admin"
+    DEFAULT_ADMIN_PASSWORD: str = "Admin@QOptimize2026!"
 
     # CORS configuration
     FRONTEND_ORIGIN: Union[str, List[str]] = [

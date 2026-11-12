@@ -111,6 +111,20 @@ class ProblemService:
         return items
 
     @staticmethod
+    async def delete_problem(problem_id: str) -> bool:
+        """Delete problem from persistent storage or memory."""
+        deleted = False
+        if db_manager.is_connected and db_manager.db is not None:
+            try:
+                res = await db_manager.db["problems"].delete_one({"id": problem_id})
+                deleted = res.deleted_count > 0
+            except Exception as e:
+                logger.error(f"MongoDB delete failed: {e}")
+        if not deleted:
+            deleted = db_manager.memory_delete("problems", problem_id)
+        return deleted
+
+    @staticmethod
     def get_supported_problem_types() -> List[ProblemTypeInfo]:
         """List all supported optimization problem families with schemas and metadata."""
         return [

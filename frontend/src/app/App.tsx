@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { NavigationItemKey, ProblemType } from '../types'
 import { useBackendHealth } from '../hooks/useBackendHealth'
 import { AppLayout } from '../components/layout/AppLayout'
+import { AuthProvider } from '../context/AuthContext'
+import { AuthModal } from '../components/auth/AuthModal'
 import { LandingPage } from '../pages/LandingPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { ProblemBuilderPage } from '../pages/ProblemBuilderPage'
@@ -13,7 +15,7 @@ import { ExperimentsDashboardPage } from '../pages/ExperimentsDashboardPage'
 import { LearnPage } from '../pages/LearnPage'
 import { SettingsPage } from '../pages/SettingsPage'
 
-export const App: React.FC = () => {
+const MainContent: React.FC = () => {
   const [view, setView] = useState<'landing' | 'workspace'>('landing')
   const [activeTab, setActiveTab] = useState<NavigationItemKey>('overview')
   const [, setSelectedProblemType] = useState<ProblemType>('max_cut')
@@ -68,6 +70,15 @@ export const App: React.FC = () => {
         />
       )}
     </AppLayout>
+  )
+}
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <MainContent />
+      <AuthModal />
+    </AuthProvider>
   )
 }
 

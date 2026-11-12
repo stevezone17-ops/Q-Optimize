@@ -20,8 +20,11 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 12000)
 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('q_optimize_access_token') : null
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   }
 

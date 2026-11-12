@@ -19,6 +19,12 @@ async def lifespan(app: FastAPI):
     logger.info("Initializing Q-Optimize Backend Engine...")
     # Attempt DB connection
     await db_manager.connect_to_database()
+    # Seed default platform admin account if needed
+    try:
+        from backend.app.services.auth_service import AuthService
+        await AuthService.seed_default_admin_if_needed()
+    except Exception as e:
+        logger.warning(f"Admin seeding warning: {e}")
     yield
     # Shutdown
     logger.info("Shutting down Q-Optimize Backend Engine...")

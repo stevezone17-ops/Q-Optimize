@@ -2,7 +2,8 @@ import React from 'react'
 import { NavigationItemKey } from '../../types'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
-import { Plus, ExternalLink, HelpCircle } from 'lucide-react'
+import { Plus, ExternalLink, HelpCircle, LogIn, LogOut, User as UserIcon } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 
 interface HeaderProps {
   activeTab: NavigationItemKey
@@ -55,6 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
   }
 
   const current = titles[activeTab] || { title: 'Workspace', subtitle: '' }
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth()
 
   return (
     <header className="h-16 border-b border-scientific-border bg-midnight-950/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-20">
@@ -97,6 +99,38 @@ export const Header: React.FC<HeaderProps> = ({
         >
           Docs
         </Button>
+
+        <div className="h-5 w-px bg-slate-800 mx-1" />
+
+        {isAuthenticated && user ? (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs">
+              <UserIcon className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-medium text-slate-200">{user.username}</span>
+              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-cyan-950 text-cyan-400 border border-cyan-800 rounded">
+                {user.role}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logout()}
+              title="Sign Out"
+              leftIcon={<LogOut className="h-3.5 w-3.5" />}
+            >
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openAuthModal('login')}
+            leftIcon={<LogIn className="h-3.5 w-3.5" />}
+          >
+            Sign In
+          </Button>
+        )}
       </div>
     </header>
   )
