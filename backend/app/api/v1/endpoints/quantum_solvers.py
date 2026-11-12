@@ -24,6 +24,7 @@ from backend.app.solvers.quantum.exceptions import (
     ShotLimitExceededError,
     BackendNotAvailableError,
 )
+from backend.app.core.middleware import enforce_quantum_quotas
 
 router = APIRouter()
 backend_manager = QuantumBackendManager()
@@ -90,6 +91,7 @@ async def validate_quantum_request(req: QAOAExecutionRequest):
         problem_type, instance = await QAOAExecutionPipeline._resolve_problem(req)
         qubo = QAOAExecutionPipeline._build_qubo(problem_type, instance, req.penalty_coefficients)
         num_qubits = len(qubo.variable_order)
+        enforce_quantum_quotas(num_qubits, req.config.p_depth, req.config.max_iterations)
         backend_manager.validate_resource_requirements(num_qubits, req.config.shots, req.config.simulation_mode)
 
         return {

@@ -9,6 +9,11 @@ from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
 from backend.app.core.cors import configure_cors
 from backend.app.core.logging import logger
+from backend.app.core.middleware import (
+    SecurityHeadersMiddleware,
+    PayloadSizeLimitMiddleware,
+    RateLimiterMiddleware,
+)
 from backend.app.db.mongodb import db_manager
 from backend.app.api.v1.router import api_v1_router
 
@@ -43,6 +48,11 @@ app = FastAPI(
 
 # Configure CORS
 configure_cors(app)
+
+# Attach Production Security Middlewares
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(PayloadSizeLimitMiddleware)
+app.add_middleware(RateLimiterMiddleware)
 
 # Global exception handlers
 @app.exception_handler(Exception)
