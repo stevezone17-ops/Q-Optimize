@@ -3,7 +3,7 @@
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
 from backend.app.core.config import settings
@@ -64,7 +64,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Root Health Check (Convenience)
+# Root Health & Probe Endpoints (Convenience)
 @app.get("/health", tags=["System"])
 async def root_health() -> Dict[str, Any]:
     db_status = await db_manager.get_db_status()
@@ -76,6 +76,26 @@ async def root_health() -> Dict[str, Any]:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database": db_status,
     }
+
+
+@app.get("/health/live", tags=["System"])
+async def root_liveness() -> Dict[str, Any]:
+    return {"status": "live", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+@app.get("/health/ready", tags=["System"])
+async def root_readiness(response: Response) -> Dict[str, Any]:
+    db_status = await db_manager.get_db_status()
+    is_ready = db_status.get("connected") is True or db_status.get("engine") == "in_memory_fallback"
+    if not is_ready:
+        response.status_code = 503
+    return {
+        "status": "ready" if is_ready else "not_ready",
+        "database_connected": db_status.get("connected", False),
+        "engine": db_status.get("engine"),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
 
 
 # Include Versioned API Routes
