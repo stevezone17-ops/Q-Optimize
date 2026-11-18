@@ -4,6 +4,7 @@ import { useBackendHealth } from '../hooks/useBackendHealth'
 import { AppLayout } from '../components/layout/AppLayout'
 import { AuthProvider } from '../context/AuthContext'
 import { AuthModal } from '../components/auth/AuthModal'
+import { ErrorBoundary } from '../components/ui/ErrorBoundary'
 import { LandingPage } from '../pages/LandingPage'
 import { OverviewPage } from '../pages/OverviewPage'
 import { ProblemBuilderPage } from '../pages/ProblemBuilderPage'
@@ -39,36 +40,38 @@ const MainContent: React.FC = () => {
       healthStatus={status}
       backendVersion={health?.version}
     >
-      {activeTab === 'overview' && (
-        <OverviewPage
-          onNavigate={setActiveTab}
-          onSelectProblemType={handleSelectProblemType}
-          healthStatus={status}
-          backendVersion={health?.version}
-        />
-      )}
+      <ErrorBoundary key={activeTab}>
+        {activeTab === 'overview' && (
+          <OverviewPage
+            onNavigate={setActiveTab}
+            onSelectProblemType={handleSelectProblemType}
+            healthStatus={status}
+            backendVersion={health?.version}
+          />
+        )}
 
-      {activeTab === 'problem-builder' && <ProblemBuilderPage />}
+        {activeTab === 'problem-builder' && <ProblemBuilderPage />}
 
-      {activeTab === 'formulation-studio' && <FormulationStudioPage />}
+        {activeTab === 'formulation-studio' && <FormulationStudioPage />}
 
-      {activeTab === 'quantum-lab' && <QuantumLabPage />}
+        {activeTab === 'quantum-lab' && <QuantumLabPage />}
 
-      {activeTab === 'classical-lab' && <ClassicalLabPage />}
+        {activeTab === 'classical-lab' && <ClassicalLabPage />}
 
-      {activeTab === 'comparison-lab' && <ComparisonLabPage />}
+        {activeTab === 'comparison-lab' && <ComparisonLabPage />}
 
-      {activeTab === 'my-experiments' && <ExperimentsDashboardPage />}
+        {activeTab === 'my-experiments' && <ExperimentsDashboardPage />}
 
-      {activeTab === 'learn' && <LearnPage />}
+        {activeTab === 'learn' && <LearnPage />}
 
-      {activeTab === 'settings' && (
-        <SettingsPage
-          healthStatus={status}
-          healthData={health}
-          onRefetchHealth={refetch}
-        />
-      )}
+        {activeTab === 'settings' && (
+          <SettingsPage
+            healthStatus={status}
+            healthData={health}
+            onRefetchHealth={refetch}
+          />
+        )}
+      </ErrorBoundary>
     </AppLayout>
   )
 }

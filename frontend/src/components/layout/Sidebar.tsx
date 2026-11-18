@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  X,
 } from 'lucide-react'
 import { NavigationItemKey } from '../../types'
 import { HealthStatus } from '../../hooks/useBackendHealth'
@@ -21,6 +22,8 @@ interface SidebarProps {
   onSelectTab: (tab: NavigationItemKey) => void
   healthStatus: HealthStatus
   backendVersion?: string
+  isOpen?: boolean
+  onClose?: () => void
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   healthStatus,
   backendVersion,
+  isOpen,
+  onClose,
 }) => {
   const navItems: { key: NavigationItemKey; label: string; icon: React.ReactNode; phaseBadge?: string }[] = [
     { key: 'overview', label: 'Overview', icon: <Layers className="h-4 w-4" /> },
@@ -42,7 +47,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ]
 
   return (
-    <aside className="w-64 border-r border-scientific-border bg-midnight-950 flex flex-col h-screen select-none shrink-0">
+    <aside
+      className={cn(
+        'w-64 border-r border-scientific-border bg-midnight-950 flex flex-col h-screen select-none shrink-0 z-40 transition-all',
+        isOpen ? 'fixed inset-y-0 left-0 flex shadow-2xl' : 'hidden md:flex'
+      )}
+      aria-label="Sidebar navigation"
+    >
       {/* Brand Header */}
       <div className="p-5 border-b border-scientific-border/80 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -59,6 +70,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-[10px] text-scientific-muted">Hybrid Quantum Platform</p>
           </div>
         </div>
+
+        {isOpen && onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg text-slate-400 hover:text-white md:hidden hover:bg-midnight-800 transition-colors"
+            aria-label="Close navigation sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -72,9 +93,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={item.key}
-              onClick={() => onSelectTab(item.key)}
+              onClick={() => {
+                onSelectTab(item.key)
+                onClose?.()
+              }}
               className={cn(
-                'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group',
+                'w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-scientific-accent',
                 isActive
                   ? 'bg-scientific-hover text-white shadow-sm border border-scientific-accent/30 font-semibold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-midnight-900'

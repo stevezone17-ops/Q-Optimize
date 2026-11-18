@@ -2,19 +2,21 @@ import React from 'react'
 import { NavigationItemKey } from '../../types'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
-import { Plus, ExternalLink, HelpCircle, LogIn, LogOut, User as UserIcon } from 'lucide-react'
+import { Plus, ExternalLink, HelpCircle, LogIn, LogOut, User as UserIcon, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 interface HeaderProps {
   activeTab: NavigationItemKey
   onSelectTab: (tab: NavigationItemKey) => void
   onOpenLanding: () => void
+  onToggleMobileNav?: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onSelectTab,
   onOpenLanding,
+  onToggleMobileNav,
 }) => {
   const titles: Record<NavigationItemKey, { title: string; subtitle: string }> = {
     overview: {
@@ -59,22 +61,34 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, isAuthenticated, openAuthModal, logout } = useAuth()
 
   return (
-    <header className="h-16 border-b border-scientific-border bg-midnight-950/80 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-20">
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-sm font-semibold text-white tracking-tight">{current.title}</h1>
-          <Badge variant="outline" size="sm">
-            Phase 1
-          </Badge>
+    <header className="h-16 border-b border-scientific-border bg-midnight-950/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0 z-20">
+      <div className="flex items-center gap-3">
+        {onToggleMobileNav && (
+          <button
+            onClick={onToggleMobileNav}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white md:hidden hover:bg-midnight-900 border border-scientific-border"
+            aria-label="Toggle navigation drawer"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm font-semibold text-white tracking-tight">{current.title}</h1>
+            <Badge variant="outline" size="sm" className="hidden sm:inline-flex">
+              Phase 1
+            </Badge>
+          </div>
+          <p className="text-[11px] text-scientific-muted hidden sm:block">{current.subtitle}</p>
         </div>
-        <p className="text-[11px] text-scientific-muted">{current.subtitle}</p>
       </div>
 
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2 sm:gap-2.5">
         <Button
           variant="ghost"
           size="sm"
           onClick={onOpenLanding}
+          className="hidden md:inline-flex"
           leftIcon={<ExternalLink className="h-3.5 w-3.5" />}
         >
           Product Overview
@@ -87,7 +101,8 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onSelectTab('problem-builder')}
             leftIcon={<Plus className="h-3.5 w-3.5" />}
           >
-            New Problem
+            <span className="hidden sm:inline">New Problem</span>
+            <span className="sm:hidden">New</span>
           </Button>
         )}
 
@@ -95,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
           variant="outline"
           size="sm"
           onClick={() => onSelectTab('learn')}
+          className="hidden lg:inline-flex"
           leftIcon={<HelpCircle className="h-3.5 w-3.5" />}
         >
           Docs

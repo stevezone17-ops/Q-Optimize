@@ -35,4 +35,27 @@ describe('Q-Optimize Application Shell', () => {
     expect(screen.getByText('Problem Metadata')).toBeInTheDocument()
     expect(screen.getByText('Canonical Problem Specification')).toBeInTheDocument()
   })
+
+  it('provides accessible skip to main content link and mobile drawer controls', () => {
+    render(<App />)
+    const launchButtons = screen.getAllByRole('button', { name: /Launch Platform Workspace|Open Workspace/i })
+    fireEvent.click(launchButtons[0])
+
+    // Verify accessible skip link exists
+    const skipLink = screen.getByText('Skip to main content')
+    expect(skipLink).toBeInTheDocument()
+    expect(skipLink).toHaveAttribute('href', '#main-content')
+
+    // Verify mobile navigation toggle button exists
+    const mobileToggle = screen.getByLabelText('Toggle navigation drawer')
+    expect(mobileToggle).toBeInTheDocument()
+
+    // Toggle drawer open
+    fireEvent.click(mobileToggle)
+    expect(screen.getByLabelText('Close navigation sidebar')).toBeInTheDocument()
+
+    // Toggle drawer closed
+    fireEvent.click(screen.getByLabelText('Close navigation sidebar'))
+    expect(screen.queryByLabelText('Close navigation sidebar')).not.toBeInTheDocument()
+  })
 })
