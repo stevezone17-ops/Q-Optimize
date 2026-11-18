@@ -13,6 +13,7 @@ from backend.app.core.security import (
 from backend.app.domain.auth.models import UserRole
 from backend.app.services.auth_service import AuthService
 from backend.app.db.mongodb import db_manager
+from backend.app.core.middleware import rate_limiter
 
 
 @pytest.fixture(autouse=True)
@@ -20,6 +21,7 @@ def clean_auth_store():
     """Ensure in-memory auth store is clean for predictable test state."""
     db_manager._memory_store["users"] = {}
     db_manager._memory_store["problems"] = {}
+    rate_limiter.reset()
 
 
 @pytest.mark.asyncio

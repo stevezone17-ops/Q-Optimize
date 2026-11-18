@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 from backend.app.api.v1.endpoints import (
     auth,
+    jobs,
     health,
     problems,
     formulations,
@@ -20,6 +21,7 @@ from backend.app.api.v1.endpoints import (
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(auth.router)
+api_v1_router.include_router(jobs.router)
 
 api_v1_router.include_router(health.router)
 api_v1_router.include_router(problems.router)

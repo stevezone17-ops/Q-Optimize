@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     PASSWORD_RESET_EXPIRE_MINUTES: int = 15
 
+    # Resource Guard & Concurrency
+    MEMORY_SAFETY_THRESHOLD_PERCENT: float = 99.0
+    ENABLE_RESOURCE_GUARD: bool = True
+    MAX_CONCURRENT_SIMULATIONS: int = 4
+    MAX_CONCURRENT_CLASSICAL_JOBS: int = 8
+    MAX_CONCURRENT_USER_JOBS: int = 3
+
     # Default Admin Seed
     DEFAULT_ADMIN_EMAIL: str = "admin@q-optimize.io"
     DEFAULT_ADMIN_USERNAME: str = "admin"
