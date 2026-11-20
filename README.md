@@ -2,12 +2,13 @@
 
 > **An AI-Assisted Hybrid Quantum-Classical Optimization Framework with Adaptive QAOA and Intelligent Solver Selection**
 
-[![Status: Phase 8 Complete](https://img.shields.io/badge/Status-Phase%208%20Experiments%20%26%20Benchmarking-10B981.svg)](#)
+[![Status: Phase 9 Complete](https://img.shields.io/badge/Status-Phase%209%20Production%20Ready-10B981.svg)](#)
+[![CI: Passing](https://github.com/stevezone17-ops/Q-Optimize/actions/workflows/ci.yml/badge.svg)](#)
 [![Python: 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](#)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg)](#)
 [![React: 18](https://img.shields.io/badge/Frontend-React%2018%20%7C%20TypeScript-61DAFB.svg)](#)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](#)
-[![Tests: 337 Pytest | 60 Vitest](https://img.shields.io/badge/Tests-397%20Passing-emerald.svg)](#)
+[![Tests: 382 Pytest | 61 Vitest](https://img.shields.io/badge/Tests-443%20Passing-emerald.svg)](#)
 
 ---
 
@@ -424,25 +425,56 @@ npm run dev
 ### Running Test Suites
 
 ```bash
-# Backend test suite (201 tests across schemas, evaluators, constraints, QUBO, Ising, classical solvers, QAOA, adaptive QAOA, benchmarks)
+# Backend test suite (382 tests across auth, security, reliability, solvers, QAOA, adaptive QAOA, ML)
 python -m pytest backend/tests -v
 
-# Frontend test suite (33 tests across App shell, Problem Builder, Formulation Studio, Classical Lab, and Adaptive QAOA Lab)
+# Frontend test suite (61 tests across App shell, accessibility, labs, visualization, experiments)
 npm test --prefix frontend
 
-# Production build check
+# Frontend production build check
 npm run build --prefix frontend
 ```
 
 ---
 
-## 6. Known Limitations & Research Boundaries
+## 6. Phase 9 — Production Readiness, Security, Scalability & Deployment
+
+Phase 9 hardens Q-Optimize into an enterprise-ready, horizontally deployable platform through defense-in-depth security, bounded concurrency, production observability, and container orchestration:
+
+- **Authentication & RBAC:** Secure user registration, bcrypt password hashing (cost factor 12), JWT access and refresh token exchange, and Role-Based Access Control (`admin`, `researcher`, `user`) with horizontal privilege escalation defense.
+- **API Defense & Resource Protection:** Token bucket rate limiting (20 req/min for auth, 120 req/min general), 10MB payload size restriction, CORS restrictions, NoSQL injection pattern sanitization, and automated security response headers (HSTS, CSP, X-Frame-Options DENY, nosniff).
+- **Database Resiliency:** Centralized PyMongo connection pooling (min 5, max 50), automatic reconnect on disconnect, background health pings, startup indexing (unique email/username and composite owner/created indexes), and transparent in-memory fallback.
+- **Background Workload Management:** `JobQueueManager` regulating asynchronous optimization workloads with thread-safe concurrency limits, cooperative cancellation tokens, watchdog timeouts, host memory protection thresholds (`psutil`), and a dedicated Dead-Letter Queue (DLQ).
+- **Frontend Accessibility & Performance:** React `ErrorBoundary` per workspace view, responsive mobile drawer navigation with animated backdrop, WCAG-compliant skip-to-content links, `prefers-reduced-motion` compliance, and bundle minimization (119 kB gzipped JS).
+- **Logging & Observability:** Structured logging with `SensitiveDataRedactor` scrubbing passwords and Bearer tokens, Kubernetes-ready `/health/live` and `/health/ready` probes (< 5ms response), and runtime system telemetry in `/health`.
+- **Environment & Configuration:** Pydantic model validators rejecting `DEBUG=True` and weak JWT secrets when `APP_ENV=production`.
+- **Containerization & CI/CD:** Multi-stage Dockerfiles (`python:3.12-slim` backend, `nginx:alpine` frontend), `docker-compose.yml` stack with health-check dependencies, and automated GitHub Actions CI workflow executing 443 tests on push and pull requests.
+
+### Docker Compose Quickstart
+
+```bash
+# Copy and configure environment variables
+cp .env.example .env
+
+# Build and start all services (MongoDB + FastAPI + React/Nginx)
+docker-compose up --build -d
+
+# Verify liveness and readiness
+curl http://localhost:8000/health/live
+curl http://localhost:8000/health/ready
+```
+
+See [DEPLOYMENT_GUIDE.md](file:///d:/Q-Optimize/DEPLOYMENT_GUIDE.md) for full deployment and operations details.
+
+---
+
+## 7. Known Limitations & Research Boundaries
 - **Exact Solver Instance Limits:** `ExactSolver` enforces safety thresholds ($n \le 18$ for Max-Cut, $n \le 10$ for TSP) to prevent factorial/exponential computational explosions.
 - **Classical Simulation Ceilings:** Quantum state evolutions and sampling are conducted classically via Qiskit Aer ($n \le 20$ qubits, $p \le 10$ layers, $\text{shots} \le 50,000$). No physical quantum hardware execution or physical quantum supremacy is claimed.
 - **Natural Language Parsing:** Remains strictly draft-only; human confirmation is mandatory before canonical creation.
 
 ---
 
-## 7. License
+## 8. License
 
 Licensed under the MIT License. Developed for research and educational purposes.
