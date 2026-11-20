@@ -1,7 +1,7 @@
 """Configuration management using Pydantic Settings."""
 
 from typing import List, Union
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -57,6 +57,21 @@ class Settings(BaseSettings):
         elif isinstance(v, list):
             return v
         return ["http://localhost:5173"]
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        if self.APP_ENV.lower() == "production":
+            if self.DEBUG:
+                raise ValueError("DEBUG mode must be disabled (False) in production.")
+            if (
+                not self.JWT_SECRET_KEY
+                or self.JWT_SECRET_KEY == "insecure_dev_secret_replace_in_production"
+                or len(self.JWT_SECRET_KEY) < 32
+            ):
+                raise ValueError(
+                    "JWT_SECRET_KEY must be a cryptographically strong secret (minimum 32 characters) in production."
+                )
+        return self
 
 
 settings = Settings()
