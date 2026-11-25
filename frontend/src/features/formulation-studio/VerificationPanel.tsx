@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '../../components/ui/Button'
 import { VerificationResult, QuboModel } from '../../types'
 import { formulationService } from '../../services/formulationService'
@@ -22,6 +22,11 @@ export const VerificationPanel: React.FC<VerificationPanelProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<VerificationResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setResult(null)
+    setError(null)
+  }, [formulationId, problemId, problemType])
 
   const handleRunVerification = async () => {
     setIsLoading(true)

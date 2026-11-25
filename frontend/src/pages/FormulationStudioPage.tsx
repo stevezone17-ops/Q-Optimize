@@ -244,7 +244,19 @@ export const FormulationStudioPage: React.FC = () => {
 
       {error && (
         <Alert variant="error" title="Formulation Error">
-          {error}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span>{error}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={handleGenerateFormulation}
+              isLoading={isGenerating}
+              leftIcon={<RefreshCw className="h-3 w-3" />}
+            >
+              Retry
+            </Button>
+          </div>
         </Alert>
       )}
 
@@ -435,9 +447,36 @@ export const FormulationStudioPage: React.FC = () => {
         </div>
       )}
 
+      {/* Loading & Empty States when formulation is not yet available */}
+      {isGenerating && !formulation && (
+        <div className="p-8 rounded-xl border border-scientific-border bg-midnight-900/40 flex flex-col items-center justify-center gap-3 text-center font-mono">
+          <RefreshCw className="h-6 w-6 text-scientific-accent animate-spin" />
+          <p className="text-xs text-slate-300">Generating QUBO & Ising Spin Hamiltonian...</p>
+        </div>
+      )}
+
+      {!isGenerating && !formulation && (
+        <div className="p-8 rounded-xl border border-scientific-border bg-midnight-900/40 flex flex-col items-center justify-center gap-3 text-center font-mono">
+          <Calculator className="h-6 w-6 text-scientific-muted" />
+          <p className="text-xs text-slate-300">
+            No formulation loaded for the selected problem.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="primary"
+            onClick={handleGenerateFormulation}
+            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+          >
+            Generate Formulation
+          </Button>
+        </div>
+      )}
+
       {/* Tab 3: Independent Verification */}
       {activeTab === 'verification' && formulation?.qubo && (
         <VerificationPanel
+          key={formulation.id}
           formulationId={formulation.id}
           problemId={!activeProblem.isPreset ? selectedProblemId : undefined}
           problemType={activeProblem.problemType}
