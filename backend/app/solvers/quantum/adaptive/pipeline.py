@@ -468,7 +468,7 @@ class AdaptiveQAOAExecutionPipeline:
         # 10. Persist Record
         record = AdaptiveExecutionRecord(
             execution_id=exec_id,
-            problem_id=req.problem_id,
+            problem_id=req.problem_id or "adhoc",
             problem_type=prob_type,
             status=result.status,
             strategy_type=strat_cfg.strategy_type,
@@ -495,7 +495,7 @@ class AdaptiveQAOAExecutionPipeline:
 
         record = AdaptiveExecutionRecord(
             execution_id=exec_id,
-            problem_id=req.problem_id,
+            problem_id=req.problem_id or "adhoc",
             problem_type=prob_type,
             status=QuantumExecutionStatus.PENDING,
             strategy_type=req.config.strategy_config.strategy_type,

@@ -148,7 +148,7 @@ class AdaptiveQAOAResult(BaseModel):
     best_gamma: List[float]
     best_beta: List[float]
     best_bitstring: str
-    best_solution: Dict[str, Any]
+    best_solution: Any
     objective_value: float
     expected_energy: float
     is_feasible: bool
