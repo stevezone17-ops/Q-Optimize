@@ -92,8 +92,9 @@ export const FormulationStudioPage: React.FC = () => {
     fetchProblems()
   }, [])
 
-  // Auto-generate formulation for default initial benchmark
+  // Auto-generate formulation for selected problem
   useEffect(() => {
+    setFormulation(null)
     handleGenerateFormulation()
   }, [selectedProblemId])
 
