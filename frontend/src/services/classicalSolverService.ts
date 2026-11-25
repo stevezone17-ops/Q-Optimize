@@ -48,6 +48,7 @@ export const classicalSolverService = {
     return request<SolverResult>('/solvers/classical/execute', {
       method: 'POST',
       body: JSON.stringify(payload),
+      timeoutMs: 60000,
     })
   },
 
@@ -98,6 +99,7 @@ export const classicalSolverService = {
     return request<import('../types').BenchmarkResult>('/solvers/classical/benchmark', {
       method: 'POST',
       body: JSON.stringify(payload),
+      timeoutMs: 60000,
     })
   },
 

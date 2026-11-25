@@ -58,6 +58,7 @@ export const quantumSolverService = {
     return request<QAOAExecutionResult>('/solvers/quantum/qaoa/execute', {
       method: 'POST',
       body: JSON.stringify(payload),
+      timeoutMs: 60000,
     })
   },
 
@@ -108,6 +109,7 @@ export const quantumSolverService = {
     return request<HybridBenchmarkResult>('/solvers/quantum/benchmark', {
       method: 'POST',
       body: JSON.stringify(payload),
+      timeoutMs: 60000,
     })
   },
 

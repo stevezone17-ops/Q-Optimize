@@ -64,6 +64,7 @@ export const adaptiveSolverService = {
     return request<AdaptiveQAOAResult>('/solvers/quantum/adaptive/execute', {
       method: 'POST',
       body: JSON.stringify(req),
+      timeoutMs: 60000,
     })
   },
 
@@ -114,6 +115,7 @@ export const adaptiveSolverService = {
     return request<AdaptiveBenchmarkResult>('/solvers/quantum/adaptive/benchmarks', {
       method: 'POST',
       body: JSON.stringify(req),
+      timeoutMs: 60000,
     })
   },
 
