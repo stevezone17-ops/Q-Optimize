@@ -24,15 +24,27 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "img-src 'self' data:; "
-            "style-src 'self' 'unsafe-inline'; "
-            "script-src 'self'; "
-            "font-src 'self' data:; "
-            "connect-src 'self' ws:; "
-            "frame-ancestors 'none';"
-        )
+        is_docs_path = request.url.path in ("/docs", "/redoc", "/openapi.json")
+        if is_docs_path:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "img-src 'self' data: https://fastapi.tiangolo.com; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "font-src 'self' data: https://cdn.jsdelivr.net; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none';"
+            )
+        else:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "img-src 'self' data:; "
+                "style-src 'self' 'unsafe-inline'; "
+                "script-src 'self'; "
+                "font-src 'self' data:; "
+                "connect-src 'self' ws:; "
+                "frame-ancestors 'none';"
+            )
         return response
 
 

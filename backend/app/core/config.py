@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     APP_ENV: str = "development"
     PROJECT_NAME: str = "Q-Optimize API"
-    VERSION: str = "0.1.0"
+    VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
     DEBUG: bool = True
 
@@ -46,7 +46,14 @@ class Settings(BaseSettings):
     FRONTEND_ORIGIN: Union[str, List[str]] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
     ]
 
     @field_validator("FRONTEND_ORIGIN", mode="before")
