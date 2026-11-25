@@ -31,6 +31,60 @@ def test_verification_max_cut_complete():
     assert len(res.discrepancies) == 0
 
 
+def test_verification_unweighted_max_cut_4node_cycle():
+    """
+    Verify unweighted 4-Node Cycle (C4) Max-Cut benchmark exhaustively:
+    - 4 vertices, 4 edges, 16 binary configurations
+    - Maximum cut value of 4.0 (QUBO energy -4.0)
+    - Optimal assignments 0101 and 1010 under cyclic vertex ordering
+    - Exact QUBO and Ising energy equivalence
+    """
+    from backend.app.formulations.ising_converter import IsingConverter
+    from backend.app.formulations.qubo_builder import QuboBuilder
+
+    problem = {
+        "nodes": ["A", "B", "C", "D"],
+        "edges": [
+            ["A", "B", 1.0],
+            ["B", "C", 1.0],
+            ["C", "D", 1.0],
+            ["D", "A", 1.0],
+        ],
+    }
+    qubo = MaxCutQuboGenerator.generate(problem)
+    ising = IsingConverter.qubo_to_ising(qubo)
+    res = FormulationVerifier.verify(
+        problem_type="max_cut",
+        instance_data=problem,
+        qubo=qubo,
+        ising=ising,
+    )
+    assert res.is_verified is True
+    assert res.num_states_tested == 16
+    assert res.max_energy_discrepancy < 1e-8
+    assert abs(res.min_qubo_energy - (-4.0)) < 1e-8
+
+    builder = QuboBuilder(variable_order=qubo.variable_order)
+    for var, val in qubo.linear_terms.items():
+        builder.add_linear(var, val)
+    for pair_key, val in qubo.quadratic_terms.items():
+        v1, v2 = pair_key.split(",", 1)
+        builder.add_quadratic(v1, v2, val)
+    builder.add_offset(qubo.offset)
+
+    optimal_bitstrings = []
+    for bits in [(a, b, c, d) for a in (0, 1) for b in (0, 1) for c in (0, 1) for d in (0, 1)]:
+        bit_vec = list(bits)
+        e_qubo = builder.evaluate_energy(bit_vec)
+        z_vec = IsingConverter.binary_to_spin(bit_vec)
+        e_ising = IsingConverter.evaluate_energy(ising, z_vec)
+        assert abs(e_qubo - e_ising) < 1e-8
+        if abs(e_qubo - (-4.0)) < 1e-8:
+            optimal_bitstrings.append("".join(str(x) for x in bits))
+
+    assert set(optimal_bitstrings) == {"0101", "1010"}
+
+
 def test_verification_assignment_complete():
     """Verify 2x2 Assignment formulation exhaustively across all 16 states."""
     problem = {
