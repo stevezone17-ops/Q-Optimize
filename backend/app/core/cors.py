@@ -15,9 +15,18 @@ def configure_cors(app: FastAPI) -> None:
     if not sanitized_origins:
         sanitized_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
+    # In development, allow any localhost/127.0.0.1 port (e.g. Vite fallback 5174, 5175)
+    # while production strictly enforces explicit FRONTEND_ORIGIN entries.
+    allow_origin_regex = (
+        r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
+        if settings.APP_ENV.lower() != "production"
+        else None
+    )
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=sanitized_origins,
+        allow_origin_regex=allow_origin_regex,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
