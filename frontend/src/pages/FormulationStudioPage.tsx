@@ -94,7 +94,6 @@ export const FormulationStudioPage: React.FC = () => {
 
   // Auto-generate formulation for selected problem
   useEffect(() => {
-    setFormulation(null)
     handleGenerateFormulation()
   }, [selectedProblemId])
 
@@ -149,6 +148,7 @@ export const FormulationStudioPage: React.FC = () => {
       const res = await formulationService.generateFormulation(payload)
       setFormulation(res)
     } catch (err) {
+      setFormulation(null)
       setError((err as Error).message || 'Failed to generate formulation.')
     } finally {
       setIsGenerating(false)
