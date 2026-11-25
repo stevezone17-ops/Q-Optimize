@@ -1,0 +1,56 @@
+{
+  "protocol_version": "1.0.0",
+  "title": "Q-Optimize Controlled Experimental Protocol (Phase 10)",
+  "simulation_backend": "Qiskit AerSimulator (classical CPU simulation)",
+  "random_seed_policy": {
+    "dataset_generation": "Explicit deterministic base seeds per family (1001..3010)",
+    "solver_trials": "Deterministic per-trial seed offset: seed_k = 42 + k * 17 for k in [0, num_trials - 1]"
+  },
+  "computational_budgets": {
+    "exact": {
+      "description": "Exhaustive branch-and-bound / enumeration (deterministic, 1 trial)",
+      "max_n_maxcut": 18,
+      "max_n_tsp": 10
+    },
+    "simulated_annealing": {
+      "max_iterations": 250,
+      "initial_temperature": 100.0,
+      "cooling_rate": 0.95,
+      "trials_per_instance": 3
+    },
+    "genetic_algorithm": {
+      "population_size": 30,
+      "max_iterations": 80,
+      "mutation_rate": 0.1,
+      "trials_per_instance": 3
+    },
+    "standard_qaoa": {
+      "p_depth": 1,
+      "shots": 512,
+      "optimizer": "COBYLA",
+      "max_evaluations": 40,
+      "trials_per_instance": 3,
+      "max_qubits": 10
+    },
+    "adaptive_qaoa": {
+      "initial_depth": 1,
+      "max_depth": 2,
+      "shots": 512,
+      "primary_optimizer": "COBYLA",
+      "fallback_optimizer": "Nelder-Mead",
+      "max_evaluations_total": 50,
+      "trials_per_instance": 3,
+      "max_qubits": 10
+    }
+  },
+  "evaluation_metrics": [
+    "best_objective",
+    "mean_objective",
+    "median_objective",
+    "std_objective",
+    "feasibility_rate",
+    "optimality_gap_percent",
+    "approximation_ratio",
+    "runtime_seconds"
+  ]
+}
