@@ -1,8 +1,17 @@
 """Main FastAPI application entry point for Q-Optimize."""
 
+import sys
+from pathlib import Path
 from contextlib import asynccontextmanager
 from typing import Dict, Any
 from datetime import datetime, timezone
+
+# Ensure project root is on sys.path so `backend.app.*` imports resolve
+# regardless of whether uvicorn is invoked as `app.main:app` or `backend.app.main:app`.
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[2])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
@@ -21,15 +30,24 @@ from backend.app.api.v1.router import api_v1_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown routines."""
-    logger.info("Initializing Q-Optimize Backend Engine...")
+    logger.info(
+        f"Initializing {settings.PROJECT_NAME} v{settings.VERSION} "
+        f"(env={settings.APP_ENV}, debug={settings.DEBUG})..."
+    )
     # Attempt DB connection
     await db_manager.connect_to_database()
+    db_status = await db_manager.get_db_status()
+    logger.info(
+        f"Persistence engine ready: {db_status.get('engine')} "
+        f"(connected={db_status.get('connected')})"
+    )
     # Seed default platform admin account if needed
     try:
         from backend.app.services.auth_service import AuthService
         await AuthService.seed_default_admin_if_needed()
     except Exception as e:
         logger.warning(f"Admin seeding warning: {e}")
+    logger.info(f"API router mounted at '{settings.API_V1_PREFIX}' ({len(app.routes)} total routes). Startup complete.")
     yield
     # Shutdown
     logger.info("Shutting down Q-Optimize Backend Engine...")
