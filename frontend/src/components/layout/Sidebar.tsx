@@ -10,6 +10,7 @@ import {
   Settings,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   X,
 } from 'lucide-react'
@@ -137,19 +138,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="rounded-lg border border-scientific-border/60 p-2.5 bg-midnight-950/70">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[11px] font-mono text-slate-400">FastAPI Backend</span>
-            {healthStatus === 'connected' && (
+            {healthStatus === 'online' && (
               <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
                 <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                Connected
+                Online
               </span>
             )}
-            {healthStatus === 'checking' && (
+            {healthStatus === 'connecting' && (
               <span className="inline-flex items-center gap-1 text-[10px] font-mono text-sky-400">
                 <Loader2 className="h-3 w-3 animate-spin text-sky-400" />
-                Checking
+                Connecting
               </span>
             )}
-            {healthStatus === 'disconnected' && (
+            {healthStatus === 'degraded' && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400">
+                <AlertTriangle className="h-3 w-3 text-amber-400" />
+                Degraded
+              </span>
+            )}
+            {healthStatus === 'offline' && (
               <span className="inline-flex items-center gap-1 text-[10px] font-mono text-rose-400">
                 <AlertCircle className="h-3 w-3 text-rose-400" />
                 Offline

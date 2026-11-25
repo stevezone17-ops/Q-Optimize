@@ -230,7 +230,14 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
 
             <div className="pt-2 border-t border-scientific-border/60 text-[11px] text-scientific-muted">
-              Connected: {healthStatus === 'connected' ? 'Active Localhost' : 'Connecting...'}
+              Status:{' '}
+              {healthStatus === 'online'
+                ? 'Online (Active Localhost)'
+                : healthStatus === 'degraded'
+                ? 'Degraded (Limited Capacity)'
+                : healthStatus === 'connecting'
+                ? 'Connecting...'
+                : 'Offline'}
             </div>
           </div>
         </div>

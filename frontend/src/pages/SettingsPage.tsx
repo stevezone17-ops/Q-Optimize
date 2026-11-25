@@ -47,13 +47,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           <CardHeader>
             <div className="flex items-center justify-between">
               <Badge variant="accent">Networking</Badge>
-              {healthStatus === 'connected' ? (
+              {healthStatus === 'online' ? (
                 <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3" /> Live
+                  <CheckCircle2 className="h-3 w-3" /> Online
+                </span>
+              ) : healthStatus === 'degraded' ? (
+                <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> Degraded
+                </span>
+              ) : healthStatus === 'connecting' ? (
+                <span className="text-[10px] text-sky-400 font-mono flex items-center gap-1">
+                  Connecting...
                 </span>
               ) : (
                 <span className="text-[10px] text-rose-400 font-mono flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" /> Disconnected
+                  <AlertCircle className="h-3 w-3" /> Offline
                 </span>
               )}
             </div>
