@@ -132,8 +132,7 @@ class FormulationService:
                 target_problem_type = problem_type
                 target_instance = instance
             else:
-                target_problem_type = target_qubo.metadata.get("problem_type", "max_cut")
-                target_instance = instance or {}
+                raise ValueError("Underlying problem instance is required to verify an ad-hoc formulation.")
         elif problem_id:
             prob = await ProblemService.get_problem(problem_id, owner_id=owner_id)
             if not prob:

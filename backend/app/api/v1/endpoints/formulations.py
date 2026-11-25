@@ -42,7 +42,7 @@ async def generate_formulation(
         return await FormulationService.generate_formulation(req, owner_id=owner_id)
     except ValueError as val_err:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY if "not found" not in str(val_err).lower() else status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND if "not found" in str(val_err).lower() else 422,
             detail=str(val_err),
         )
     except Exception as e:
@@ -62,7 +62,7 @@ async def generate_qubo_only(req: GenerateQuboRequest) -> QuboModel:
         return formulation.qubo
     except ValueError as val_err:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY if "not found" not in str(val_err).lower() else status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND if "not found" in str(val_err).lower() else 422,
             detail=str(val_err),
         )
     except Exception as e:
@@ -79,7 +79,7 @@ async def convert_qubo_to_ising(req: GenerateIsingRequest) -> IsingModel:
         return _engine.qubo_to_ising(req.qubo)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail=f"QUBO-to-Ising conversion failed: {str(e)}",
         )
 
@@ -102,7 +102,7 @@ async def verify_formulation(req: VerifyFormulationRequest) -> VerificationResul
         )
     except ValueError as val_err:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY if "not found" not in str(val_err).lower() else status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND if "not found" in str(val_err).lower() else 422,
             detail=str(val_err),
         )
     except Exception as e:
@@ -151,6 +151,13 @@ async def export_formulation(
     format: str = Query("all", description="Export format: dense, sparse, latex, or all")
 ) -> Dict[str, Any]:
     """Export QUBO matrix and Ising coefficients in structured format."""
+    allowed_formats = {"dense", "sparse", "latex", "all"}
+    if format not in allowed_formats:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unsupported export format '{format}'. Expected one of: {sorted(allowed_formats)}.",
+        )
+
     formulation = await FormulationService.get_formulation(formulation_id)
     if not formulation:
         raise HTTPException(

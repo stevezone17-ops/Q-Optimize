@@ -132,3 +132,12 @@ def test_formulation_invalid_problem_returns_404_or_422(client: TestClient):
         json={},
     )
     assert empty_res.status_code == 422
+
+    blank_id_res = client.post(
+        "/api/v1/formulations/generate",
+        json={"problem_id": "   "},
+    )
+    assert blank_id_res.status_code == 422
+
+    bad_export = client.get("/api/v1/formulations/any-id/export?format=invalid_fmt")
+    assert bad_export.status_code == 422
