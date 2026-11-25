@@ -14,17 +14,42 @@ router = APIRouter(tags=["System Health & Observability"])
 @router.get("/health", response_model=Dict[str, Any])
 async def health_check() -> Dict[str, Any]:
     """Return health status of API, version, environment, and database connectivity."""
-    db_status = await db_manager.get_db_status()
-    mem = psutil.virtual_memory()
+    degraded_reasons = []
+
+    try:
+        db_status = await db_manager.get_db_status()
+    except Exception as exc:
+        db_status = {"connected": False, "engine": "unavailable", "error": str(exc)}
+        degraded_reasons.append(f"database_error: {exc}")
+
+    try:
+        mem = psutil.virtual_memory()
+        memory_percent = mem.percent
+        cpu_percent = psutil.cpu_percent(interval=None)
+    except Exception as exc:
+        memory_percent = None
+        cpu_percent = None
+        degraded_reasons.append(f"telemetry_unavailable: {exc}")
+
+    is_safe, resource_reason = job_queue_manager.check_system_resources()
+    if not is_safe:
+        degraded_reasons.append(f"resource_pressure: {resource_reason}")
+
+    if not db_status.get("connected") and db_status.get("engine") != "in_memory_fallback":
+        degraded_reasons.append("persistence_unavailable")
+
     active_jobs = len(job_queue_manager.list_jobs(status=None))
     dead_letters = len(job_queue_manager.get_dead_letter_queue())
 
+    overall_status = "degraded" if degraded_reasons else "healthy"
+
     return {
-        "status": "healthy",
+        "status": overall_status,
+        "degraded_reasons": degraded_reasons,
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "environment": settings.APP_ENV,
-        "phase": "Phase 1 - Complete Platform Foundation",
+        "phase": "Phase 10 - Production Ready & Research Validated",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database": db_status,
         "workers": {
@@ -34,8 +59,8 @@ async def health_check() -> Dict[str, Any]:
             "max_concurrent_classical": settings.MAX_CONCURRENT_CLASSICAL_JOBS,
         },
         "system": {
-            "memory_percent": mem.percent,
-            "cpu_percent": psutil.cpu_percent(interval=None),
+            "memory_percent": memory_percent,
+            "cpu_percent": cpu_percent,
         },
         "supported_problems": ["max_cut", "assignment", "tsp"],
     }
