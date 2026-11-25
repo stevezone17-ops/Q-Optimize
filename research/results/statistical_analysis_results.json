@@ -1,0 +1,378 @@
+{
+  "generated_at": "2026-11-25T09:20:49.260470+00:00",
+  "descriptive_statistics": [
+    {
+      "problem_type": "max_cut",
+      "solver": "exact",
+      "n_trials": 11,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0013,
+      "runtime_std_s": 0.0011,
+      "runtime_ci95_s": [
+        0.0006,
+        0.0021
+      ]
+    },
+    {
+      "problem_type": "max_cut",
+      "solver": "simulated_annealing",
+      "n_trials": 33,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0514,
+      "runtime_std_s": 0.0625,
+      "runtime_ci95_s": [
+        0.0292,
+        0.0735
+      ]
+    },
+    {
+      "problem_type": "max_cut",
+      "solver": "genetic_algorithm",
+      "n_trials": 33,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.3512,
+      "runtime_std_s": 0.2576,
+      "runtime_ci95_s": [
+        0.2599,
+        0.4426
+      ]
+    },
+    {
+      "problem_type": "max_cut",
+      "solver": "standard_qaoa",
+      "n_trials": 33,
+      "approx_ratio_mean": 0.995,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.019,
+      "approx_ratio_ci95": [
+        0.9883,
+        1.0017
+      ],
+      "gap_pct_mean": 0.5006,
+      "runtime_mean_s": 1.0537,
+      "runtime_std_s": 1.4967,
+      "runtime_ci95_s": [
+        0.523,
+        1.5845
+      ]
+    },
+    {
+      "problem_type": "max_cut",
+      "solver": "adaptive_qaoa",
+      "n_trials": 33,
+      "approx_ratio_mean": 0.9864,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0439,
+      "approx_ratio_ci95": [
+        0.9708,
+        1.0019
+      ],
+      "gap_pct_mean": 1.3642,
+      "runtime_mean_s": 1.171,
+      "runtime_std_s": 0.7614,
+      "runtime_ci95_s": [
+        0.9011,
+        1.441
+      ]
+    },
+    {
+      "problem_type": "assignment",
+      "solver": "exact",
+      "n_trials": 7,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0002,
+      "runtime_std_s": 0.0,
+      "runtime_ci95_s": [
+        0.0002,
+        0.0002
+      ]
+    },
+    {
+      "problem_type": "assignment",
+      "solver": "simulated_annealing",
+      "n_trials": 21,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0381,
+      "runtime_std_s": 0.0099,
+      "runtime_ci95_s": [
+        0.0335,
+        0.0426
+      ]
+    },
+    {
+      "problem_type": "assignment",
+      "solver": "genetic_algorithm",
+      "n_trials": 21,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.241,
+      "runtime_std_s": 0.031,
+      "runtime_ci95_s": [
+        0.2269,
+        0.2551
+      ]
+    },
+    {
+      "problem_type": "assignment",
+      "solver": "standard_qaoa",
+      "n_trials": 15,
+      "approx_ratio_mean": 0.9296,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.1255,
+      "approx_ratio_ci95": [
+        0.8601,
+        0.9991
+      ],
+      "gap_pct_mean": 9.989,
+      "runtime_mean_s": 0.509,
+      "runtime_std_s": 0.0378,
+      "runtime_ci95_s": [
+        0.4881,
+        0.53
+      ]
+    },
+    {
+      "problem_type": "assignment",
+      "solver": "adaptive_qaoa",
+      "n_trials": 15,
+      "approx_ratio_mean": 0.8595,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.2071,
+      "approx_ratio_ci95": [
+        0.7449,
+        0.9742
+      ],
+      "gap_pct_mean": 26.501,
+      "runtime_mean_s": 0.7488,
+      "runtime_std_s": 0.118,
+      "runtime_ci95_s": [
+        0.6834,
+        0.8141
+      ]
+    },
+    {
+      "problem_type": "tsp",
+      "solver": "exact",
+      "n_trials": 5,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0002,
+      "runtime_std_s": 0.0001,
+      "runtime_ci95_s": [
+        0.0002,
+        0.0003
+      ]
+    },
+    {
+      "problem_type": "tsp",
+      "solver": "simulated_annealing",
+      "n_trials": 15,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.0416,
+      "runtime_std_s": 0.0144,
+      "runtime_ci95_s": [
+        0.0337,
+        0.0496
+      ]
+    },
+    {
+      "problem_type": "tsp",
+      "solver": "genetic_algorithm",
+      "n_trials": 15,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.2511,
+      "runtime_std_s": 0.0369,
+      "runtime_ci95_s": [
+        0.2307,
+        0.2715
+      ]
+    },
+    {
+      "problem_type": "tsp",
+      "solver": "standard_qaoa",
+      "n_trials": 9,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.5687,
+      "runtime_std_s": 0.047,
+      "runtime_ci95_s": [
+        0.5326,
+        0.6048
+      ]
+    },
+    {
+      "problem_type": "tsp",
+      "solver": "adaptive_qaoa",
+      "n_trials": 9,
+      "approx_ratio_mean": 1.0,
+      "approx_ratio_median": 1.0,
+      "approx_ratio_std": 0.0,
+      "approx_ratio_ci95": [
+        1.0,
+        1.0
+      ],
+      "gap_pct_mean": 0.0,
+      "runtime_mean_s": 0.8933,
+      "runtime_std_s": 0.1117,
+      "runtime_ci95_s": [
+        0.8075,
+        0.9792
+      ]
+    }
+  ],
+  "hypothesis_tests": [
+    {
+      "comparison": "SA vs Standard QAOA (Approx. Ratio)",
+      "design": "paired",
+      "test": "wilcoxon_signed_rank",
+      "n_pairs": 57,
+      "mean_a": 1.0,
+      "mean_b": 0.9786,
+      "statistic": 0.0,
+      "p_value": 0.0032989353588360605,
+      "cohens_d": 0.4277,
+      "error": null,
+      "p_adjusted_holm": 0.013196,
+      "significant_alpha_05": true
+    },
+    {
+      "comparison": "SA vs Adaptive QAOA (Approx. Ratio)",
+      "design": "paired",
+      "test": "wilcoxon_signed_rank",
+      "n_pairs": 57,
+      "mean_a": 1.0,
+      "mean_b": 0.9551,
+      "statistic": 0.0,
+      "p_value": 0.007632441648205508,
+      "cohens_d": 0.5152,
+      "error": null,
+      "p_adjusted_holm": 0.022897,
+      "significant_alpha_05": true
+    },
+    {
+      "comparison": "Standard QAOA vs Adaptive QAOA (Approx. Ratio)",
+      "design": "paired",
+      "test": "wilcoxon_signed_rank",
+      "n_pairs": 57,
+      "mean_a": 0.9786,
+      "mean_b": 0.9551,
+      "statistic": 49.0,
+      "p_value": 0.3256273578347909,
+      "cohens_d": 0.2334,
+      "error": null,
+      "p_adjusted_holm": 0.325627,
+      "significant_alpha_05": false
+    },
+    {
+      "comparison": "Standard QAOA vs Adaptive QAOA (Runtime s)",
+      "design": "paired",
+      "test": "wilcoxon_signed_rank",
+      "n_pairs": 57,
+      "mean_a": 0.8338,
+      "mean_b": 1.0161,
+      "statistic": 109.0,
+      "p_value": 1.1930994812050744e-08,
+      "cohens_d": -0.1965,
+      "error": null,
+      "p_adjusted_holm": 0.0,
+      "significant_alpha_05": true
+    },
+    {
+      "comparison": "SA vs Genetic Algorithm (Runtime s)",
+      "design": "paired",
+      "test": "wilcoxon_signed_rank",
+      "n_pairs": 57,
+      "mean_a": 0.0443,
+      "mean_b": 0.303,
+      "statistic": 0.0,
+      "p_value": 5.143753751233159e-11,
+      "cohens_d": -1.7457,
+      "error": null,
+      "p_adjusted_holm": 0.0,
+      "significant_alpha_05": true
+    },
+    {
+      "comparison": "Standard QAOA Approx. Ratio: Max-Cut vs Assignment",
+      "design": "independent",
+      "test": "mann_whitney_u",
+      "n_a": 33,
+      "n_b": 15,
+      "mean_a": 0.995,
+      "mean_b": 0.9296,
+      "statistic": 318.0,
+      "p_value": 0.03443178205705891,
+      "effect_size_r": -0.2848,
+      "cohens_d": 0.9208,
+      "error": null,
+      "p_adjusted_holm": 0.068864,
+      "significant_alpha_05": false
+    }
+  ]
+}
