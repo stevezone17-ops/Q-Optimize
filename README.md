@@ -429,7 +429,13 @@ pip install -r requirements.txt
 
 #### 2. Start the Backend Server
 
-**Option A (Automated startup script - Recommended):**
+**Option A (Unified Full-Stack Launcher - Recommended for Windows):**
+```powershell
+# From project root D:\Q-Optimize (starts Backend + Frontend together)
+.\start-dev.ps1
+```
+
+**Option B (Backend-only automated startup script):**
 ```powershell
 # From D:\Q-Optimize\backend
 .\start.ps1
