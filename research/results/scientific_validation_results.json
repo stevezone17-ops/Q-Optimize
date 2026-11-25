@@ -1,0 +1,350 @@
+{
+  "generated_at": "2026-11-25T08:58:49.030008+00:00",
+  "all_passed": true,
+  "exhaustive_verification": [
+    {
+      "id": "maxcut_k4_unweighted",
+      "problem_type": "max_cut",
+      "description": "Complete graph K4 (unit weights)",
+      "num_variables": 4,
+      "num_states_tested": 16,
+      "feasible_states_count": 16,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": -4.0,
+      "min_ising_energy": -4.0,
+      "optimal_bitstring": "0011",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 16 binary configurations. E_QUBO(x) == -C(x) verified with max discrepancy 0.00e+00. QUBO and Ising energies are strictly identical.",
+      "elapsed_ms": 15.67
+    },
+    {
+      "id": "maxcut_weighted_5node",
+      "problem_type": "max_cut",
+      "description": "Weighted 5-node graph",
+      "num_variables": 5,
+      "num_states_tested": 32,
+      "feasible_states_count": 32,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": -12.5,
+      "min_ising_energy": -12.5,
+      "optimal_bitstring": "01101",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 32 binary configurations. E_QUBO(x) == -C(x) verified with max discrepancy 0.00e+00. QUBO and Ising energies are strictly identical.",
+      "elapsed_ms": 14.4
+    },
+    {
+      "id": "maxcut_zero_weights",
+      "problem_type": "max_cut",
+      "description": "Edge case: All-zero edge weights (zero objective)",
+      "num_variables": 3,
+      "num_states_tested": 8,
+      "feasible_states_count": 8,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 0.0,
+      "min_ising_energy": 0.0,
+      "optimal_bitstring": "000",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 8 binary configurations. E_QUBO(x) == -C(x) verified with max discrepancy 0.00e+00. QUBO and Ising energies are strictly identical.",
+      "elapsed_ms": 1.01
+    },
+    {
+      "id": "maxcut_negative_weights",
+      "problem_type": "max_cut",
+      "description": "Edge case: Mixed positive & negative edge weights",
+      "num_variables": 4,
+      "num_states_tested": 16,
+      "feasible_states_count": 16,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": -7.5,
+      "min_ising_energy": -7.5,
+      "optimal_bitstring": "0011",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 16 binary configurations. E_QUBO(x) == -C(x) verified with max discrepancy 0.00e+00. QUBO and Ising energies are strictly identical.",
+      "elapsed_ms": 17.57
+    },
+    {
+      "id": "maxcut_disconnected",
+      "problem_type": "max_cut",
+      "description": "Edge case: Disconnected graph (2 components)",
+      "num_variables": 4,
+      "num_states_tested": 16,
+      "feasible_states_count": 16,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": -5.0,
+      "min_ising_energy": -5.0,
+      "optimal_bitstring": "0101",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 16 binary configurations. E_QUBO(x) == -C(x) verified with max discrepancy 0.00e+00. QUBO and Ising energies are strictly identical.",
+      "elapsed_ms": 9.31
+    },
+    {
+      "id": "assignment_2x2_standard",
+      "problem_type": "assignment",
+      "description": "Standard 2x2 Linear Assignment (4 binary vars)",
+      "num_variables": 4,
+      "num_states_tested": 16,
+      "feasible_states_count": 2,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 5.0,
+      "min_ising_energy": 5.0,
+      "optimal_bitstring": "0110",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 16 configurations (2 feasible permutations). Feasible states have zero penalty with E_QUBO(x) == C_orig(x). Infeasible states are penalized.",
+      "elapsed_ms": 5.87
+    },
+    {
+      "id": "assignment_3x3_standard",
+      "problem_type": "assignment",
+      "description": "Standard 3x3 Linear Assignment (9 binary vars, 512 states)",
+      "num_variables": 9,
+      "num_states_tested": 512,
+      "feasible_states_count": 6,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 9.0,
+      "min_ising_energy": 9.0,
+      "optimal_bitstring": "010100001",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 512 configurations (6 feasible permutations). Feasible states have zero penalty with E_QUBO(x) == C_orig(x). Infeasible states are penalized.",
+      "elapsed_ms": 645.69
+    },
+    {
+      "id": "assignment_3x3_zero_cost",
+      "problem_type": "assignment",
+      "description": "Edge case: 3x3 zero-cost matrix (degenerate optimal)",
+      "num_variables": 9,
+      "num_states_tested": 512,
+      "feasible_states_count": 6,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 0.0,
+      "min_ising_energy": 0.0,
+      "optimal_bitstring": "001010100",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 512 configurations (6 feasible permutations). Feasible states have zero penalty with E_QUBO(x) == C_orig(x). Infeasible states are penalized.",
+      "elapsed_ms": 369.41
+    },
+    {
+      "id": "assignment_2x2_negative_cost",
+      "problem_type": "assignment",
+      "description": "Edge case: 2x2 negative cost matrix",
+      "num_variables": 4,
+      "num_states_tested": 16,
+      "feasible_states_count": 2,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": -13.0,
+      "min_ising_energy": -13.0,
+      "optimal_bitstring": "1001",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 16 configurations (2 feasible permutations). Feasible states have zero penalty with E_QUBO(x) == C_orig(x). Infeasible states are penalized.",
+      "elapsed_ms": 3.46
+    },
+    {
+      "id": "tsp_3city_symmetric",
+      "problem_type": "tsp",
+      "description": "3-city symmetric TSP (9 binary vars, 512 states)",
+      "num_variables": 9,
+      "num_states_tested": 512,
+      "feasible_states_count": 6,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 45.0,
+      "min_ising_energy": 45.0,
+      "optimal_bitstring": "001010100",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 512 configurations (6 valid Hamiltonian cycles). Valid tours have zero penalty with E_QUBO(x) == Tour Distance. QUBO and Ising match across all states.",
+      "elapsed_ms": 284.14
+    },
+    {
+      "id": "tsp_3city_asymmetric",
+      "problem_type": "tsp",
+      "description": "3-city asymmetric TSP (9 binary vars, 512 states)",
+      "num_variables": 9,
+      "num_states_tested": 512,
+      "feasible_states_count": 6,
+      "is_verified": true,
+      "max_energy_discrepancy": 0.0,
+      "min_qubo_energy": 20.0,
+      "min_ising_energy": 20.0,
+      "optimal_bitstring": "001100010",
+      "upper_triangular_valid": true,
+      "passed": true,
+      "feasibility_summary": "Exhaustively tested all 512 configurations (6 valid Hamiltonian cycles). Valid tours have zero penalty with E_QUBO(x) == Tour Distance. QUBO and Ising match across all states.",
+      "elapsed_ms": 399.56
+    }
+  ],
+  "negative_and_infeasible_edge_cases": [
+    {
+      "case": "invalid_nonsquare_assignment",
+      "passed": true,
+      "detail": "Standard 1-to-1 matching equality constraints require square dimensions. Received rectangular instance with 2 agents and 3 tasks. Rectangular matching with unequal cardinality requires explicit slack variables."
+    },
+    {
+      "case": "infeasible_assignment_duplicate_task",
+      "passed": true,
+      "is_feasible": false,
+      "violations": [
+        {
+          "constraint_id": "TASK_DUPLICATE_ASSIGNMENT",
+          "constraint_name": "Task Single Agent Constraint",
+          "message": "Task 'T1' is assigned to multiple agents: ['W1', 'W2']. A task can be assigned at most once.",
+          "expected": 1,
+          "actual": 2,
+          "severity": "error"
+        },
+        {
+          "constraint_id": "UNASSIGNED_TASK",
+          "constraint_name": "Complete Matching Constraint",
+          "message": "Task 'T2' is not assigned to any agent in square assignment problem.",
+          "expected": "1 agent",
+          "actual": "unassigned",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "case": "infeasible_tsp_duplicate_city",
+      "passed": true,
+      "is_feasible": false,
+      "violations": [
+        {
+          "constraint_id": "DUPLICATE_CITY_VISIT",
+          "constraint_name": "Single Visit Constraint",
+          "message": "Cities visited more than once in tour cycle: ['C0']. Every city must be visited exactly once.",
+          "expected": "1 visit per city",
+          "actual": "Duplicates: ['C0']",
+          "severity": "error"
+        },
+        {
+          "constraint_id": "OMITTED_CITIES",
+          "constraint_name": "Complete Tour Coverage Constraint",
+          "message": "Tour omits cities: ['C2']. All 3 cities must be visited.",
+          "expected": "All 3 cities",
+          "actual": "Missing: ['C2']",
+          "severity": "error"
+        }
+      ]
+    }
+  ],
+  "end_to_end_solver_parity": [
+    {
+      "instance_id": "maxcut_4node",
+      "solver": "exact",
+      "reported_objective": 10.0,
+      "independent_objective": 10.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "maxcut_4node",
+      "solver": "simulated_annealing",
+      "reported_objective": 10.0,
+      "independent_objective": 10.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "maxcut_4node",
+      "solver": "genetic_algorithm",
+      "reported_objective": 10.0,
+      "independent_objective": 10.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "maxcut_4node",
+      "solver": "qaoa_aer_p1",
+      "reported_objective": 10.0,
+      "independent_objective": 10.0,
+      "is_feasible": true,
+      "qubo_energy": -10.0,
+      "ising_energy": -10.0,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "assignment_3x3",
+      "solver": "exact",
+      "reported_objective": 9.0,
+      "independent_objective": 9.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "assignment_3x3",
+      "solver": "simulated_annealing",
+      "reported_objective": 9.0,
+      "independent_objective": 9.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "assignment_3x3",
+      "solver": "genetic_algorithm",
+      "reported_objective": 9.0,
+      "independent_objective": 9.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "assignment_3x3",
+      "solver": "qaoa_aer_p1",
+      "reported_objective": 10.0,
+      "independent_objective": 10.0,
+      "is_feasible": true,
+      "qubo_energy": 10.0,
+      "ising_energy": 10.0,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "tsp_3city",
+      "solver": "exact",
+      "reported_objective": 45.0,
+      "independent_objective": 45.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "tsp_3city",
+      "solver": "simulated_annealing",
+      "reported_objective": 45.0,
+      "independent_objective": 45.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "tsp_3city",
+      "solver": "genetic_algorithm",
+      "reported_objective": 45.0,
+      "independent_objective": 45.0,
+      "is_feasible": true,
+      "parity_verified": true
+    },
+    {
+      "instance_id": "tsp_3city",
+      "solver": "qaoa_aer_p1",
+      "reported_objective": 45.0,
+      "independent_objective": 45.0,
+      "is_feasible": true,
+      "qubo_energy": 45.0,
+      "ising_energy": 45.0,
+      "parity_verified": true
+    }
+  ]
+}
