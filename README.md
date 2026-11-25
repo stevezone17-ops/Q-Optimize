@@ -402,16 +402,41 @@ Q-Optimize/
 
 ### Backend Setup
 
-```bash
-cd backend
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
-
+#### 1. Setup Virtual Environment & Install Dependencies
+```powershell
+# Windows PowerShell
+cd D:\Q-Optimize\backend
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-uvicorn backend.app.main:app --reload --port 8000
+```
+
+```bash
+# Linux / macOS / Bash
+cd backend
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### 2. Start the Backend Server
+
+**Option A (Automated startup script - Recommended):**
+```powershell
+# From D:\Q-Optimize\backend
+.\start.ps1
+
+# Or from project root
+.\start-backend.ps1
+```
+
+**Option B (Manual uvicorn startup):**
+```powershell
+cd D:\Q-Optimize\backend
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000
 ```
 
 ### Frontend Setup
@@ -424,9 +449,11 @@ npm run dev
 
 ### Running Test Suites
 
-```bash
-# Backend test suite (382 tests across auth, security, reliability, solvers, QAOA, adaptive QAOA, ML)
-python -m pytest backend/tests -v
+```powershell
+# Backend test suite (382 tests using .venv)
+cd D:\Q-Optimize\backend
+.\.venv\Scripts\Activate.ps1
+pytest tests -v
 
 # Frontend test suite (61 tests across App shell, accessibility, labs, visualization, experiments)
 npm test --prefix frontend
