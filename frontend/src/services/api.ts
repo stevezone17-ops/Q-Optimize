@@ -1,7 +1,40 @@
 /** Centralized API request service with error handling, timeout, and GET deduplication */
 
-export const API_BASE_URL =
+const DEFAULT_API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').replace(/\/+$/, '')
+
+const API_URL_STORAGE_KEY = 'q_optimize_api_base_url'
+
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(API_URL_STORAGE_KEY)
+    if (stored && stored.trim()) {
+      return stored.trim().replace(/\/+$/, '')
+    }
+  }
+  return DEFAULT_API_BASE_URL
+}
+
+export function setApiBaseUrl(url: string): string {
+  const normalized = (url || DEFAULT_API_BASE_URL).trim().replace(/\/+$/, '')
+  if (typeof window !== 'undefined') {
+    if (normalized === DEFAULT_API_BASE_URL) {
+      localStorage.removeItem(API_URL_STORAGE_KEY)
+    } else {
+      localStorage.setItem(API_URL_STORAGE_KEY, normalized)
+    }
+  }
+  return normalized
+}
+
+export function resetApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(API_URL_STORAGE_KEY)
+  }
+  return DEFAULT_API_BASE_URL
+}
+
+export const API_BASE_URL = DEFAULT_API_BASE_URL
 
 const DEFAULT_TIMEOUT_MS = 15000
 const inFlightGets = new Map<string, Promise<unknown>>()
@@ -47,8 +80,9 @@ function formatErrorDetail(errorBody: unknown, fallback: string): string {
 }
 
 export async function request<T>(endpoint: string, options: ApiRequestOptions = {}): Promise<T> {
+  const baseUrl = getApiBaseUrl()
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${normalizedEndpoint}`
+  const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${normalizedEndpoint}`
   const method = (options.method || 'GET').toUpperCase()
 
   // Deduplicate concurrent identical GET requests without external signal
@@ -121,7 +155,7 @@ export async function request<T>(endpoint: string, options: ApiRequestOptions = 
       const rawMsg = (err as Error).message || 'Unable to connect to backend service.'
       const friendlyMsg =
         rawMsg === 'Failed to fetch'
-          ? `Unable to reach backend at ${API_BASE_URL}. Verify the FastAPI server is running.`
+          ? `Unable to reach backend at ${baseUrl}. Verify the FastAPI server is running.`
           : rawMsg
       throw new ApiError(friendlyMsg, 0)
     } finally {

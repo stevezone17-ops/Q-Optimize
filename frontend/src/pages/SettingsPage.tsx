@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
 import { HealthStatus } from '../hooks/useBackendHealth'
 import { healthService } from '../services/healthService'
+import { getApiBaseUrl, setApiBaseUrl, resetApiBaseUrl } from '../services/api'
 import { BackendHealthResponse } from '../types'
 import { CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
 
@@ -19,15 +20,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   healthData,
   onRefetchHealth,
 }) => {
-  const [apiUrl, setApiUrl] = useState(
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-  )
+  const [apiUrl, setApiUrl] = useState(() => getApiBaseUrl())
   const [testResult, setTestResult] = useState<string | null>(null)
   const [isTesting, setIsTesting] = useState(false)
 
   const handleTestConnection = async () => {
     setIsTesting(true)
     setTestResult(null)
+    setApiBaseUrl(apiUrl)
     try {
       const data = await healthService.getHealth()
       setTestResult(`Successfully connected to ${data.service} (v${data.version}) in ${data.environment} mode.`)
@@ -37,6 +37,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     } finally {
       setIsTesting(false)
     }
+  }
+
+  const handleResetApiUrl = () => {
+    const def = resetApiBaseUrl()
+    setApiUrl(def)
+    setTestResult(null)
+    onRefetchHealth()
   }
 
   return (
@@ -87,7 +94,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 isLoading={isTesting}
                 leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
               >
-                Test Connection
+                Save & Test Connection
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetApiUrl}
+              >
+                Reset Default
               </Button>
             </div>
 
