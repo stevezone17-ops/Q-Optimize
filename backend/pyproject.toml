@@ -1,0 +1,11 @@
+[project]
+name = "q-optimize-backend"
+version = "1.0.0"
+description = "AI-Assisted Hybrid Quantum-Classical Optimization Framework Backend"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["..", "."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
