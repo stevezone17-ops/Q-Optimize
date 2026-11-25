@@ -402,6 +402,12 @@ Q-Optimize/
 
 ### Backend Setup
 
+#### 0. Unified Full-Stack Startup (Windows / VS Code)
+```powershell
+# Launch both Backend (port 8000) and Frontend (Vite) in one command
+.\start-all.ps1
+```
+
 #### 1. Setup Virtual Environment & Install Dependencies
 ```powershell
 # Windows PowerShell
@@ -461,6 +467,11 @@ npm test --prefix frontend
 # Frontend production build check
 npm run build --prefix frontend
 ```
+
+### Troubleshooting Local Startup
+- **Backend shows `Offline` in Sidebar:** Ensure FastAPI is running on port `8000` (`.\start-backend.ps1`) and check `http://127.0.0.1:8000/health`.
+- **Vite opens on port `5174` instead of `5173`:** Port `5173` is already occupied by another process. The backend CORS configuration in `development` mode automatically permits all `localhost` and `127.0.0.1` ports.
+- **PowerShell `Activate.ps1` blocked by Execution Policy:** Run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` in the terminal before activating `.venv`.
 
 ---
 
