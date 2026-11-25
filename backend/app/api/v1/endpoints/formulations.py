@@ -1,8 +1,10 @@
 """Formulation endpoints for QUBO and Ising generation, conversion, and verification."""
 
 from typing import Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, status, Query
+from fastapi import APIRouter, HTTPException, status, Query, Depends
 from pydantic import BaseModel, Field
+from backend.app.api.deps import get_current_user_optional
+from backend.app.domain.auth.models import User
 from backend.app.domain.formulations.models import (
     QuboModel,
     IsingModel,
@@ -27,13 +29,17 @@ class VerifyFormulationRequest(BaseModel):
 
 
 @router.post("/generate", response_model=FormulationResponse, status_code=status.HTTP_201_CREATED)
-async def generate_formulation(req: GenerateQuboRequest) -> FormulationResponse:
+async def generate_formulation(
+    req: GenerateQuboRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+) -> FormulationResponse:
     """
     Generate canonical QUBO and corresponding Ising spin Hamiltonian for a problem.
     Supports either a registered problem ID or direct problem instance data.
     """
+    owner_id = current_user.id if current_user else "default_user"
     try:
-        return await FormulationService.generate_formulation(req)
+        return await FormulationService.generate_formulation(req, owner_id=owner_id)
     except ValueError as val_err:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY if "not found" not in str(val_err).lower() else status.HTTP_404_NOT_FOUND,

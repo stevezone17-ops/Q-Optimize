@@ -31,12 +31,12 @@ class FormulationService:
         """
         problem_type: str
         instance_data: Dict[str, Any]
-        prob_id: Optional[str] = req.problem_id
+        prob_id: Optional[str] = req.problem_id.strip() if isinstance(req.problem_id, str) and req.problem_id.strip() else None
 
-        if req.problem_id:
-            problem = await ProblemService.get_problem(req.problem_id, owner_id=owner_id)
+        if prob_id:
+            problem = await ProblemService.get_problem(prob_id, owner_id=owner_id)
             if not problem:
-                raise ValueError(f"Problem '{req.problem_id}' was not found.")
+                raise ValueError(f"Problem '{prob_id}' was not found.")
             problem_type = problem.problem_type
             instance_data = problem.instance
         elif req.problem_type and req.instance:

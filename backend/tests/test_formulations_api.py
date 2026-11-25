@@ -117,3 +117,18 @@ def test_verify_formulation_endpoint(client: TestClient):
     assert data["is_verified"] is True
     assert data["num_states_tested"] == 8
     assert data["max_energy_discrepancy"] < 1e-8
+
+
+def test_formulation_invalid_problem_returns_404_or_422(client: TestClient):
+    """Verify invalid problem IDs and incomplete payloads return clear HTTP errors."""
+    missing_res = client.post(
+        "/api/v1/formulations/generate",
+        json={"problem_id": "non-existent-problem-id"},
+    )
+    assert missing_res.status_code == 404
+
+    empty_res = client.post(
+        "/api/v1/formulations/generate",
+        json={},
+    )
+    assert empty_res.status_code == 422
